@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    color: #1f2933;
+    background: #f7f2ea;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background: #f7f2ea;
+}
+
+.sevia-shell {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 32px;
+}
+
+.sevia-hero {
+    width: min(100%, 760px);
+}
+
+.sevia-kicker {
+    margin: 0 0 12px;
+    color: #6b7280;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.sevia-hero h1 {
+    margin: 0;
+    font-size: clamp(48px, 8vw, 96px);
+    line-height: 0.95;
+}
+
+.sevia-hero p:last-child {
+    margin: 18px 0 0;
+    max-width: 520px;
+    color: #4b5563;
+    font-size: 18px;
+    line-height: 1.6;
+}
