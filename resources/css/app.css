@@ -2,47 +2,150 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-    color: #1f2933;
-    background: #f7f2ea;
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+@layer base {
+    @font-face {
+        font-family: "Inter Tight";
+        src: url("/vendor/frontend-sevia/fonts/InterTight-VariableFont_wght.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: "Inter Tight";
+        src: url("/vendor/frontend-sevia/fonts/InterTight-Italic-VariableFont_wght.ttf") format("truetype");
+        font-style: italic;
+        font-weight: 100 900;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: "Cormorant Garamond";
+        src: url("/vendor/frontend-sevia/fonts/CormorantGaramond-VariableFont_wght.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 300 700;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: "Cormorant Garamond";
+        src: url("/vendor/frontend-sevia/fonts/CormorantGaramond-Italic-VariableFont_wght.ttf") format("truetype");
+        font-style: italic;
+        font-weight: 300 700;
+        font-display: swap;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-x: clip;
+    }
+
+    body {
+        min-height: 100vh;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: clip;
+        background: #ffffff;
+        color: #5b2730;
+        font-family: "Inter Tight", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .site-body,
+    .site-page {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        overflow-x: clip;
+    }
+
+    .site-body--checkout {
+        background: #fdfbf8;
+    }
 }
 
-body {
-    min-height: 100vh;
-    margin: 0;
-    background: #f7f2ea;
-}
+@layer components {
+    .sevia-volume-option--selected {
+        border-color: #5b2730 !important;
+        background-color: #5b2730 !important;
+        color: #fdfbf8 !important;
+    }
 
-.sevia-shell {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 32px;
-}
+    .sevia-price-range__input {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 30px;
+        margin: 0;
+        background: transparent;
+        pointer-events: none;
+        appearance: none;
+    }
 
-.sevia-hero {
-    width: min(100%, 760px);
-}
+    .sevia-price-range__input::-webkit-slider-thumb {
+        width: 9px;
+        height: 9px;
+        margin-top: -3.5px;
+        border: 1px solid #5b2730;
+        border-radius: 9999px;
+        background: #fdfbf8;
+        cursor: pointer;
+        pointer-events: auto;
+        appearance: none;
+    }
 
-.sevia-kicker {
-    margin: 0 0 12px;
-    color: #6b7280;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
+    .sevia-price-range__input::-moz-range-thumb {
+        width: 9px;
+        height: 9px;
+        border: 1px solid #5b2730;
+        border-radius: 9999px;
+        background: #fdfbf8;
+        cursor: pointer;
+        pointer-events: auto;
+    }
 
-.sevia-hero h1 {
-    margin: 0;
-    font-size: clamp(48px, 8vw, 96px);
-    line-height: 0.95;
-}
+    .sevia-price-range__input::-webkit-slider-runnable-track {
+        height: 2px;
+        background: transparent;
+    }
 
-.sevia-hero p:last-child {
-    margin: 18px 0 0;
-    max-width: 520px;
-    color: #4b5563;
-    font-size: 18px;
-    line-height: 1.6;
+    .sevia-price-range__input::-moz-range-track {
+        height: 2px;
+        background: transparent;
+    }
+
+    .sevia-liqpay-form form {
+        margin: 0;
+    }
+
+    .sevia-liqpay-form button,
+    .sevia-liqpay-form input[type="submit"],
+    .sevia-liqpay-form input[type="image"] {
+        display: inline-flex;
+        min-height: 52px;
+        width: 100%;
+        max-width: 100%;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        background: #5b2730;
+        padding: 16px 40px;
+        color: #fff8f4;
+        font-size: 11.5px;
+        font-weight: 500;
+        line-height: 17px;
+        letter-spacing: 1.84px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+    .sevia-liqpay-form button:hover,
+    .sevia-liqpay-form input[type="submit"]:hover,
+    .sevia-liqpay-form input[type="image"]:hover {
+        background: #4d2028;
+    }
+
 }

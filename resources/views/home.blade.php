@@ -3,11 +3,11 @@
 @section('title', 'Sevia')
 
 @section('content')
-    <main class="sevia-shell">
-        <section class="sevia-hero">
-            <p class="sevia-kicker">Frontend package</p>
-            <h1>Sevia</h1>
-            <p>Clean starter for the perfume storefront.</p>
-        </section>
-    </main>
+    @include('front.sevia::home.sections.hero')
+    @include('front.sevia::home.sections.summer-bestsellers')
+    @include('front.sevia::home.sections.collections')
+    @include('front.sevia::home.sections.discounts')
+    @include('front.sevia::home.sections.discovery-set')
+    @include('front.sevia::home.sections.showroom')
+    @include('front.sevia::home.sections.instagram')
 @endsection
