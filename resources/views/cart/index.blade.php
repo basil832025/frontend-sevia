@@ -53,6 +53,35 @@
     $freeShippingProgress = $freeShippingFrom > 0 ? min(100, max(0, ($cartTotalWithBottles / $freeShippingFrom) * 100)) : 0;
     $bottleOptions = collect($bottles ?? []);
     $defaultBottle = $bottleOptions->first();
+    $cartItems = collect($items);
+    $discoverySetGroups = $cartItems
+        ->filter(fn (array $item): bool => (bool) data_get($item, 'meta.discovery_53') && filled(data_get($item, 'meta.discovery_set_id')))
+        ->groupBy(fn (array $item): string => (string) data_get($item, 'meta.discovery_set_id'))
+        ->map(function ($setItems, string $setId) {
+            $setItems = collect($setItems)->values();
+            $qty = max(1, (int) $setItems->min('qty'));
+            $originalTotal = $setItems->sum(fn (array $item): float => (float) data_get($item, 'meta.discovery_original_price', $item['price'] ?? 0) * (int) ($item['qty'] ?? 1));
+            $discountedTotal = $setItems->sum(fn (array $item): float => (float) ($item['subtotal'] ?? 0));
+
+            return [
+                'id' => $setId,
+                'items' => $setItems,
+                'qty' => $qty,
+                'original_total' => $originalTotal,
+                'discounted_total' => $discountedTotal,
+                'discount' => max(0, $originalTotal - $discountedTotal),
+            ];
+        })
+        ->values();
+    $regularItems = $cartItems
+        ->reject(fn (array $item): bool => (bool) data_get($item, 'meta.discovery_53') && filled(data_get($item, 'meta.discovery_set_id')))
+        ->values();
+    $regularQty = $regularItems->sum(fn (array $item): int => (int) ($item['qty'] ?? 0));
+    $discoveryOriginalTotal = $discoverySetGroups->sum('original_total');
+    $discoveryDiscountedTotal = $discoverySetGroups->sum('discounted_total');
+    $discoveryDiscountTotal = $discoverySetGroups->sum('discount');
+    $itemsSubtotal = $regularItems->sum(fn ($item) => (float) ($item['old_subtotal'] ?? $item['subtotal'] ?? 0)) + $discoveryOriginalTotal;
+    $discountTotal = max(0, $itemsSubtotal - (float) $total);
 @endphp
 
 @section('content')
@@ -92,7 +121,89 @@
             </div>
 
             <div>
-                @foreach ($items as $item)
+                @foreach ($discoverySetGroups as $set)
+                    <article class="mb-[22px] border border-[#E8DAD0] bg-white">
+                        <header class="relative z-20 flex min-h-[105px] items-center gap-[22px] px-[22px] py-[17px] max-sm:min-h-0 max-sm:flex-wrap max-sm:gap-4 max-sm:px-4 max-sm:py-4">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2.5">
+                                    <p class="m-0 text-[10px] uppercase leading-[15px] tracking-[1.5px] text-[#7A4751]">Discovery 5×3</p>
+                                    <span class="inline-flex h-[19px] items-center bg-[#5B2730] px-[7px] text-[9.5px] uppercase leading-[14px] tracking-[0.95px] text-[#FFF8F4]">15%</span>
+                                </div>
+                                <h2 class="m-0 mt-1 font-cormorant text-[21px] font-medium leading-6 text-[#5B2730]">Мій сет</h2>
+                                <p class="m-0 mt-1 text-[12px] leading-[18px] text-[#7A4751]">Пʼять ароматів по 3 мл · атомайзери в комплекті</p>
+                            </div>
+
+                            <form class="flex h-[30px] items-center border border-[#E8DAD0]" method="POST" action="{{ route('cart.discovery-set.quantity') }}">
+                                @csrf
+                                <input type="hidden" name="discovery_set_id" value="{{ $set['id'] }}">
+                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="-1" aria-label="Менше">-</button>
+                                <span class="grid h-7 min-w-[26px] place-items-center px-2 text-[13px] leading-5 text-[#5B2730]">{{ $set['qty'] }}</span>
+                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="1" aria-label="Більше">+</button>
+                            </form>
+
+                            <div class="min-w-24 text-right">
+                                <p class="m-0 text-[16px] font-medium leading-6 text-[#B03B45]">{{ $money($set['discounted_total']) }}</p>
+                                <p class="m-0 text-[12.5px] leading-[19px] text-[#C9A9B0] line-through">{{ $money($set['original_total']) }}</p>
+                            </div>
+
+                            <form class="relative z-30" method="POST" action="{{ route('cart.discovery-set.remove') }}" data-cart-remove-form>
+                                @csrf
+                                <input type="hidden" name="discovery_set_id" value="{{ $set['id'] }}">
+                                <button class="grid size-[30px] place-items-center text-[#A98088]" type="button" aria-label="Прибрати сет" data-cart-remove-open>
+                                    <svg class="size-[13px]" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3.25 3.25L9.75 9.75M9.75 3.25L3.25 9.75" stroke="#A98088" stroke-width="1.1375" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                                <div class="absolute right-0 top-9 z-50 hidden w-[218px] border border-[#E8DAD0] bg-white p-3.5 text-left shadow-[0_12px_30px_rgba(91,39,48,0.14)]" hidden data-cart-remove-confirm>
+                                    <p class="m-0 font-cormorant text-[20px] font-medium leading-6 text-[#5B2730]">Видалити сет?</p>
+                                    <p class="m-0 mt-1 text-[12px] leading-[18px] text-[#7A4751]">Усі 5 ароматів буде прибрано з кошика.</p>
+                                    <div class="mt-3 flex items-center justify-between gap-2">
+                                        <button class="h-9 flex-1 border border-[#E8DAD0] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#7A4751]" type="button" data-cart-remove-cancel>Скасувати</button>
+                                        <button class="h-9 flex-1 bg-[#5B2730] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#FFF8F4]" type="submit">Видалити</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </header>
+
+                        <div class="relative z-0 grid grid-cols-5 border-y border-[#E8DAD0] bg-[#FBF4F0] max-sm:grid-cols-1">
+                            @foreach ($set['items'] as $setItem)
+                                @php
+                                    $setMeta = is_array($setItem['meta'] ?? null) ? $setItem['meta'] : [];
+                                    $setLabelParts = collect(preg_split('/\s*·\s*/u', (string) ($setMeta['cart_label'] ?? '')))->filter()->values();
+                                    $setBrand = (string) ($setMeta['brand'] ?? ($setLabelParts->count() >= 3 ? $setLabelParts->get(0) : ''));
+                                    $setName = (string) ($setMeta['name'] ?? ($setLabelParts->count() >= 3 ? $setLabelParts->get(1) : ($setItem['name'] ?? 'Товар')));
+                                    $setVolume = (string) ($setMeta['volume'] ?? ($setLabelParts->count() >= 3 ? $setLabelParts->get(2) : ($setItem['variant'] ?? '3 мл')));
+                                    $setOriginalPrice = (float) data_get($setMeta, 'discovery_original_price', $setItem['price'] ?? 0);
+                                @endphp
+                                <div class="relative flex min-h-[181px] flex-col items-center justify-between px-2.5 pb-4 pt-[15px] text-center max-sm:min-h-[61px] max-sm:flex-row max-sm:gap-3 max-sm:border-t max-sm:border-[#F0E6DE] max-sm:px-5 max-sm:py-[9px]">
+                                    <span class="absolute left-2.5 top-[9px] text-[10px] leading-[15px] text-[#8A5D66] max-sm:static max-sm:w-3">{{ $loop->iteration }}</span>
+                                    <div class="flex h-[62px] w-full items-center justify-center max-sm:h-[42px] max-sm:w-10">
+                                        @if (! empty($setItem['image']))
+                                            <img class="max-h-[60px] max-w-[42px] object-contain max-sm:max-h-10 max-sm:max-w-[28px]" src="{{ $setItem['image'] }}" alt="{{ trim($setBrand . ' ' . $setName) }}">
+                                        @endif
+                                    </div>
+                                    <div class="w-full min-w-0 max-sm:flex max-sm:flex-1 max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:text-left">
+                                        <div class="min-w-0">
+                                            <p class="m-0 mt-[9px] truncate text-[10px] uppercase leading-[15px] tracking-[1.4px] text-[#7A4751] max-sm:hidden">{{ $setBrand }}</p>
+                                            <h3 class="m-0 mt-[3px] font-cormorant text-[15.5px] font-medium leading-[18px] text-[#5B2730] max-sm:mt-0">{{ $setName }}</h3>
+                                        </div>
+                                        <p class="m-0 mt-2 text-[11px] leading-4 text-[#7A4751] max-sm:mt-0 max-sm:w-[77px] max-sm:text-[14px] max-sm:leading-[21px]">{{ $setVolume }} · {{ $money($setOriginalPrice) }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <footer class="flex min-h-[49px] items-center justify-between gap-5 px-[22px] py-[13px] max-sm:flex-col max-sm:items-start max-sm:px-4">
+                            <p class="m-0 flex items-center gap-2 text-[12px] leading-[17px] text-[#457A5C]">
+                                <span class="grid size-[13px] place-items-center rounded-full border border-[#457A5C] text-[9px]">✓</span>
+                                Сет дешевший на {{ $money($set['discount']) }}, ніж ті самі аромати окремо
+                            </p>
+                            <a class="text-[13px] leading-5 text-[#7A4751]" href="{{ route('discovery-53', ['edit_set' => $set['id']]) }}">Змінити склад</a>
+                        </footer>
+                    </article>
+                @endforeach
+
+                @foreach ($regularItems as $item)
                         @php
                             $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
                             $labelParts = collect(preg_split('/\s*·\s*/u', (string) ($meta['cart_label'] ?? '')))->filter()->values();
@@ -274,13 +385,23 @@
                 <div class="border-t border-[#E8DAD0] px-[26px] pb-6 pt-4 max-sm:px-5 max-sm:pb-5">
                     <dl class="m-0 grid gap-0 text-[13.5px] leading-5">
                         <div class="flex justify-between py-[5.5px]">
-                            <dt class="text-[#7A4751]">Аромати · {{ $qty }} розпиви</dt>
-                            <dd class="m-0 text-[#5B2730]">{{ $money($itemsSubtotal) }}</dd>
+                            <dt class="text-[#7A4751]">Аромати · {{ $regularQty }} розпиви</dt>
+                            <dd class="m-0 text-[#5B2730]">{{ $money($regularItems->sum(fn ($item) => (float) ($item['old_subtotal'] ?? $item['subtotal'] ?? 0))) }}</dd>
                         </div>
                         <div class="flex justify-between py-[5.5px]">
                             <dt class="text-[#7A4751]">Знижка на аромати</dt>
-                            <dd class="m-0 text-[#4D8566]">{{ $discountTotal > 0 ? '- ' . $money($discountTotal) : $money(0) }}</dd>
+                            <dd class="m-0 text-[#4D8566]">{{ ($discountTotal - $discoveryDiscountTotal) > 0 ? '- ' . $money($discountTotal - $discoveryDiscountTotal) : $money(0) }}</dd>
                         </div>
+                        @if ($discoverySetGroups->isNotEmpty())
+                            <div class="flex justify-between py-[5.5px]">
+                                <dt class="text-[#7A4751]">Discovery 5×3 · сет</dt>
+                                <dd class="m-0 text-[#5B2730]">{{ $money($discoveryOriginalTotal) }}</dd>
+                            </div>
+                            <div class="flex justify-between py-[5.5px]">
+                                <dt class="text-[#7A4751]">Знижка на сет · 15%</dt>
+                                <dd class="m-0 text-[#4D8566]">- {{ $money($discoveryDiscountTotal) }}</dd>
+                            </div>
+                        @endif
                         <div class="flex justify-between py-[5.5px]">
                             <dt class="text-[#7A4751]">Флакони · {{ $bottleSummaryLabel($bottleBreakdown, $bottleCount) }}</dt>
                             <dd class="m-0 text-[#5B2730]">{{ $money($bottleFee) }}</dd>

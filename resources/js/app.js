@@ -2636,3 +2636,291 @@ document.querySelectorAll('[data-volume-option]').forEach((button) => {
         })
         .catch(() => {});
 })();
+
+(() => {
+    const root = document.querySelector('[data-discovery-set]');
+    if (!root) return;
+
+    const maxItems = Number.parseInt(root.dataset.setSize || '5', 10) || 5;
+    const storageKey = 'sevia.discovery53.selection';
+    const cards = [...root.querySelectorAll('[data-discovery-card]')];
+    const title = root.querySelector('[data-discovery-title]');
+    const bar = root.querySelector('[data-discovery-bar]');
+    const slots = root.querySelector('[data-discovery-slots]');
+    const details = root.querySelector('[data-discovery-details]');
+    const detailList = root.querySelector('[data-discovery-detail-list]');
+    const expand = root.querySelector('[data-discovery-expand]');
+    const collapse = root.querySelector('[data-discovery-collapse]');
+    const cartButton = root.querySelector('[data-discovery-cart]');
+    const totalNode = root.querySelector('[data-discovery-total]');
+    const discountedNode = root.querySelector('[data-discovery-discounted]');
+    const initialSelectionNode = root.querySelector('[data-discovery-initial-selection]');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+    const editSetId = root.dataset.editSetId || '';
+    let selected = [];
+
+    const money = (value) => `${Math.round(Number(value) || 0).toLocaleString('uk-UA')} ₴`;
+    const selectedIds = () => new Set(selected.map((item) => String(item.productId)));
+    const save = () => localStorage.setItem(storageKey, JSON.stringify(selected));
+    const normalizeSelection = (items) => Array.isArray(items)
+        ? items.filter((item) => item && item.productId && item.title && item.image).slice(0, maxItems)
+        : [];
+    const load = () => {
+        if (editSetId) {
+            try {
+                selected = normalizeSelection(JSON.parse(initialSelectionNode?.textContent || '[]'));
+                save();
+            } catch {
+                selected = [];
+            }
+            return;
+        }
+
+        try {
+            const items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            selected = normalizeSelection(items);
+        } catch {
+            selected = [];
+        }
+    };
+    const itemFromCard = (card) => ({
+        productId: Number.parseInt(card.dataset.productId || '0', 10),
+        rootId: Number.parseInt(card.dataset.productRootId || '0', 10),
+        title: card.dataset.productTitle || '',
+        brand: card.dataset.productBrand || '',
+        image: card.dataset.productImage || '',
+        price: Number.parseFloat(card.dataset.productPrice || '0') || 0,
+        priceLabel: card.dataset.productPriceLabel || '',
+        volume: card.dataset.productVolume || '3 мл',
+        notes: card.dataset.productNotes || '',
+        cartLabel: card.dataset.cartLabel || '',
+    });
+    const labelForMissing = (missing) => {
+        if (missing <= 0) return 'У кошик';
+        if (missing === 1) return 'Оберіть ще 1 аромат';
+        if (missing < 5) return `Оберіть ще ${missing} аромати`;
+        return `Оберіть ще ${missing} ароматів`;
+    };
+    const remove = (productId) => {
+        selected = selected.filter((item) => String(item.productId) !== String(productId));
+        save();
+        render();
+    };
+    const renderSlots = () => {
+        if (!slots) return;
+        slots.innerHTML = '';
+
+        for (let index = 0; index < maxItems; index += 1) {
+            const item = selected[index];
+            const slot = document.createElement(item ? 'div' : 'button');
+            slot.className = item
+                ? 'relative flex h-[68px] w-[58.6px] shrink-0 items-center justify-center rounded-[6px] border border-[#F0E6DE] bg-[#FDFBF8] px-2 py-[7px] sm:h-[66px] sm:w-[58px]'
+                : 'flex h-[68px] w-[58.6px] shrink-0 items-center justify-center rounded-[6px] border border-dashed border-[#F0E6DE] text-[15px] font-light leading-[22px] text-[#8A5D66] sm:h-[66px] sm:w-[58px]';
+
+            if (!item) {
+                slot.type = 'button';
+                slot.textContent = '+';
+                slot.addEventListener('click', () => window.scrollTo({ top: root.offsetTop, behavior: 'smooth' }));
+                slots.appendChild(slot);
+                continue;
+            }
+
+            const image = document.createElement('img');
+            image.className = 'max-h-[52px] max-w-[39.85px] object-contain sm:max-h-[50px] sm:max-w-[34px]';
+            image.src = item.image;
+            image.alt = `${item.brand} ${item.title}`;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'absolute right-px top-px grid size-[22px] place-items-center text-[11px] leading-none text-[#8A5D66] sm:size-6 sm:text-[12px] sm:text-[#C9A9B0]';
+            button.setAttribute('aria-label', `Прибрати ${item.title} із сету`);
+            button.textContent = '×';
+            button.addEventListener('click', () => remove(item.productId));
+
+            slot.append(image, button);
+            slots.appendChild(slot);
+        }
+    };
+    const renderDetails = () => {
+        if (!detailList) return;
+        detailList.innerHTML = '';
+
+        selected.forEach((item, index) => {
+            const row = document.createElement('article');
+            row.className = 'relative flex h-[61px] items-center gap-3 border-t border-[#F0E6DE] px-5 py-[9px] sm:min-h-[212px] sm:flex-col sm:items-start sm:justify-between sm:gap-0 sm:border-t-0 sm:border-r sm:px-5 sm:pb-[18px] sm:pt-10 last:sm:border-r-0';
+
+            const number = document.createElement('span');
+            number.className = 'absolute left-5 top-3.5 hidden text-[10px] leading-[15px] text-[#8A5D66] sm:block';
+            number.textContent = String(index + 1);
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'grid size-[30px] shrink-0 place-items-center text-[16px] leading-none text-[#C9A9B0] sm:absolute sm:right-3 sm:top-2 sm:size-[26px]';
+            removeButton.setAttribute('aria-label', `Прибрати ${item.title} із сету`);
+            removeButton.textContent = '×';
+            removeButton.addEventListener('click', () => remove(item.productId));
+
+            const image = document.createElement('img');
+            image.className = 'h-10 w-10 max-w-[28px] shrink-0 object-contain sm:h-[72px] sm:w-auto sm:max-w-12';
+            image.src = item.image;
+            image.alt = `${item.brand} ${item.title}`;
+
+            const content = document.createElement('div');
+            content.className = 'flex min-w-0 flex-1 items-center justify-between gap-3 sm:block sm:w-full';
+            const brand = document.createElement('p');
+            brand.className = 'm-0 mt-3 hidden text-[9.5px] uppercase leading-[14px] tracking-[1.33px] text-[#7A4751] sm:block';
+            brand.textContent = item.brand;
+            const heading = document.createElement('h3');
+            heading.className = 'm-0 min-w-0 flex-1 font-cormorant text-[15.5px] font-medium leading-[18px] text-[#5B2730] sm:mt-1 sm:text-[17px] sm:leading-5';
+            heading.textContent = item.title;
+            const price = document.createElement('p');
+            price.className = 'm-0 w-[77px] shrink-0 text-[14px] leading-[21px] text-[#7A4751] sm:mt-2 sm:w-auto';
+            price.textContent = `${item.volume} · ${item.priceLabel || money(item.price)}`;
+            content.append(brand, heading, price);
+
+            row.append(number, removeButton, image, content);
+            detailList.appendChild(row);
+        });
+    };
+    const renderCards = () => {
+        const ids = selectedIds();
+
+        cards.forEach((card) => {
+            const selectedCard = ids.has(String(card.dataset.productId));
+            card.dataset.selected = selectedCard ? 'true' : 'false';
+            const label = card.querySelector('[data-discovery-toggle-label]');
+            if (label) label.textContent = selectedCard ? '- Прибрати' : '+ Додати';
+        });
+    };
+    const render = () => {
+        const missing = Math.max(0, maxItems - selected.length);
+        const total = selected.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        const discounted = total * 0.85;
+
+        renderCards();
+        renderSlots();
+        renderDetails();
+
+        if (title) {
+            title.textContent = selected.length >= maxItems
+                ? `Сет зібрано — ${selected.length} із ${maxItems}`
+                : `Обери ароматів · лишилось ${missing}`;
+        }
+        if (totalNode) totalNode.textContent = money(total);
+        if (discountedNode) discountedNode.textContent = money(discounted);
+        if (cartButton) {
+            cartButton.disabled = selected.length !== maxItems;
+            cartButton.textContent = labelForMissing(missing);
+        }
+    };
+
+    cards.forEach((card) => {
+        card.querySelector('[data-discovery-toggle]')?.addEventListener('click', () => {
+            const item = itemFromCard(card);
+            const exists = selectedIds().has(String(item.productId));
+
+            if (exists) {
+                remove(item.productId);
+                return;
+            }
+
+            if (!item.productId || selected.length >= maxItems) {
+                return;
+            }
+
+            selected.push(item);
+            save();
+            render();
+        });
+    });
+
+    expand?.addEventListener('click', () => {
+        const expanded = expand.getAttribute('aria-expanded') === 'true';
+        expand.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        if (bar) bar.dataset.expanded = expanded ? 'false' : 'true';
+        details?.classList.toggle('hidden', expanded);
+    });
+
+    collapse?.addEventListener('click', () => {
+        expand?.setAttribute('aria-expanded', 'false');
+        if (bar) bar.dataset.expanded = 'false';
+        details?.classList.add('hidden');
+    });
+
+    cartButton?.addEventListener('click', async () => {
+        if (cartButton.disabled || selected.length !== maxItems) return;
+
+        cartButton.disabled = true;
+        cartButton.textContent = 'Додаємо...';
+        const setId = editSetId || `discovery53-${Date.now()}`;
+        let lastData = null;
+
+        try {
+            if (editSetId && root.dataset.removeSetUrl) {
+                const removeResponse = await fetch(root.dataset.removeSetUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    body: JSON.stringify({ discovery_set_id: editSetId }),
+                });
+                const removeData = await removeResponse.json();
+                if (!removeResponse.ok || removeData.ok === false) {
+                    throw new Error(removeData.message || 'Set remove failed');
+                }
+            }
+
+            for (const item of selected) {
+                const response = await fetch(root.dataset.addUrl || '/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        product_id: item.productId,
+                        qty: 1,
+                        price: Math.round((Number(item.price) || 0) * 0.85 * 100) / 100,
+                        meta: {
+                            cart_label: item.cartLabel,
+                            volume: item.volume,
+                            brand: item.brand,
+                            name: item.title,
+                            notes: item.notes,
+                            discovery_53: true,
+                            discovery_set_id: setId,
+                            discovery_original_price: item.price,
+                        },
+                    }),
+                });
+                const data = await response.json();
+                if (!response.ok || data.ok === false) throw new Error(data.message || 'Cart add failed');
+                lastData = data;
+            }
+
+            if (lastData) {
+                document.querySelectorAll('[data-cart-count]').forEach((badge) => {
+                    const qty = Math.max(0, Number.parseInt(lastData.qty ?? 0, 10) || 0);
+                    badge.textContent = String(qty);
+                    badge.classList.toggle('hidden', qty <= 0);
+                    badge.classList.toggle('grid', qty > 0);
+                });
+                window.dispatchEvent(new CustomEvent('sevia-cart-updated', { detail: lastData }));
+            }
+
+            localStorage.removeItem(storageKey);
+            selected = [];
+            render();
+            window.location.assign(root.dataset.cartUrl || '/cart');
+        } catch (error) {
+            console.error('Discovery set add failed', error);
+            render();
+        }
+    });
+
+    load();
+    render();
+})();

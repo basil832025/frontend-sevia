@@ -82,6 +82,52 @@ class SeviaCartController extends Controller
         return $this->cartResponse($request, $this->cart->remove($productId, $meta));
     }
 
+    public function discoverySetQuantity(Request $request)
+    {
+        $setId = trim((string) $request->input('discovery_set_id', ''));
+        $delta = (int) $request->input('delta', 0);
+
+        if ($setId === '' || $delta === 0) {
+            return $this->cartResponse($request, ['ok' => false, 'message' => 'Не передано сет.'], 422);
+        }
+
+        $items = collect($this->cart->info()['items'] ?? [])
+            ->filter(fn (array $item): bool => (string) data_get($item, 'meta.discovery_set_id') === $setId)
+            ->values();
+
+        if ($items->isEmpty()) {
+            return $this->cartResponse($request, ['ok' => false, 'message' => 'Сет не знайдено.'], 404);
+        }
+
+        $currentQty = max(1, (int) $items->min('qty'));
+        $nextQty = max(0, $currentQty + $delta);
+
+        foreach ($items as $item) {
+            $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
+            $this->cart->setQty((int) $item['product_id'], $nextQty, (float) ($item['price'] ?? 0), $meta);
+        }
+
+        return $this->cartResponse($request, $this->cart->info());
+    }
+
+    public function removeDiscoverySet(Request $request)
+    {
+        $setId = trim((string) $request->input('discovery_set_id', ''));
+
+        if ($setId === '') {
+            return $this->cartResponse($request, ['ok' => false, 'message' => 'Не передано сет.'], 422);
+        }
+
+        collect($this->cart->info()['items'] ?? [])
+            ->filter(fn (array $item): bool => (string) data_get($item, 'meta.discovery_set_id') === $setId)
+            ->each(function (array $item): void {
+                $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
+                $this->cart->remove((int) $item['product_id'], $meta, true);
+            });
+
+        return $this->cartResponse($request, $this->cart->info());
+    }
+
     public function info()
     {
         return response()->json($this->cart->info());

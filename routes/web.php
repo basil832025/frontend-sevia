@@ -15,6 +15,8 @@ use Basil832025\FrontendSevia\Http\Controllers\SeviaTemplatePageController;
 
 Route::get('/', [SeviaCatalogController::class, 'home'])->name('home');
 
+Route::get('/discovery-53', [SeviaCatalogController::class, 'discovery'])->name('discovery-53');
+Route::get('/discovery-53/count', [SeviaCatalogController::class, 'discoveryCount'])->name('discovery-53.count');
 Route::get('/catalog', [SeviaCatalogController::class, 'index'])->name('catalog.index');
 Route::get('/sale', [SeviaCatalogController::class, 'index'])->name('sale.index');
 Route::get('/catalog/count', [SeviaCatalogController::class, 'count'])->name('catalog.count');
@@ -23,12 +25,15 @@ Route::get('/cart', [SeviaCartController::class, 'page'])->name('cart.page');
 Route::post('/cart/add', [SeviaCartController::class, 'add'])->name('cart.add');
 Route::post('/cart/quantity', [SeviaCartController::class, 'quantity'])->name('cart.quantity');
 Route::post('/cart/remove', [SeviaCartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/discovery-set/quantity', [SeviaCartController::class, 'discoverySetQuantity'])->name('cart.discovery-set.quantity');
+Route::post('/cart/discovery-set/remove', [SeviaCartController::class, 'removeDiscoverySet'])->name('cart.discovery-set.remove');
 Route::get('/cart/info', [SeviaCartController::class, 'info'])->name('cart.info');
 Route::post('/favorites/toggle', [SeviaAccountController::class, 'toggleFavorite'])->name('favorites.toggle');
 
 Route::get('/account', [SeviaAccountController::class, 'overview'])->name('account.overview');
 Route::get('/account/orders', [SeviaAccountController::class, 'orders'])->name('account.orders');
 Route::get('/account/orders/{order}', [SeviaAccountController::class, 'order'])->name('account.orders.show');
+Route::post('/account/orders/{order}/repeat', [SeviaAccountController::class, 'repeatOrder'])->name('account.orders.repeat');
 Route::get('/account/profile', [SeviaAccountController::class, 'profile'])->name('account.profile');
 Route::get('/account/favorites', [SeviaAccountController::class, 'favorites'])->name('account.favorites');
 Route::get('/account/profile/edit', [SeviaAccountController::class, 'editProfile'])->name('account.profile.edit');

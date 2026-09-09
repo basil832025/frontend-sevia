@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Shop\Characteristic;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductCategory;
+use App\Services\CartService;
 use App\Services\InstagramFeedService;
 use App\Support\GuestFavoritesStore;
 use Illuminate\Support\Facades\Auth;
@@ -115,6 +116,72 @@ class SeviaCatalogController extends Controller
             'selectedVolume' => (int) $request->query('volume', 0),
             'favoriteIds' => $this->favoriteIds(),
             'saleOnly' => $saleOnly,
+        ]);
+    }
+
+    public function discovery(Request $request)
+    {
+        $locale = app()->getLocale() ?: 'uk';
+        $perPage = 24;
+        $baseQuery = $this->baseQuery();
+
+        $rootIds = (clone $baseQuery)->pluck('id');
+        $filterRootIds = $this->rootIdsMatchingPrice($rootIds, $request);
+        $filterGroups = $this->filterGroups($filterRootIds, $locale);
+        $selectedFilters = $this->selectedFilters($request);
+
+        $allProducts = $this->filteredProducts($baseQuery, $request, $locale, $selectedFilters)
+            ->map(fn (array $product): ?array => $this->discoveryProductCard($product))
+            ->filter()
+            ->values();
+
+        if ($allProducts->isEmpty() && $rootIds->isEmpty()) {
+            $allProducts = $this->fallbackProducts()
+                ->map(fn (array $product): ?array => $this->discoveryProductCard($product))
+                ->filter()
+                ->values();
+        }
+
+        $page = max(1, (int) $request->query('page', 1));
+        $products = $allProducts->forPage($page, $perPage)->values();
+        $lastPage = max(1, (int) ceil($allProducts->count() / $perPage));
+        [$priceMin, $priceMax] = $this->priceBounds($rootIds);
+        [$editingDiscoverySetId, $editingDiscoveryItems] = $this->discoveryEditSelection($request);
+
+        return view('front.sevia::discovery.index', [
+            'breadcrumbs' => [
+                ['title' => 'Sevia', 'url' => route('home')],
+                ['title' => 'Discovery 5x3', 'url' => null],
+            ],
+            'filterGroups' => $filterGroups,
+            'selectedFilters' => $selectedFilters,
+            'products' => $products,
+            'productsTotal' => $allProducts->count(),
+            'page' => min($page, $lastPage),
+            'lastPage' => $lastPage,
+            'sort' => (string) $request->query('sort', 'popular'),
+            'priceMin' => $priceMin,
+            'priceMax' => $priceMax,
+            'currentPriceMin' => $request->query('price_min', $priceMin),
+            'currentPriceMax' => $request->query('price_max', $priceMax),
+            'favoriteIds' => $this->favoriteIds(),
+            'editingDiscoverySetId' => $editingDiscoverySetId,
+            'editingDiscoveryItems' => $editingDiscoveryItems,
+        ]);
+    }
+
+    public function discoveryCount(Request $request)
+    {
+        $locale = app()->getLocale() ?: 'uk';
+        $selectedFilters = $this->selectedFilters($request);
+
+        $count = $this->filteredProducts($this->baseQuery(), $request, $locale, $selectedFilters)
+            ->map(fn (array $product): ?array => $this->discoveryProductCard($product))
+            ->filter()
+            ->count();
+
+        return response()->json([
+            'count' => $count,
         ]);
     }
 
@@ -541,6 +608,68 @@ class SeviaCatalogController extends Controller
             'unit' => '/ ' . $volume,
             'badge' => $product->is_new ? 'New' : ($product->is_hit ? 'Bestseller' : ($product->is_promo ? 'Sale' : null)),
             'url' => route('product.show', ['product' => $product->slug]),
+        ];
+    }
+
+    private function discoveryProductCard(array $product): ?array
+    {
+        $volume = collect($product['volumes'] ?? [])
+            ->first(fn (array $option): bool => (int) preg_replace('/\D+/', '', (string) ($option['label'] ?? '')) === 3);
+
+        if (! $volume || (int) ($volume['id'] ?? 0) <= 0) {
+            return null;
+        }
+
+        $product['discovery_volume'] = $volume;
+        $product['price'] = (float) ($volume['price'] ?? 0);
+        $product['price_label'] = (string) ($volume['price_label'] ?? $this->money($product['price']));
+        $product['cart_product_id'] = (int) $volume['id'];
+        $product['cart_price'] = (float) ($volume['price'] ?? 0);
+        $product['cart_label'] = collect([$product['brand'], $product['name'], $volume['label'] ?? '3 мл', $product['price_label']])->filter()->implode(' · ');
+        $product['unit'] = '/ ' . ($volume['label'] ?? '3 мл');
+
+        return $product;
+    }
+
+    private function discoveryEditSelection(Request $request): array
+    {
+        $setId = trim((string) $request->query('edit_set', ''));
+
+        if ($setId === '') {
+            return ['', collect()];
+        }
+
+        $items = collect(app(CartService::class)->info()['items'] ?? [])
+            ->filter(fn (array $item): bool => (bool) data_get($item, 'meta.discovery_53') && (string) data_get($item, 'meta.discovery_set_id') === $setId)
+            ->values();
+
+        if ($items->isEmpty()) {
+            return ['', collect()];
+        }
+
+        return [
+            $setId,
+            $items->map(function (array $item): array {
+                $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
+                $labelParts = collect(preg_split('/\s*В·\s*/u', (string) ($meta['cart_label'] ?? '')))->filter()->values();
+                $brand = (string) ($meta['brand'] ?? ($labelParts->count() >= 3 ? $labelParts->get(0) : ''));
+                $name = (string) ($meta['name'] ?? ($labelParts->count() >= 3 ? $labelParts->get(1) : ($item['name'] ?? '')));
+                $volume = (string) ($meta['volume'] ?? ($labelParts->count() >= 3 ? $labelParts->get(2) : ($item['variant'] ?? '3 РјР»')));
+                $price = (float) data_get($meta, 'discovery_original_price', $item['price'] ?? 0);
+
+                return [
+                    'productId' => (int) ($item['product_id'] ?? 0),
+                    'rootId' => (int) ($item['product_id'] ?? 0),
+                    'title' => $name,
+                    'brand' => $brand,
+                    'image' => (string) ($item['image'] ?? ''),
+                    'price' => $price,
+                    'priceLabel' => $this->money($price),
+                    'volume' => $volume,
+                    'notes' => (string) ($meta['notes'] ?? ''),
+                    'cartLabel' => (string) ($meta['cart_label'] ?? collect([$brand, $name, $volume])->filter()->implode(' В· ')),
+                ];
+            })->values(),
         ];
     }
 

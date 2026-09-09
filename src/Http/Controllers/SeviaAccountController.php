@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Shop\Client;
 use App\Models\Shop\ClientAddress;
 use App\Models\Shop\Order;
+use App\Models\Shop\OrderItem;
 use App\Models\Shop\Product;
+use App\Services\CartService;
 use App\Services\NovaPostApiClient;
 use App\Support\GuestFavoritesStore;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class SeviaAccountController extends Controller
 {
@@ -150,28 +153,11 @@ class SeviaAccountController extends Controller
             404
         );
 
-        $order->load(['items.product']);
+        $order->load(['items.product.parent']);
         $novaTracking = $this->liveNovaTracking($order);
         $tracking = $this->trackingOrder(collect([$order]), $novaTracking);
         $tracking['steps'] = $this->orderTrackingSteps($order, $novaTracking);
-        $items = $order->items->map(function ($item): array {
-            $snapshot = (array) ($item->product_snapshot ?? []);
-            $product = $item->product;
-            $name = trim((string) data_get($snapshot, 'name', $product?->name ?? 'Аромат'));
-            $brand = trim((string) data_get($snapshot, 'brand', 'Sevia'));
-            $volume = trim((string) data_get($snapshot, 'volume', data_get($snapshot, 'unit', '')));
-            $qty = (int) ($item->qty ?? 1);
-            $unitPrice = (float) ($item->unit_price_effective ?? $item->unit_price ?? $item->subtotal ?? $item->total ?? 0);
-
-            return [
-                'meta' => trim($brand . ' · Унісекс' . ($volume !== '' ? ' · ' . $volume : '') . ' · ' . $qty),
-                'name' => $name,
-                'price' => $this->money($unitPrice * max($qty, 1)),
-                'image' => $product?->main_image_url ?: $product?->image_url,
-                'product_id' => (int) ($item->product_id ?? 0),
-                'product_slug' => (string) ($product?->slug ?? ''),
-            ];
-        })->values();
+        $items = $this->orderDetailItems($order);
 
         return view('front.sevia::account.order', [
             'client' => $client,
@@ -181,6 +167,75 @@ class SeviaAccountController extends Controller
             'orderTotal' => $this->money((float) ($order->grand_total ?: $order->total_price_sale ?: $order->total_price)),
             'orderedAt' => $order->created_at?->translatedFormat('j F Y · H:i') ?? '',
         ]);
+    }
+
+    public function repeatOrder(Order $order): RedirectResponse
+    {
+        /** @var Client|null $client */
+        $client = Auth::guard('web')->user();
+
+        if (! $client) {
+            return redirect()->route('auth.phone');
+        }
+
+        abort_unless(
+            (int) $order->clients_id === (int) $client->id
+                && $order->status !== OrderStatus::Cart,
+            404
+        );
+
+        $items = $order->items()
+            ->with('product')
+            ->orderBy('id')
+            ->get()
+            ->reject(fn (OrderItem $item): bool => data_get($item->meta, 'line_type') === 'bottle')
+            ->values();
+
+        if ($items->isEmpty()) {
+            return back()->with('error', 'У замовленні немає товарів для повторення.');
+        }
+
+        $setIdMap = [];
+        $addedCount = 0;
+        $skippedCount = 0;
+        $cart = app(CartService::class);
+
+        foreach ($items as $item) {
+            $product = $item->product;
+            $productId = (int) ($item->product_id ?? 0);
+            $qty = max(1, (int) ($item->qty ?? 1));
+
+            if ($productId <= 0 || ! $product || ! (bool) ($product->in_stock ?? true)) {
+                $skippedCount++;
+
+                continue;
+            }
+
+            $meta = is_array($item->meta ?? null) ? $item->meta : [];
+            $setId = trim((string) data_get($meta, 'discovery_set_id', ''));
+
+            if ((bool) data_get($meta, 'discovery_53') && $setId !== '') {
+                $setIdMap[$setId] ??= 'repeat-' . $order->id . '-' . Str::uuid();
+                $meta['discovery_set_id'] = $setIdMap[$setId];
+            }
+
+            $price = (float) ($item->unit_price_effective ?? $item->unit_price ?? 0);
+            $cart->add($productId, $qty, $price > 0 ? $price : null, $meta);
+            $addedCount++;
+        }
+
+        if ($addedCount === 0) {
+            return back()->with('error', 'Немає доступних товарів для додавання в кошик.');
+        }
+
+        $message = 'Товари із замовлення додані в кошик.';
+        if ($skippedCount > 0) {
+            $message .= ' Пропущено: ' . $skippedCount . '.';
+        }
+
+        return redirect()
+            ->route('cart.page')
+            ->with('success', $message);
     }
 
     public function profile(Request $request)
@@ -772,6 +827,106 @@ class SeviaAccountController extends Controller
             ->all();
 
         return $amounts !== [] ? $amounts : [3, 5, 10, 15, 20, 30];
+    }
+
+    private function orderDetailItems(Order $order): Collection
+    {
+        $items = $order->items->sortBy('id')->values();
+        $sets = $items
+            ->filter(fn (OrderItem $item): bool => $this->isDiscoveryOrderItem($item))
+            ->groupBy(fn (OrderItem $item): string => (string) data_get($item->meta, 'discovery_set_id'));
+        $seenSetIds = [];
+
+        return $items
+            ->map(function (OrderItem $item) use ($sets, &$seenSetIds): ?array {
+                $setId = trim((string) data_get($item->meta, 'discovery_set_id', ''));
+
+                if ($setId !== '' && $sets->has($setId)) {
+                    if (isset($seenSetIds[$setId])) {
+                        return null;
+                    }
+
+                    $seenSetIds[$setId] = true;
+                    $setItems = $sets->get($setId)->sortBy('id')->values();
+                    $qty = (int) max(1, $setItems->min('qty') ?? 1);
+                    $originalTotal = (float) $setItems->sum(fn (OrderItem $setItem): float => (float) data_get($setItem->meta, 'discovery_original_price', $setItem->unit_price) * (float) $setItem->qty);
+                    $discountedTotal = (float) $setItems->sum(fn (OrderItem $setItem): float => (float) $setItem->unit_price * (float) $setItem->qty);
+                    $firstItem = $setItems->first();
+
+                    return [
+                        'type' => 'discovery_set',
+                        'id' => $setId,
+                        'meta' => 'Сет · ' . $setItems->count() . ' ароматів · 3 мл · ' . $qty,
+                        'name' => 'DISCOVERY 53',
+                        'price' => $this->money($discountedTotal),
+                        'old_price' => $originalTotal > $discountedTotal ? $this->money($originalTotal) : null,
+                        'image' => $firstItem?->product?->main_image_url ?: $firstItem?->product?->image_url,
+                        'product_id' => (int) ($firstItem?->product_id ?? 0),
+                        'product_slug' => '',
+                        'qty' => $qty,
+                        'volume' => '3 мл',
+                        'children_count' => $setItems->count(),
+                        'children' => $setItems
+                            ->map(fn (OrderItem $setItem): array => $this->orderDetailRegularItem($setItem, true))
+                            ->values(),
+                    ];
+                }
+
+                return $this->orderDetailRegularItem($item);
+            })
+            ->filter()
+            ->values();
+    }
+
+    private function isDiscoveryOrderItem(OrderItem $item): bool
+    {
+        return (bool) data_get($item->meta, 'discovery_53')
+            && filled(data_get($item->meta, 'discovery_set_id'));
+    }
+
+    private function orderDetailRegularItem(OrderItem $item, bool $asSetChild = false): array
+    {
+        $snapshot = (array) ($item->product_snapshot ?? []);
+        $meta = is_array($item->meta ?? null) ? $item->meta : [];
+        $labelParts = collect(preg_split('/\s*·\s*/u', (string) data_get($meta, 'cart_label', '')))
+            ->filter()
+            ->values();
+        $product = $item->product;
+        $parent = $product?->parent ?: $product;
+        $name = trim((string) (
+            data_get($meta, 'name')
+            ?? data_get($snapshot, 'name')
+            ?? ($labelParts->count() >= 3 ? $labelParts->get(1) : null)
+            ?? $parent?->display_name
+            ?? $parent?->name
+            ?? 'Аромат'
+        ));
+        $brand = trim((string) (
+            data_get($meta, 'brand')
+            ?? data_get($snapshot, 'brand')
+            ?? ($labelParts->count() >= 3 ? $labelParts->get(0) : null)
+            ?? 'Sevia'
+        ));
+        $volume = trim((string) (
+            data_get($meta, 'volume')
+            ?? data_get($snapshot, 'volume')
+            ?? data_get($snapshot, 'unit')
+            ?? ($labelParts->count() >= 3 ? $labelParts->get(2) : '')
+        ));
+        $qty = (int) ($item->qty ?? 1);
+        $unitPrice = (float) ($item->unit_price_effective ?? $item->unit_price ?? $item->subtotal ?? $item->total ?? 0);
+
+        return [
+            'type' => $asSetChild ? 'discovery_child' : 'regular',
+            'meta' => trim($brand . ($asSetChild ? '' : ' · Унісекс') . ($volume !== '' ? ' · ' . $volume : '') . ($asSetChild ? '' : ' · ' . $qty)),
+            'name' => $name,
+            'price' => $this->money($unitPrice * max($qty, 1)),
+            'image' => $parent?->main_image_url ?: $parent?->image_url ?: $product?->main_image_url ?: $product?->image_url,
+            'product_id' => (int) ($item->product_id ?? 0),
+            'product_slug' => (string) ($parent?->slug ?? $product?->slug ?? ''),
+            'qty' => $qty,
+            'volume' => $volume,
+        ];
     }
 
     private function productTitle(Product $product): string

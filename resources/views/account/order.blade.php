@@ -78,19 +78,69 @@
                     </div>
                     <div class="mt-3 max-w-[760px]">
                         @forelse ($items as $item)
-                            <article class="flex min-h-[84px] items-center gap-3 border-t border-[#E8DAD0] py-3">
-                                <div class="flex h-[60px] w-12 shrink-0 items-center justify-center bg-[#FBF1ED] p-1">
-                                    @if ($item['image'])
-                                        <img class="h-full w-full object-contain" src="{{ $item['image'] }}" alt="{{ $item['name'] }}" loading="lazy">
-                                    @endif
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <div class="text-[9.5px] uppercase leading-[11px] tracking-[0.4px] text-[#A98088]">{{ $item['meta'] }}</div>
-                                    <h3 class="m-0 mt-0.5 font-cormorant text-[22px] font-medium leading-[26px] text-[#5B2730] max-sm:text-[17px] max-sm:leading-[21px]">{{ $item['name'] }}</h3>
-                                    <a class="mt-1 inline-block text-[10px] font-medium uppercase leading-3 tracking-[0.5px] text-[#7A4751] no-underline" href="{{ $item['product_slug'] !== '' ? route('product.show', ['product' => $item['product_slug']]) : route('catalog.index') }}">Купити ще</a>
-                                </div>
-                                <span class="shrink-0 text-[14px] font-medium leading-[17px] text-[#5B2730]">{{ $item['price'] }}</span>
-                            </article>
+                            @if (($item['type'] ?? 'regular') === 'discovery_set')
+                                <article class="border-t border-[#E8DAD0] py-3">
+                                    <div class="flex min-h-[84px] items-center gap-3">
+                                        <div class="flex h-[60px] w-12 shrink-0 items-center justify-center bg-[#FBF1ED] p-1">
+                                            @if ($item['image'])
+                                                <img class="h-full w-full object-contain" src="{{ $item['image'] }}" alt="{{ $item['name'] }}" loading="lazy">
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <div class="text-[9.5px] uppercase leading-[11px] tracking-[0.4px] text-[#A98088]">{{ $item['meta'] }}</div>
+                                                <span class="inline-flex h-[18px] items-center bg-[#5B2730] px-2 text-[9px] uppercase leading-none tracking-[0.8px] text-[#FFF8F4]">Сет</span>
+                                            </div>
+                                            <h3 class="m-0 mt-0.5 font-cormorant text-[22px] font-medium leading-[26px] text-[#5B2730] max-sm:text-[17px] max-sm:leading-[21px]">{{ $item['name'] }}</h3>
+                                            <p class="m-0 mt-1 text-[11.5px] leading-[17px] text-[#7A4751]">{{ $item['children_count'] ?? 5 }} ароматів по {{ $item['volume'] ?? '3 мл' }}</p>
+                                        </div>
+                                        <div class="shrink-0 text-right">
+                                            <span class="block text-[14px] font-medium leading-[17px] text-[#5B2730]">{{ $item['price'] }}</span>
+                                            @if (! empty($item['old_price']))
+                                                <span class="mt-0.5 block text-[11px] leading-[14px] text-[#C9A9B0] line-through">{{ $item['old_price'] }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <details class="group mt-2 border border-[#E8DAD0] bg-[#FBF4F0]">
+                                        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-[10.5px] font-medium uppercase leading-4 tracking-[1px] text-[#7A4751] [&::-webkit-details-marker]:hidden">
+                                            <span>Склад сету</span>
+                                            <span class="group-open:hidden">Розгорнути</span>
+                                            <span class="hidden group-open:inline">Згорнути</span>
+                                        </summary>
+                                        <div class="grid grid-cols-5 border-t border-[#E8DAD0] max-lg:grid-cols-3 max-sm:grid-cols-1">
+                                            @foreach (($item['children'] ?? collect()) as $setItem)
+                                                <div class="flex min-h-[128px] flex-col items-center justify-between border-l border-[#E8DAD0] px-2.5 py-3 text-center first:border-l-0 max-sm:min-h-[58px] max-sm:flex-row max-sm:gap-3 max-sm:border-l-0 max-sm:border-t max-sm:px-3 max-sm:py-2 max-sm:text-left max-sm:first:border-t-0">
+                                                    <div class="flex h-[46px] w-full items-center justify-center max-sm:h-10 max-sm:w-10">
+                                                        @if (! empty($setItem['image']))
+                                                            <img class="max-h-[44px] max-w-[34px] object-contain" src="{{ $setItem['image'] }}" alt="{{ $setItem['name'] }}" loading="lazy">
+                                                        @endif
+                                                    </div>
+                                                    <div class="min-w-0 max-sm:flex-1">
+                                                        <p class="m-0 truncate text-[9px] uppercase leading-[13px] tracking-[0.8px] text-[#A98088] max-sm:hidden">{{ $setItem['meta'] }}</p>
+                                                        <h4 class="m-0 mt-1 font-cormorant text-[15px] font-medium leading-[18px] text-[#5B2730] max-sm:mt-0 max-sm:text-[16px]">{{ $setItem['name'] }}</h4>
+                                                    </div>
+                                                    <span class="text-[10.5px] leading-4 text-[#7A4751] max-sm:w-[44px]">{{ $setItem['volume'] ?: '3 мл' }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </details>
+                                </article>
+                            @else
+                                <article class="flex min-h-[84px] items-center gap-3 border-t border-[#E8DAD0] py-3">
+                                    <div class="flex h-[60px] w-12 shrink-0 items-center justify-center bg-[#FBF1ED] p-1">
+                                        @if ($item['image'])
+                                            <img class="h-full w-full object-contain" src="{{ $item['image'] }}" alt="{{ $item['name'] }}" loading="lazy">
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-[9.5px] uppercase leading-[11px] tracking-[0.4px] text-[#A98088]">{{ $item['meta'] }}</div>
+                                        <h3 class="m-0 mt-0.5 font-cormorant text-[22px] font-medium leading-[26px] text-[#5B2730] max-sm:text-[17px] max-sm:leading-[21px]">{{ $item['name'] }}</h3>
+                                        <a class="mt-1 inline-block text-[10px] font-medium uppercase leading-3 tracking-[0.5px] text-[#7A4751] no-underline" href="{{ $item['product_slug'] !== '' ? route('product.show', ['product' => $item['product_slug']]) : route('catalog.index') }}">Купити ще</a>
+                                    </div>
+                                    <span class="shrink-0 text-[14px] font-medium leading-[17px] text-[#5B2730]">{{ $item['price'] }}</span>
+                                </article>
+                            @endif
                         @empty
                             <p class="border-t border-[#E8DAD0] py-5 text-[13px] text-[#A98088]">Склад замовлення недоступний.</p>
                         @endforelse
@@ -102,7 +152,10 @@
                 </section>
 
                 <div class="mt-6 flex max-w-[760px] flex-col gap-2.5 pb-2">
-                    <a class="flex h-[47px] items-center justify-center bg-[#5B2730] text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-white no-underline" href="{{ route('account.orders') }}">Повторити замовлення</a>
+                    <form method="POST" action="{{ route('account.orders.repeat', $order) }}">
+                        @csrf
+                        <button class="flex h-[47px] w-full items-center justify-center bg-[#5B2730] text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-white" type="submit">Повторити замовлення</button>
+                    </form>
                     <button class="flex h-[45px] items-center justify-center border border-[#5B2730] bg-white text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-[#5B2730]" type="button">Завантажити чек</button>
                 </div>
             </main>

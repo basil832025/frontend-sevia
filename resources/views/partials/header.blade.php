@@ -39,7 +39,7 @@
         <nav class="flex items-center justify-start gap-[38px] text-[14px] leading-[22px] tracking-[0.56px] text-[#7A4751] sm:max-lg:gap-[22px] sm:max-lg:text-[10.1px] sm:max-lg:leading-4 sm:max-lg:tracking-[0.4px] [&>a:nth-child(1)]:order-1 [&>a:nth-child(n+3)]:order-2" aria-label="Primary navigation">
             <a class="order-1 hover:text-[#5B2730]" href="{{ route('sale.index') }}">Sale</a>
             <a class="hover:text-[#5B2730]" href="{{ route('catalog.index') }}">Каталог</a>
-            <a class="whitespace-nowrap font-semibold hover:text-[#5B2730]" href="#discovery">Discovery 5×3</a>
+            <a class="whitespace-nowrap font-semibold hover:text-[#5B2730]" href="{{ route('discovery-53') }}">Discovery 5×3</a>
             <a class="hover:text-[#5B2730]" href="#collections">Колекції</a>
         </nav>
 
@@ -129,7 +129,7 @@
                     <span class="font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Каталог</span>
                     <span class="text-[16px] leading-[19px] text-[#A98088]">›</span>
                 </a>
-                <a class="flex h-[62px] w-full items-center justify-between border-t border-[#E8DAD0] px-5 py-[17px]" href="#discovery">
+                <a class="flex h-[62px] w-full items-center justify-between border-t border-[#E8DAD0] px-5 py-[17px]" href="{{ route('discovery-53') }}">
                     <span class="flex items-center gap-[9px]">
                         <span class="font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Discovery 5×3</span>
                         <span class="bg-[#B08C57] px-1.5 py-0.5 text-[8px] font-medium uppercase leading-[10px] tracking-[0.4px] text-white">New</span>
