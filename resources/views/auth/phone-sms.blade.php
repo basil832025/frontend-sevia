@@ -1,10 +1,11 @@
 @extends('front.sevia::layouts.app')
 
-@section('title', 'Авторизація | Sevia')
-@section('meta_description', 'Авторизація Sevia за номером телефону')
+@section('title', st('frontend-sevia-auth.title', 'Авторизація | Sevia'))
+@section('meta_description', st('frontend-sevia-auth.meta_description', 'Авторизація Sevia за номером телефону'))
 
 @section('content')
     @php
+        $authText = static fn (string $key, string $default): string => st("frontend-sevia-auth.$key", $default);
         $authItems = collect($checkoutItems ?? []);
         $authQty = (int) $authItems->sum(fn ($item) => (int) ($item['qty'] ?? 1));
         $authItemsSubtotal = (float) $authItems->sum(fn ($item) => (float) ($item['old_subtotal'] ?? $item['subtotal'] ?? 0));
@@ -26,7 +27,7 @@
             }
 
             $bottleQty = max(1, (int) ($item['qty'] ?? 1));
-            $bottleTitle = (string) ($meta['bottle_title'] ?? 'Стандартний');
+            $bottleTitle = (string) ($meta['bottle_title'] ?? $authText('bottle_default', 'Стандартний'));
             $bottleKey = (string) ($meta['bottle_id'] ?? $bottleTitle);
             $authBottleBreakdown[$bottleKey] = [
                 'title' => $bottleTitle,
@@ -47,9 +48,9 @@
 
             return $count . ' ' . $label;
         };
-        $authBottleSummaryLabel = static function (array $breakdown, int $fallbackCount) use ($authBottleTitleLabel): string {
+        $authBottleSummaryLabel = static function (array $breakdown, int $fallbackCount) use ($authBottleTitleLabel, $authText): string {
             if ($breakdown === []) {
-                return $fallbackCount . ' стандартні';
+                return $fallbackCount . ' ' . $authText('bottles', 'стандартні');
             }
 
             return collect($breakdown)
@@ -61,22 +62,22 @@
         $authFreeShippingLeft = $authFreeShippingFrom > 0 ? max(0, $authFreeShippingFrom - $authCartTotal) : 0;
         $authFreeShippingProgress = $authFreeShippingFrom > 0 ? min(100, max(0, ($authCartTotal / $authFreeShippingFrom) * 100)) : 0;
         $authHasFreeShipping = $authFreeShippingFrom > 0 && $authCartTotal >= $authFreeShippingFrom;
-        $authQtyLabel = $authQty === 1 ? 'аромат' : ($authQty >= 2 && $authQty <= 4 ? 'аромати' : 'ароматів');
+        $authQtyLabel = $authQty === 1 ? $authText('fragrance_one', 'аромат') : ($authQty >= 2 && $authQty <= 4 ? $authText('fragrance_few', 'аромати') : $authText('fragrance_many', 'ароматів'));
         $checkoutDelivery = session('checkout.delivery', []);
         $authDeliveryMethod = in_array((string) ($checkoutDelivery['delivery_method'] ?? ''), ['nova_branch', 'nova_postomat', 'nova_courier', 'sevia_pickup'], true)
             ? (string) $checkoutDelivery['delivery_method']
             : 'nova_branch';
         $authDeliveryMethodTitle = [
-            'nova_branch' => 'Нова Пошта · відділення',
-            'nova_postomat' => 'Нова Пошта · поштомат',
-            'nova_courier' => 'Курʼєр Нової Пошти',
-            'sevia_pickup' => 'Шоу-рум Sevia · самовивіз',
+            'nova_branch' => $authText('nova_branch', 'Нова Пошта · відділення'),
+            'nova_postomat' => $authText('nova_postomat', 'Нова Пошта · поштомат'),
+            'nova_courier' => $authText('nova_courier', 'Курʼєр Нової Пошти'),
+            'sevia_pickup' => $authText('sevia_pickup', 'Шоу-рум Sevia · самовивіз'),
         ][$authDeliveryMethod];
         $authDeliveryMethodMeta = [
-            'nova_branch' => '1–2 дні · отримання за телефоном',
-            'nova_postomat' => '1–2 дні · код у СМС, без черг',
-            'nova_courier' => '1–2 дні · привезе на адресу',
-            'sevia_pickup' => 'сьогодні · вул. Хрещатик 22, Київ, з 11:00',
+            'nova_branch' => $authText('nova_branch_meta', '1–2 дні · отримання за телефоном'),
+            'nova_postomat' => $authText('nova_postomat_meta', '1–2 дні · код у СМС, без черг'),
+            'nova_courier' => $authText('nova_courier_meta', '1–2 дні · привезе на адресу'),
+            'sevia_pickup' => $authText('sevia_pickup_meta', 'сьогодні · вул. Хрещатик 22, Київ, з 11:00'),
         ][$authDeliveryMethod];
         $authDeliveryMethodIcon = $authDeliveryMethod === 'sevia_pickup' ? 'S' : '✣';
     @endphp
@@ -91,15 +92,15 @@
         };
         $authNovaWarehousePrice = $authHasFreeShipping ? 0 : 70;
         $authNovaCourierPrice = $authHasFreeShipping ? 0 : 130;
-        $authNovaWarehouseLabel = $authHasFreeShipping ? 'безкоштовно' : 'від ' . $authMoney($authNovaWarehousePrice);
-        $authNovaCourierLabel = $authHasFreeShipping ? 'безкоштовно' : 'від ' . $authMoney($authNovaCourierPrice);
+        $authNovaWarehouseLabel = $authHasFreeShipping ? $authText('free', 'безкоштовно') : 'від ' . $authMoney($authNovaWarehousePrice);
+        $authNovaCourierLabel = $authHasFreeShipping ? $authText('free', 'безкоштовно') : 'від ' . $authMoney($authNovaCourierPrice);
         $authDeliveryMethodPriceLabel = match ($authDeliveryMethod) {
             'nova_courier' => $authNovaCourierLabel,
-            'sevia_pickup' => 'безкоштовно',
+            'sevia_pickup' => $authText('free', 'безкоштовно'),
             default => $authNovaWarehouseLabel,
         };
         $authGrandTotal = $authCartTotal;
-        $authCityValue = (string) ($checkoutDelivery['city'] ?? 'Київ');
+        $authCityValue = (string) ($checkoutDelivery['city'] ?? $authText('default_city', 'Київ'));
         $authCityRef = (string) ($checkoutDelivery['city_ref'] ?? '8d5a980d-391c-11dd-90d9-001a92567626');
         $authCityName = (string) ($checkoutDelivery['city_name'] ?? $authCityValue);
         $authCityDisplayName = (string) ($checkoutDelivery['city_display_name'] ?? $authCityName);
@@ -138,36 +139,36 @@
     @endphp
     <section class="mx-auto flex w-full max-w-[1440px] items-start gap-[212px] bg-[#FDFBF8] px-16 pb-[110px] pt-14 max-lg:flex-col max-lg:gap-12 max-sm:px-5 max-sm:pb-0 max-sm:pt-7">
         <main class="w-full max-w-[700px] flex-1" data-phone-auth>
-            <nav class="flex h-[25px] items-center gap-4 text-[12.5px] leading-[19px] tracking-[0.125px] {{ $isDeliveryStep ? 'mb-3.5' : '' }}" aria-label="Кроки оформлення">
-                <span class="flex items-center gap-[11px] {{ ($isAuthenticated ?? false) ? 'text-[#7A4751]' : 'text-[#5B2730]' }}"><b class="grid size-[25px] place-items-center rounded-full border text-[11px] font-medium {{ ($isAuthenticated ?? false) ? 'border-[#7A4751] text-[#7A4751]' : 'border-[#5B2730] bg-[#5B2730] text-[#FFF8F4]' }}">@if ($isAuthenticated ?? false)<svg class="size-[11px]" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M2.1 5.65L4.35 7.8L8.9 3.2" stroke="currentColor" stroke-width="0.9625" stroke-linecap="round" stroke-linejoin="round"/></svg>@else 1 @endif</b>Телефон</span>
+            <nav class="flex h-[25px] items-center gap-4 text-[12.5px] leading-[19px] tracking-[0.125px] {{ $isDeliveryStep ? 'mb-3.5' : '' }}" aria-label="{{ $authText('steps', 'Кроки оформлення') }}">
+                <span class="flex items-center gap-[11px] {{ ($isAuthenticated ?? false) ? 'text-[#7A4751]' : 'text-[#5B2730]' }}"><b class="grid size-[25px] place-items-center rounded-full border text-[11px] font-medium {{ ($isAuthenticated ?? false) ? 'border-[#7A4751] text-[#7A4751]' : 'border-[#5B2730] bg-[#5B2730] text-[#FFF8F4]' }}">@if ($isAuthenticated ?? false)<svg class="size-[11px]" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M2.1 5.65L4.35 7.8L8.9 3.2" stroke="currentColor" stroke-width="0.9625" stroke-linecap="round" stroke-linejoin="round"/></svg>@else 1 @endif</b>{{ $authText('phone', 'Телефон') }}</span>
                 <i class="h-px w-[46px] bg-[#E8DAD0]"></i>
-                <span class="flex items-center gap-[11px] {{ $isDeliveryStep ? 'text-[#7A4751]' : (($isAuthenticated ?? false) ? 'text-[#5B2730]' : 'text-[#A98088]') }}"><b class="grid size-[25px] place-items-center rounded-full border text-[11px] font-medium {{ $isDeliveryStep ? 'border-[#7A4751] text-[#7A4751]' : (($isAuthenticated ?? false) ? 'border-[#5B2730] bg-[#5B2730] text-[#FFF8F4]' : 'border-[#E8DAD0] text-[#A98088]') }}">@if ($isDeliveryStep)<svg class="size-[11px]" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M2.1 5.65L4.35 7.8L8.9 3.2" stroke="currentColor" stroke-width="0.9625" stroke-linecap="round" stroke-linejoin="round"/></svg>@else 2 @endif</b>Дані отримувача</span>
+                <span class="flex items-center gap-[11px] {{ $isDeliveryStep ? 'text-[#7A4751]' : (($isAuthenticated ?? false) ? 'text-[#5B2730]' : 'text-[#A98088]') }}"><b class="grid size-[25px] place-items-center rounded-full border text-[11px] font-medium {{ $isDeliveryStep ? 'border-[#7A4751] text-[#7A4751]' : (($isAuthenticated ?? false) ? 'border-[#5B2730] bg-[#5B2730] text-[#FFF8F4]' : 'border-[#E8DAD0] text-[#A98088]') }}">@if ($isDeliveryStep)<svg class="size-[11px]" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M2.1 5.65L4.35 7.8L8.9 3.2" stroke="currentColor" stroke-width="0.9625" stroke-linecap="round" stroke-linejoin="round"/></svg>@else 2 @endif</b>{{ $authText('recipient', 'Дані отримувача') }}</span>
                 <i class="h-px w-[46px] bg-[#E8DAD0]"></i>
-                <span class="flex items-center gap-[11px] {{ $isDeliveryStep ? 'text-[#5B2730]' : 'text-[#A98088]' }}"><b class="grid size-[25px] place-items-center rounded-full border text-[11px] {{ $isDeliveryStep ? 'border-[#5B2730] bg-[#5B2730] font-medium text-[#FFF8F4]' : 'border-[#E8DAD0] font-normal' }}">3</b>Доставка та оплата</span>
+                <span class="flex items-center gap-[11px] {{ $isDeliveryStep ? 'text-[#5B2730]' : 'text-[#A98088]' }}"><b class="grid size-[25px] place-items-center rounded-full border text-[11px] {{ $isDeliveryStep ? 'border-[#5B2730] bg-[#5B2730] font-medium text-[#FFF8F4]' : 'border-[#E8DAD0] font-normal' }}">3</b>{{ $authText('delivery_payment', 'Доставка та оплата') }}</span>
             </nav>
 
             <div class="{{ ($isAuthenticated ?? false) ? 'hidden' : '' }}" data-phone-step>
             <div class="pt-7">
-                <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">Введіть номер телефону</h1>
-                <p class="m-0 mt-3.5 text-[14px] leading-[22px] text-[#7A4751]">Надішлемо код у СМС.</p>
+                <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">{{ $authText('phone_title', 'Введіть номер телефону') }}</h1>
+                <p class="m-0 mt-3.5 text-[14px] leading-[22px] text-[#7A4751]">{{ $authText('phone_hint', 'Надішлемо код у СМС.') }}</p>
             </div>
 
             <form class="mt-6 flex flex-col gap-[42px]" data-phone-auth-form action="{{ route('auth.phone.send') }}" method="POST">
                 @csrf
                 <input type="hidden" name="redirect_to_checkout" value="1">
                 <div class="w-full max-w-[336px]">
-                    <label class="mb-2 block text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]" for="auth-phone">Телефон <span class="text-[#C9A9B0]">*</span></label>
+                    <label class="mb-2 block text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]" for="auth-phone">{{ $authText('phone', 'Телефон') }} <span class="text-[#C9A9B0]">*</span></label>
                     <input class="h-[44px] w-full border-0 border-b border-[#E8DAD0] bg-transparent px-0 text-[15.5px] leading-[23px] text-[#5B2730] outline-none placeholder:text-[#A98088] focus:border-[#5B2730]" id="auth-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" value="+380 " maxlength="17" required data-phone-input>
                 </div>
 
                 <div class="hidden max-w-[336px]" data-code-wrap>
-                    <label class="mb-2 block text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]" for="auth-code">Код із СМС <span class="text-[#C9A9B0]">*</span></label>
+                    <label class="mb-2 block text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]" for="auth-code">{{ $authText('sms_code', 'Код із СМС') }} <span class="text-[#C9A9B0]">*</span></label>
                     <input class="h-[44px] w-full border-0 border-b border-[#E8DAD0] bg-transparent px-0 text-[20px] tracking-[7px] text-[#5B2730] outline-none focus:border-[#5B2730]" id="auth-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="4" pattern="\d{4}" data-code-input>
                 </div>
 
                 <div class="flex items-center gap-4 max-sm:flex-col max-sm:items-stretch">
-                    <button class="flex h-[52px] min-w-[215px] items-center justify-center gap-3 bg-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#FFF8F4] disabled:opacity-50" type="submit" data-phone-submit>Отримати код</button>
-                    <button class="hidden h-[52px] border border-[#E8DAD0] px-5 text-[11px] uppercase tracking-[1.3px] text-[#7A4751]" type="button" data-phone-resend>Надіслати ще раз</button>
+                    <button class="flex h-[52px] min-w-[215px] items-center justify-center gap-3 bg-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#FFF8F4] disabled:opacity-50" type="submit" data-phone-submit>{{ $authText('get_code', 'Отримати код') }}</button>
+                    <button class="hidden h-[52px] border border-[#E8DAD0] px-5 text-[11px] uppercase tracking-[1.3px] text-[#7A4751]" type="button" data-phone-resend>{{ $authText('resend', 'Надіслати ще раз') }}</button>
                 </div>
                 <p class="m-0 min-h-5 text-[13px] leading-5 text-[#7A4751]" data-phone-message aria-live="polite"></p>
             </form>
@@ -175,11 +176,11 @@
 
             <div class="hidden" data-code-step>
                 <div class="pt-1">
-                    <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">Код із СМС</h1>
-                    <p class="m-0 mt-3.5 text-[14px] leading-[22px] text-[#7A4751]">Надіслали чотири цифри на <span data-code-phone></span></p>
+                    <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">{{ $authText('sms_code', 'Код із СМС') }}</h1>
+                    <p class="m-0 mt-3.5 text-[14px] leading-[22px] text-[#7A4751]">{{ $authText('sent_digits', 'Надіслали чотири цифри на') }} <span data-code-phone></span></p>
                 </div>
                 <div class="mt-6 flex flex-col gap-2">
-                    <label class="block text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">Код підтвердження</label>
+                    <label class="block text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">{{ $authText('confirmation_code', 'Код підтвердження') }}</label>
                     <div class="flex gap-2.5 max-sm:gap-2.5" data-code-digits>
                         @for ($index = 0; $index < 4; $index++)
                             <input class="grid h-[58px] w-[50px] place-items-center border border-[#E8DAD0] bg-transparent text-center text-[20px] leading-[30px] text-[#5B2730] outline-none focus:border-[#5B2730] max-sm:h-[52px] max-sm:w-[44px] max-sm:text-[18px] max-sm:leading-[27px]" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" data-code-digit>
@@ -191,32 +192,32 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex items-start gap-2">
-                                <h3 class="font-cormorant text-[25px] leading-[1.15] text-[#642A35] max-sm:text-[20px]">Не прийшов код?</h3>
+                                <h3 class="font-cormorant text-[25px] leading-[1.15] text-[#642A35] max-sm:text-[20px]">{{ $authText('contact_support', 'Не прийшов код?') }}</h3>
                                 <span class="mt-[-4px] text-[26px] leading-none text-[#C99C96]" aria-hidden="true">*</span>
                             </div>
-                            <p class="mt-3 text-[16px] leading-[1.4] text-[#642A35] max-sm:mt-2 max-sm:text-[14px]">Зателефонуйте нам на</p>
+                            <p class="mt-3 text-[16px] leading-[1.4] text-[#642A35] max-sm:mt-2 max-sm:text-[14px]">{{ $authText('call_us', 'Зателефонуйте нам на') }}</p>
                             <a class="mt-1 inline-block font-cormorant text-[31px] leading-none text-[#642A35] transition-opacity hover:opacity-70 max-sm:text-[24px]" href="tel:+380978984333">+38 (097) 898 43 33</a>
-                            <p class="mt-4 max-w-[340px] text-[16px] leading-[1.5] text-[#642A35] max-sm:mt-3 max-sm:text-[14px] max-sm:leading-[1.45]">і ми оформимо ваше замовлення<br class="max-sm:hidden"> в телефонному режимі.</p>
+                            <p class="mt-4 max-w-[340px] text-[16px] leading-[1.5] text-[#642A35] max-sm:mt-3 max-sm:text-[14px] max-sm:leading-[1.45]">{{ $authText('phone_order', 'і ми оформимо ваше замовлення в телефонному режимі.') }}</p>
                         </div>
                     </div>
-                    <p class="m-0 min-h-[18px] pt-1 text-[13.5px] leading-[17px] text-[#A98088]" data-code-timer>Надіслати повторно можна через 1:00</p>
+                    <p class="m-0 min-h-[18px] pt-1 text-[13.5px] leading-[17px] text-[#A98088]" data-code-timer>{{ $authText('resend_timer', 'Надіслати повторно можна через 1:00') }}</p>
                     <div class="hidden w-full max-w-[359px] items-center gap-5 text-[13px] leading-5 text-[#7A4751]" data-code-actions>
-                        <button class="p-0 text-left underline decoration-[#A98088] underline-offset-4" type="button" data-phone-back>Змінити номер</button>
-                        <button class="hidden p-0 text-left underline decoration-[#A98088] underline-offset-4" type="button" data-code-resend>Надіслати код повторно</button>
+                        <button class="p-0 text-left underline decoration-[#A98088] underline-offset-4" type="button" data-phone-back>{{ $authText('change_number', 'Змінити номер') }}</button>
+                        <button class="hidden p-0 text-left underline decoration-[#A98088] underline-offset-4" type="button" data-code-resend>{{ $authText('resend_code', 'Надіслати код повторно') }}</button>
                     </div>
                     <p class="m-0 min-h-5 text-[13px] leading-5 text-[#7A4751]" data-code-message aria-live="polite"></p>
                     <div class="hidden min-h-[52px] w-full max-w-[491px] items-center gap-3 border border-[rgba(184,66,73,0.35)] bg-[#FCF4F3] px-[18px] py-[15px] text-[13.5px] font-medium leading-5 text-[#B84249]" data-code-error role="alert">
                         <span class="grid size-[15px] shrink-0 place-items-center rounded-full border border-[#B84249] text-[11px] leading-none">!</span>
-                        <span>Код не підійшов. Перевірте останнє СМС або надішліть код повторно.</span>
+                        <span>{{ $authText('code_error', 'Код не підійшов. Перевірте останнє СМС або надішліть код повторно.') }}</span>
                     </div>
                 </div>
                 <div class="hidden mt-1 flex w-full max-w-[700px] items-center justify-between gap-5 text-[13.5px] leading-5 text-[#7A4751] max-sm:flex-wrap">
-                    <span>Не отримали СМС?</span>
-                    <button class="p-0 text-left text-[13px] leading-5 text-[#7A4751] underline decoration-[#A98088] underline-offset-4" type="button" data-phone-back>Змінити номер</button>
+                    <span>{{ $authText('no_sms', 'Не отримали СМС?') }}</span>
+                    <button class="p-0 text-left text-[13px] leading-5 text-[#7A4751] underline decoration-[#A98088] underline-offset-4" type="button" data-phone-back>{{ $authText('change_number', 'Змінити номер') }}</button>
                 </div>
-                <button class="hidden h-[52px] min-w-[206px] items-center justify-center border border-[#5B2730] bg-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#FFF8F4]" type="button" data-code-resend>Надіслати код повторно</button>
+                <button class="hidden h-[52px] min-w-[206px] items-center justify-center border border-[#5B2730] bg-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#FFF8F4]" type="button" data-code-resend>{{ $authText('resend_code', 'Надіслати код повторно') }}</button>
                 <div class="pt-[35px]">
-                    <button class="flex h-[52px] min-w-[206px] items-center justify-center gap-3 border border-[#E8DAD0] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#C9A9B0] disabled:cursor-not-allowed" type="button" data-code-submit disabled>Підтвердити</button>
+                    <button class="flex h-[52px] min-w-[206px] items-center justify-center gap-3 border border-[#E8DAD0] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#C9A9B0] disabled:cursor-not-allowed" type="button" data-code-submit disabled>{{ $authText('confirm', 'Підтвердити') }}</button>
                     <button class="mt-3 hidden text-[11px] uppercase tracking-[1.3px] text-[#7A4751]" type="button" data-code-resend>Надіслати ще раз</button>
                 </div>
             </div>
@@ -226,9 +227,9 @@
                     @if (! empty($authenticatedFirstNameVocative))
                         <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">З поверненням, {{ $authenticatedFirstNameVocative }},</h1>
                     @else
-                        <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">Контактна інформація</h1>
+                        <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">{{ $authText('contact_info', 'Контактна інформація') }}</h1>
                         <div class="mt-3.5 flex w-full max-w-[615.13px] flex-col items-start">
-                            <p class="m-0 text-[14px] font-normal leading-[22px] text-[#7A4751]">Номер підтверджено. Залишилось імʼя та пошта, на неї надішлемо накладну.</p>
+                            <p class="m-0 text-[14px] font-normal leading-[22px] text-[#7A4751]">{{ $authText('phone_confirmed', 'Номер підтверджено. Залишилось імʼя та пошта, на неї надішлемо накладну.') }}</p>
                         </div>
                     @endif
                 </div>
@@ -245,15 +246,15 @@
                     <label class="flex flex-col gap-2 text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">Електронна пошта *
                         <input class="h-[44px] border-0 border-b border-[#E8DAD0] bg-transparent px-0 text-[15.5px] font-normal normal-case tracking-normal text-[#5B2730] outline-none focus:border-[#5B2730]" name="email" type="email" autocomplete="email" value="{{ $recipientEmail }}" data-recipient-field data-recipient-required aria-describedby="recipient-email-error">
                         <span class="hidden text-[11.5px] font-normal normal-case leading-[17px] tracking-normal text-[#B84249]" id="recipient-email-error" data-recipient-error-for="email"></span>
-                        <span class="text-[11.5px] font-normal normal-case tracking-normal text-[#A98088]" data-recipient-help-for="email">Надішлемо номер накладної та статус посилки</span>
+                        <span class="text-[11.5px] font-normal normal-case tracking-normal text-[#A98088]" data-recipient-help-for="email">{{ $authText('email_hint', 'Надішлемо номер накладної та статус посилки') }}</span>
                     </label>
                     <label class="flex flex-col gap-2 text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#4D8566]">Телефон *
                         <input class="h-[44px] border-0 border-b border-[#E8DAD0] bg-transparent px-0 text-[15.5px] font-normal normal-case tracking-normal text-[#5B2730] outline-none" data-recipient-phone value="{{ $authPhonePretty }}" readonly>
-                        <span class="text-[11.5px] font-medium normal-case tracking-normal text-[#4D8566]">Підтверджено</span>
+                        <span class="text-[11.5px] font-medium normal-case tracking-normal text-[#4D8566]">{{ $authText('confirmed', 'Підтверджено') }}</span>
                     </label>
                     <div class="col-span-2 flex items-center justify-between pt-2 max-sm:hidden">
                         <a class="text-[13px] leading-5 text-[#7A4751]" href="{{ route('cart.page') }}">Повернутися до кошика</a>
-                        <button class="flex h-[52px] min-w-[139px] items-center justify-center gap-3 bg-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#FFF8F4]" type="submit">Далі</button>
+                        <button class="flex h-[52px] min-w-[139px] items-center justify-center gap-3 bg-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#FFF8F4]" type="submit">{{ $authText('next', 'Далі') }}</button>
                     </div>
                 </form>
             </div>
@@ -261,7 +262,7 @@
             <div class="{{ (($isAuthenticated ?? false) && ! $isDeliveryStep) ? 'flex' : 'hidden' }} mt-8 -mx-5 flex-col items-center border-t border-[#E8DAD0] bg-white pb-[18px] sm:hidden">
                 <button class="flex h-16 w-full items-center justify-between px-5 py-[13px]" type="button" aria-label="Показати замовлення">
                     <span class="flex flex-col items-start gap-[3px]">
-                        <span class="text-[12px] font-normal uppercase leading-[18px] tracking-[1.68px] text-[#7A4751]">Замовлення</span>
+                        <span class="text-[12px] font-normal uppercase leading-[18px] tracking-[1.68px] text-[#7A4751]">{{ $authText('order', 'Замовлення') }}</span>
                         <span class="text-[11px] font-normal leading-4 tracking-[0.22px] text-[#A98088]">{{ $authQty }} {{ $authQtyLabel }}</span>
                     </span>
                     <span class="flex items-center gap-[11px]">
@@ -290,9 +291,9 @@
 
                 <form class="flex w-full flex-col gap-[26px]" data-delivery-form data-delivery-save-url="{{ route('checkout.delivery') }}" data-checkout-submit-url="{{ route('checkout.submit') }}">
                     <section class="flex flex-col gap-[22px] pt-3.5">
-                        <h2 class="m-0 font-cormorant text-[38px] font-semibold leading-[41px] tracking-[-0.38px] text-[#5B2730]">Доставка</h2>
+                        <h2 class="m-0 font-cormorant text-[38px] font-semibold leading-[41px] tracking-[-0.38px] text-[#5B2730]">{{ $authText('delivery', 'Доставка') }}</h2>
                         <label class="relative flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]" data-delivery-method-wrap>
-                            <span>Спосіб доставки <span class="text-[#C9A9B0]">*</span></span>
+                            <span>{{ $authText('delivery_method', 'Спосіб доставки') }} <span class="text-[#C9A9B0]">*</span></span>
                             <button class="flex h-[65px] w-full items-center justify-between border-b border-[#E8DAD0] py-[9px] text-left normal-case tracking-normal" type="button" data-delivery-method-toggle aria-expanded="false">
                                 <span class="flex items-center gap-4">
                                     <span class="grid size-[18px] place-items-center text-[#B84249]" data-delivery-selected-icon>{{ $authDeliveryMethodIcon }}</span>
@@ -306,37 +307,37 @@
                             <input type="hidden" name="delivery_method" value="{{ $authDeliveryMethod }}" data-delivery-method-input>
                             <input type="hidden" name="shipping_price" value="{{ $authDeliveryPrice }}" data-delivery-price-input>
                             <div class="absolute left-0 right-0 top-[93px] z-20 hidden flex-col border border-[#E8DAD0] bg-white shadow-[0_8px_20px_rgba(91,39,48,0.07)]" data-delivery-method-menu>
-                                <button class="{{ $authDeliveryMethod === 'nova_branch' ? 'relative ' : '' }}flex min-h-[65.62px] w-full items-center justify-between px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="nova_branch" data-title="Нова Пошта · відділення" data-meta="1–2 дні · отримання за телефоном" data-price="{{ $authNovaWarehousePrice }}" data-price-label="{{ $authNovaWarehouseLabel }}" data-icon="✣" @if($authDeliveryMethod === 'nova_branch') data-active="true" @endif>
-                                    <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[#B84249]">✣</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#5B2730]">Нова Пошта · відділення</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">1–2 дні · отримання за телефоном</span></span></span>
+                                <button class="{{ $authDeliveryMethod === 'nova_branch' ? 'relative ' : '' }}flex min-h-[65.62px] w-full items-center justify-between px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="nova_branch" data-title="{{ $authText('nova_branch', 'Нова Пошта · відділення') }}" data-meta="{{ $authText('nova_branch_meta', '1–2 дні · отримання за телефоном') }}" data-price="{{ $authNovaWarehousePrice }}" data-price-label="{{ $authNovaWarehouseLabel }}" data-icon="✣" @if($authDeliveryMethod === 'nova_branch') data-active="true" @endif>
+                                    <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[#B84249]">✣</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#5B2730]">{{ $authText('nova_branch', 'Нова Пошта · відділення') }}</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">{{ $authText('nova_branch_meta', '1–2 дні · отримання за телефоном') }}</span></span></span>
                                     <span class="text-[12.5px] leading-[19px] text-[#A98088]" data-delivery-option-price>{{ $authNovaWarehouseLabel }}</span>
                                     @if($authDeliveryMethod === 'nova_branch')<span class="absolute bottom-0 left-0 top-0 w-0.5 bg-[#5B2730]" data-delivery-active-bar></span>@endif
                                 </button>
-                                <button class="{{ $authDeliveryMethod === 'nova_postomat' ? 'relative ' : '' }}flex min-h-[66.62px] w-full items-center justify-between border-t border-[#F0E6DE] px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="nova_postomat" data-title="Нова Пошта · поштомат" data-meta="1–2 дні · код у СМС, без черг" data-price="{{ $authNovaWarehousePrice }}" data-price-label="{{ $authNovaWarehouseLabel }}" data-icon="✣" @if($authDeliveryMethod === 'nova_postomat') data-active="true" @endif>
-                                    <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[#B84249]">✣</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#7A4751]">Нова Пошта · поштомат</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">1–2 дні · код у СМС, без черг</span></span></span>
+                                <button class="{{ $authDeliveryMethod === 'nova_postomat' ? 'relative ' : '' }}flex min-h-[66.62px] w-full items-center justify-between border-t border-[#F0E6DE] px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="nova_postomat" data-title="{{ $authText('nova_postomat', 'Нова Пошта · поштомат') }}" data-meta="{{ $authText('nova_postomat_meta', '1–2 дні · код у СМС, без черг') }}" data-price="{{ $authNovaWarehousePrice }}" data-price-label="{{ $authNovaWarehouseLabel }}" data-icon="✣" @if($authDeliveryMethod === 'nova_postomat') data-active="true" @endif>
+                                    <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[#B84249]">✣</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#7A4751]">{{ $authText('nova_postomat', 'Нова Пошта · поштомат') }}</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">{{ $authText('nova_postomat_meta', '1–2 дні · код у СМС, без черг') }}</span></span></span>
                                     <span class="text-[12.5px] leading-[19px] text-[#A98088]" data-delivery-option-price>{{ $authNovaWarehouseLabel }}</span>
                                     @if($authDeliveryMethod === 'nova_postomat')<span class="absolute bottom-0 left-0 top-0 w-0.5 bg-[#5B2730]" data-delivery-active-bar></span>@endif
                                 </button>
-                                <button class="{{ $authDeliveryMethod === 'nova_courier' ? 'relative ' : '' }}flex min-h-[66.62px] w-full items-center justify-between border-t border-[#F0E6DE] px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="nova_courier" data-title="Курʼєр Нової Пошти" data-meta="1–2 дні · привезе на адресу" data-price="{{ $authNovaCourierPrice }}" data-price-label="{{ $authNovaCourierLabel }}" data-icon="✣" @if($authDeliveryMethod === 'nova_courier') data-active="true" @endif>
-                                    <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[#B84249]">✣</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#7A4751]">Курʼєр Нової Пошти</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">1–2 дні · привезе на адресу</span></span></span>
+                                <button class="{{ $authDeliveryMethod === 'nova_courier' ? 'relative ' : '' }}flex min-h-[66.62px] w-full items-center justify-between border-t border-[#F0E6DE] px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="nova_courier" data-title="{{ $authText('nova_courier', 'Курʼєр Нової Пошти') }}" data-meta="{{ $authText('nova_courier_meta', '1–2 дні · привезе на адресу') }}" data-price="{{ $authNovaCourierPrice }}" data-price-label="{{ $authNovaCourierLabel }}" data-icon="✣" @if($authDeliveryMethod === 'nova_courier') data-active="true" @endif>
+                                    <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[#B84249]">✣</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#7A4751]">{{ $authText('nova_courier', 'Курʼєр Нової Пошти') }}</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">{{ $authText('nova_courier_meta', '1–2 дні · привезе на адресу') }}</span></span></span>
                                     <span class="text-[12.5px] leading-[19px] text-[#A98088]" data-delivery-option-price>{{ $authNovaCourierLabel }}</span>
                                     @if($authDeliveryMethod === 'nova_courier')<span class="absolute bottom-0 left-0 top-0 w-0.5 bg-[#5B2730]" data-delivery-active-bar></span>@endif
                                 </button>
                                 <button class="{{ $authDeliveryMethod === 'sevia_pickup' ? 'relative ' : '' }}flex min-h-[66.62px] w-full items-center justify-between border-t border-[#F0E6DE] px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="sevia_pickup" data-title="Шоу-рум Sevia · самовивіз" data-meta="сьогодні · вул. Хрещатик 22, Київ, з 11:00" data-price="0" data-price-label="безкоштовно" data-icon="S" @if($authDeliveryMethod === 'sevia_pickup') data-active="true" @endif>
                                     <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[10px] font-semibold text-[#5B2730]">S</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#7A4751]">Шоу-рум Sevia · самовивіз</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">сьогодні · вул. Хрещатик 22, Київ, з 11:00</span></span></span>
-                                    <span class="text-[12.5px] leading-[19px] text-[#A98088]" data-delivery-option-price>безкоштовно</span>
+                                    <span class="text-[12.5px] leading-[19px] text-[#A98088]" data-delivery-option-price>{{ $authText('free', 'безкоштовно') }}</span>
                                     @if($authDeliveryMethod === 'sevia_pickup')<span class="absolute bottom-0 left-0 top-0 w-0.5 bg-[#5B2730]" data-delivery-active-bar></span>@endif
                                 </button>
                             </div>
                         </label>
                         <div class="flex flex-col gap-7" data-nova-delivery-fields>
                             <div class="relative flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]" data-nova-city-wrap data-cities-url="{{ route('checkout.nova-post.cities') }}">
-                                <span>Місто <span class="text-[#C9A9B0]">*</span></span>
+                                <span>{{ $authText('city', 'Місто') }} <span class="text-[#C9A9B0]">*</span></span>
                                 <button class="flex h-[54px] w-full items-center justify-between border-b border-[#E8DAD0] py-1 text-left normal-case tracking-normal" type="button" data-nova-city-open data-nova-city-selected>
                                     <span class="flex min-w-0 flex-col">
                                         <span class="truncate text-[15.5px] font-normal leading-[23px] text-[#5B2730]" data-nova-city-selected-name>{{ $authCityDisplayName ?: $authCityName }}</span>
                                         <span class="truncate text-[12px] font-normal leading-[18px] text-[#A98088]" data-nova-city-selected-details>{{ $authCityDetails }}</span>
                                     </span>
-                                    <span class="ml-3 shrink-0 text-[13px] leading-5 text-[#7A4751]">Змінити</span>
+                                    <span class="ml-3 shrink-0 text-[13px] leading-5 text-[#7A4751]">{{ $authText('change', 'Змінити') }}</span>
                                 </button>
                                 <input type="hidden" name="city" value="{{ $authCityValue }}" data-nova-city-input>
                                 <input type="hidden" name="city_ref" value="{{ $authCityRef }}" data-nova-city-ref>
@@ -346,11 +347,11 @@
                                 <div class="fixed inset-0 z-50 hidden items-start justify-center bg-[#5B2730]/35 px-4 py-8 normal-case tracking-normal backdrop-blur-[1px] max-sm:items-stretch max-sm:p-0" data-nova-city-modal>
                                     <div class="flex max-h-[calc(100vh-64px)] w-full max-w-[880px] flex-col overflow-hidden border border-[#E8DAD0] bg-[#FFF8F4] shadow-[0_20px_60px_rgba(91,39,48,0.18)] max-sm:max-h-none max-sm:min-h-screen">
                                         <div class="flex items-center justify-between border-b border-[#E8DAD0] bg-white px-8 py-5 max-sm:px-5">
-                                            <h3 class="m-0 font-cormorant text-[40px] font-semibold leading-[44px] tracking-[-0.4px] text-[#5B2730] max-sm:text-[32px] max-sm:leading-9">Виберіть своє місто</h3>
-                                            <button class="text-[34px] font-light leading-none text-[#A98088] transition hover:text-[#5B2730]" type="button" data-nova-city-close aria-label="Закрити">×</button>
+                                            <h3 class="m-0 font-cormorant text-[40px] font-semibold leading-[44px] tracking-[-0.4px] text-[#5B2730] max-sm:text-[32px] max-sm:leading-9">{{ $authText('choose_city', 'Виберіть своє місто') }}</h3>
+                                            <button class="text-[34px] font-light leading-none text-[#A98088] transition hover:text-[#5B2730]" type="button" data-nova-city-close aria-label="{{ $authText('close', 'Закрити') }}">×</button>
                                         </div>
                                         <div class="overflow-y-auto px-6 py-6 max-sm:px-5">
-                                            <p class="m-0 text-[14px] font-medium leading-[22px] text-[#A98088]">Доставляємо замовлення по всій Україні!</p>
+                                            <p class="m-0 text-[14px] font-medium leading-[22px] text-[#A98088]">{{ $authText('deliver_ukraine', 'Доставляємо замовлення по всій Україні!') }}</p>
                                             <div class="grid grid-cols-3 gap-x-20 gap-y-7 py-8 text-[21px] leading-8 text-[#7A4751] max-sm:grid-cols-2 max-sm:gap-x-10 max-sm:text-[18px]">
                                                 @foreach (['Київ', 'Харків', 'Одеса', 'Дніпро', 'Запоріжжя', 'Львів'] as $popularCity)
                                                     <button class="text-left text-[#7A4751] transition hover:text-[#5B2730]" type="button" data-nova-popular-city="{{ $popularCity }}">{{ $popularCity }}</button>
@@ -366,16 +367,16 @@
                                 </div>
                             </div>
                             <div class="{{ $authDeliveryMethod === 'nova_courier' ? 'hidden' : 'flex' }} relative flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]" data-nova-warehouse-wrap data-warehouses-url="{{ route('checkout.nova-post.warehouses') }}">
-                                <span><span data-nova-warehouse-label>{{ $authDeliveryMethod === 'nova_postomat' ? 'Поштомат' : 'Відділення' }}</span> <span class="text-[#C9A9B0]">*</span></span>
+                                <span><span data-nova-warehouse-label>{{ $authDeliveryMethod === 'nova_postomat' ? $authText('postomat', 'Поштомат') : $authText('warehouse', 'Відділення') }}</span> <span class="text-[#C9A9B0]">*</span></span>
                                 <button class="flex h-[54px] items-center justify-between border-b border-[#E8DAD0] text-left text-[15.5px] font-normal normal-case leading-[23px] tracking-normal text-[#C9A9B0]" type="button" data-nova-warehouse-toggle aria-expanded="false">
-                                    <span class="truncate {{ $authWarehouseName !== '' ? 'text-[#5B2730]' : 'text-[#C9A9B0]' }}" data-nova-warehouse-selected>{{ $authWarehouseName !== '' ? $authWarehouseName : ($authDeliveryMethod === 'nova_postomat' ? 'Оберіть поштомат' : 'Оберіть відділення') }}</span>
+                                    <span class="truncate {{ $authWarehouseName !== '' ? 'text-[#5B2730]' : 'text-[#C9A9B0]' }}" data-nova-warehouse-selected>{{ $authWarehouseName !== '' ? $authWarehouseName : ($authDeliveryMethod === 'nova_postomat' ? $authText('choose_postomat', 'Оберіть поштомат') : $authText('choose_branch', 'Оберіть відділення')) }}</span>
                                     <svg class="size-[13px] shrink-0 text-[#7A4751]" viewBox="0 0 13 13" fill="none"><path d="M3.25 5.2L6.5 8.45L9.75 5.2" stroke="currentColor" stroke-width="1.1375" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </button>
                                 <input type="hidden" name="warehouse_ref" value="{{ $authWarehouseRef }}" data-nova-warehouse-ref>
                                 <input type="hidden" name="warehouse_name" value="{{ $authWarehouseName }}" data-nova-warehouse-name>
-                                <span class="hidden text-[11.5px] font-normal normal-case leading-[17px] tracking-normal text-[#B84249]" data-nova-warehouse-error>Оберіть відділення Нової Пошти.</span>
+                                <span class="hidden text-[11.5px] font-normal normal-case leading-[17px] tracking-normal text-[#B84249]" data-nova-warehouse-error>{{ $authText('branch_error', 'Оберіть відділення Нової Пошти.') }}</span>
                                 <div class="absolute left-0 right-0 top-[78px] z-30 hidden flex-col border border-[#E8DAD0] bg-white normal-case tracking-normal shadow-[0_8px_20px_rgba(91,39,48,0.07)]" data-nova-warehouse-panel>
-                                    <input class="h-[56px] border-0 border-b border-[#E8DAD0] px-4 text-[15.5px] font-normal leading-[23px] text-[#5B2730] outline-none placeholder:text-[#A98088] focus:border-[#5B2730]" type="text" placeholder="Введіть адресу або номер відділення" autocomplete="off" data-nova-warehouse-search>
+                                    <input class="h-[56px] border-0 border-b border-[#E8DAD0] px-4 text-[15.5px] font-normal leading-[23px] text-[#5B2730] outline-none placeholder:text-[#A98088] focus:border-[#5B2730]" type="text" placeholder="{{ $authText('warehouse_search', 'Введіть адресу або номер відділення') }}" autocomplete="off" data-nova-warehouse-search>
                                     <div class="max-h-[292px] overflow-y-auto" data-nova-warehouse-menu></div>
                                 </div>
                             </div>
@@ -420,29 +421,29 @@
                         </label>
                         <div class="{{ $authOtherRecipient ? 'flex' : 'hidden' }} flex-col gap-5 border border-[#E8DAD0] bg-[#FFF8F4] px-5 py-5" data-other-recipient-panel>
                             <div class="flex flex-col gap-2">
-                                <span class="text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">Отримувач</span>
+                                <span class="text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">{{ $authText('recipient_label', 'Отримувач') }}</span>
                                 <button class="flex min-h-[54px] w-full items-center justify-between border border-[#E8DAD0] bg-white px-4 text-left" type="button">
                                     <span class="flex min-w-0 flex-col">
                                         <span class="truncate text-[15.5px] font-normal leading-[23px] text-[#5B2730]" data-other-recipient-summary>{{ trim(implode(' ', array_filter([$checkoutDelivery['other_recipient_surname'] ?? '', $checkoutDelivery['other_recipient_name'] ?? '', $checkoutDelivery['other_recipient_patronymic'] ?? '']))) ?: 'Новий отримувач' }}</span>
-                                        <span class="text-[12px] font-normal leading-[18px] text-[#A98088]">Дані для отримання у відділенні</span>
+                                        <span class="text-[12px] font-normal leading-[18px] text-[#A98088]">{{ $authText('branch_data', 'Дані для отримання у відділенні') }}</span>
                                     </span>
                                     <svg class="size-[13px] shrink-0 text-[#7A4751]" viewBox="0 0 13 13" fill="none"><path d="M3.25 5.2L6.5 8.45L9.75 5.2" stroke="currentColor" stroke-width="1.1375" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </button>
                             </div>
                             <div class="grid grid-cols-2 gap-x-7 gap-y-5 max-sm:grid-cols-1">
-                                <label class="flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">Прізвище <span class="sr-only">*</span>
+                                <label class="flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">{{ $authText('surname', 'Прізвище') }} <span class="sr-only">*</span>
                                     <input class="h-[44px] border-b border-[#E8DAD0] bg-transparent py-[9px] text-[15.5px] font-normal normal-case leading-[23px] tracking-normal text-[#5B2730] outline-none placeholder:text-[#C9A9B0] focus:border-[#5B2730]" type="text" name="other_recipient_surname" value="{{ $checkoutDelivery['other_recipient_surname'] ?? '' }}" autocomplete="family-name" data-other-recipient-field data-other-recipient-label="Прізвище">
                                     <span class="hidden text-[11.5px] font-normal normal-case leading-[17px] tracking-normal text-[#B84249]" data-other-recipient-error-for="other_recipient_surname"></span>
                                 </label>
-                                <label class="flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">Ім'я <span class="sr-only">*</span>
+                                <label class="flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">{{ $authText('first_name', 'Ім\'я') }} <span class="sr-only">*</span>
                                     <input class="h-[44px] border-b border-[#E8DAD0] bg-transparent py-[9px] text-[15.5px] font-normal normal-case leading-[23px] tracking-normal text-[#5B2730] outline-none placeholder:text-[#C9A9B0] focus:border-[#5B2730]" type="text" name="other_recipient_name" value="{{ $checkoutDelivery['other_recipient_name'] ?? '' }}" autocomplete="given-name" data-other-recipient-field data-other-recipient-label="Ім'я">
                                     <span class="hidden text-[11.5px] font-normal normal-case leading-[17px] tracking-normal text-[#B84249]" data-other-recipient-error-for="other_recipient_name"></span>
                                 </label>
-                                <label class="flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">По батькові <span class="sr-only">*</span>
+                                <label class="flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">{{ $authText('patronymic', 'По батькові') }} <span class="sr-only">*</span>
                                     <input class="h-[44px] border-b border-[#E8DAD0] bg-transparent py-[9px] text-[15.5px] font-normal normal-case leading-[23px] tracking-normal text-[#5B2730] outline-none placeholder:text-[#C9A9B0] focus:border-[#5B2730]" type="text" name="other_recipient_patronymic" value="{{ $checkoutDelivery['other_recipient_patronymic'] ?? '' }}" autocomplete="additional-name" data-other-recipient-field data-other-recipient-label="По батькові">
                                     <span class="hidden text-[11.5px] font-normal normal-case leading-[17px] tracking-normal text-[#B84249]" data-other-recipient-error-for="other_recipient_patronymic"></span>
                                 </label>
-                                <label class="flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">Мобільний телефон <span class="sr-only">*</span>
+                                <label class="flex flex-col gap-[7px] text-[10.5px] font-medium uppercase leading-4 tracking-[1.575px] text-[#A98088]">{{ $authText('mobile_phone', 'Мобільний телефон') }} <span class="sr-only">*</span>
                                     <input class="h-[44px] border-b border-[#E8DAD0] bg-transparent py-[9px] text-[15.5px] font-normal normal-case leading-[23px] tracking-normal text-[#5B2730] outline-none placeholder:text-[#C9A9B0] focus:border-[#5B2730]" type="tel" name="other_recipient_phone" inputmode="numeric" autocomplete="tel" value="{{ $checkoutDelivery['other_recipient_phone'] ?? '+380 ' }}" maxlength="17" data-other-recipient-field data-other-recipient-label="Мобільний телефон" data-other-recipient-phone>
                                     <span class="hidden text-[11.5px] font-normal normal-case leading-[17px] tracking-normal text-[#B84249]" data-other-recipient-error-for="other_recipient_phone"></span>
                                 </label>
@@ -455,15 +456,15 @@
 
                     <section class="flex flex-col gap-[22px] pt-[18px]">
                         <div class="flex items-center justify-between">
-                            <h2 class="m-0 font-cormorant text-[38px] font-semibold leading-[41px] tracking-[-0.38px] text-[#5B2730]">Оплата</h2>
+                            <h2 class="m-0 font-cormorant text-[38px] font-semibold leading-[41px] tracking-[-0.38px] text-[#5B2730]">{{ $authText('payment', 'Оплата') }}</h2>
                             <span class="text-[12px] font-semibold uppercase tracking-[1px] text-[#7A4751]">LiqPay</span>
                         </div>
                         <div class="border-t border-[#E8DAD0]">
                             <label class="flex min-h-[81px] items-center gap-3.5 border border-[#5B2730] bg-[#FBF4F0] px-[19px] py-[18px]" data-payment-option>
                                 <input class="size-[17px] accent-[#5B2730]" type="radio" name="payment" value="liqpay" @checked($authPayment === 'liqpay') data-payment-liqpay>
                                 <span class="flex flex-1 flex-col gap-[3px]">
-                                    <span class="text-[14.5px] font-medium leading-[22px] text-[#5B2730]">Онлайн оплата карткою</span>
-                                    <span class="text-[12px] font-normal leading-[18px] text-[#A98088]">Переадресуємо на захищену сторінку LiqPay — ми не обробляємо дані вашої картки</span>
+                                    <span class="text-[14.5px] font-medium leading-[22px] text-[#5B2730]">{{ $authText('card_payment', 'Онлайн оплата карткою') }}</span>
+                                    <span class="text-[12px] font-normal leading-[18px] text-[#A98088]">{{ $authText('liqpay_notice', 'Переадресуємо на захищену сторінку LiqPay — ми не обробляємо дані вашої картки') }}</span>
                                 </span>
                                 <span class="text-[12px] font-bold uppercase text-[#1A3F8B]">Visa</span>
                                 <span class="size-5 rounded-full bg-[#E84D3D] shadow-[-10px_0_0_#F6A623]"></span>
@@ -471,8 +472,8 @@
                             <label class="hidden min-h-[81px] items-center gap-3.5 px-[19px] py-[18px]" data-payment-option data-payment-cash-label>
                                 <input class="size-[17px] accent-[#5B2730]" type="radio" name="payment" value="cash" @checked($authPayment === 'cash')>
                                 <span class="flex flex-col gap-[3px]">
-                                    <span class="text-[14.5px] font-normal leading-[22px] text-[#5B2730]">Готівкою при отриманні</span>
-                                    <span class="text-[12px] font-normal leading-[18px] text-[#A98088]">Оплата при отриманні замовлення</span>
+                                    <span class="text-[14.5px] font-normal leading-[22px] text-[#5B2730]">{{ $authText('cash_payment', 'Готівкою при отриманні') }}</span>
+                                    <span class="text-[12px] font-normal leading-[18px] text-[#A98088]">{{ $authText('cash_notice', 'Оплата при отриманні замовлення') }}</span>
                                 </span>
                             </label>
                         </div>
@@ -481,10 +482,10 @@
                     <section class="flex flex-col gap-[26px] pt-[18px]">
                         <label class="flex flex-col gap-[26px]">
                             <span class="flex items-baseline justify-between">
-                                <span class="text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">Коментар до замовлення</span>
-                                <span class="text-[12.5px] font-normal leading-[19px] text-[#A98088]">не обовʼязково</span>
+                                <span class="text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">{{ $authText('comment', 'Коментар до замовлення') }}</span>
+                                <span class="text-[12.5px] font-normal leading-[19px] text-[#A98088]">{{ $authText('optional', 'не обовʼязково') }}</span>
                             </span>
-                            <textarea class="min-h-[104px] resize-none border border-[#E8DAD0] bg-white px-4 py-[13px] text-[14.5px] leading-[22px] text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" name="comment" placeholder="Наприклад: покласти пробник вечірнього аромату або підписати листівку">{{ $checkoutDelivery['comment'] ?? '' }}</textarea>
+                            <textarea class="min-h-[104px] resize-none border border-[#E8DAD0] bg-white px-4 py-[13px] text-[14.5px] leading-[22px] text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" name="comment" placeholder="{{ $authText('comment_placeholder', 'Наприклад: покласти пробник вечірнього аромату або підписати листівку') }}">{{ $checkoutDelivery['comment'] ?? '' }}</textarea>
                         </label>
                         <div class="grid grid-cols-2 gap-7 max-sm:grid-cols-1">
                             <label class="flex items-start gap-[11px] text-[13.5px] leading-5 text-[#5B2730]"><input class="mt-1 size-[17px] accent-[#5B2730]" type="checkbox" name="confirm_without_call" value="1" @checked($authConfirmWithoutCall)>Можна не телефонувати — підтверджую замовлення як є</label>
@@ -525,7 +526,7 @@
                         $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
                         $labelParts = collect(preg_split('/\s*·\s*/u', (string) ($meta['cart_label'] ?? '')))->filter()->values();
                         $brand = (string) ($meta['brand'] ?? ($labelParts->get(0) ?? ''));
-                        $name = (string) ($meta['name'] ?? ($labelParts->get(1) ?? ($item['name'] ?? 'Товар')));
+                        $name = (string) ($meta['name'] ?? ($labelParts->get(1) ?? ($item['name'] ?? $authText('product_fallback', 'Товар'))));
                         $volume = (string) ($meta['volume'] ?? ($labelParts->get(2) ?? ($item['variant'] ?? '')));
                         $itemQty = (int) ($item['qty'] ?? 1);
                         $itemTotal = (float) ($item['subtotal'] ?? 0);
@@ -560,7 +561,7 @@
                     <div class="flex justify-between py-[5.5px]"><dt class="text-[#7A4751]">Аромати · {{ $authQty }} розпиви</dt><dd class="m-0 text-[#5B2730]">{{ $authMoney($authItemsSubtotal) }}</dd></div>
                     <div class="flex justify-between py-[5.5px]"><dt class="text-[#7A4751]">Знижка на аромати</dt><dd class="m-0 text-[#4D8566]">{{ $authDiscount > 0 ? '- ' . $authMoney($authDiscount) : $authMoney(0) }}</dd></div>
                     <div class="flex justify-between py-[5.5px]"><dt class="text-[#7A4751]">Флакони · {{ $authBottleSummaryLabel($authBottleBreakdown, $authBottleCount) }}</dt><dd class="m-0 text-[#5B2730]">{{ $authMoney($authBottleFee) }}</dd></div>
-                    <div class="flex justify-between pb-[19px] pt-[5.5px]"><dt class="text-[#7A4751]">Доставка<span data-delivery-summary-title>{{ $isDeliveryStep ? ' · Нова Пошта' : '' }}</span></dt><dd class="m-0 text-[#5B2730]" data-delivery-summary-price>{{ $isDeliveryStep ? $authNovaWarehouseLabel : 'на кроці 2' }}</dd></div>
+                    <div class="flex justify-between pb-[19px] pt-[5.5px]"><dt class="text-[#7A4751]">Доставка<span data-delivery-summary-title>{{ $isDeliveryStep ? ' · ' . $authText('nova_poshta', 'Нова Пошта') : '' }}</span></dt><dd class="m-0 text-[#5B2730]" data-delivery-summary-price>{{ $isDeliveryStep ? $authNovaWarehouseLabel : $authText('delivery_step', 'на кроці 2') }}</dd></div>
                 </dl>
                 <div class="flex items-baseline justify-between">
                     <span class="text-[10.5px] font-medium uppercase leading-4 tracking-[1.68px] text-[#7A4751]">До сплати</span>

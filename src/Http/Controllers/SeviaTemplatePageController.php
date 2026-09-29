@@ -17,19 +17,28 @@ class SeviaTemplatePageController
             ->first();
 
         if (! $page || ! $page->template) {
-            return view($fallbackView);
+            return view($fallbackView, [
+                'page' => $page,
+                'content' => is_array($page?->content) ? $page->content : [],
+            ]);
         }
 
         $registry = app(TemplatePageRegistry::class);
 
         if (! $registry->has($page->template)) {
-            return view($fallbackView);
+            return view($fallbackView, [
+                'page' => $page,
+                'content' => is_array($page->content) ? $page->content : [],
+            ]);
         }
 
         $view = $registry->viewName($page->template);
 
         if (! view()->exists($view)) {
-            return view($fallbackView);
+            return view($fallbackView, [
+                'page' => $page,
+                'content' => is_array($page->content) ? $page->content : [],
+            ]);
         }
 
         return response()

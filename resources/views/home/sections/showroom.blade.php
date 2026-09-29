@@ -163,7 +163,7 @@
                         max-sm:tracking-[1.8px]
                     "
                 >
-                    магазин Sevia
+                    {{ st('home.showroom.eyebrow', 'магазин Sevia') }}
                 </p>
 
                 <h2
@@ -194,7 +194,7 @@
                     "
                 >
                     <span class="block">
-                        Спробуй нові аромати
+                        {{ st('home.showroom.title_line_1', 'Спробуй нові аромати') }}
                     </span>
 
                     <span
@@ -210,7 +210,7 @@
                             sm:max-[1099px]:tracking-[-1.18px]
                         "
                     >
-                        в нашому шоурумі
+                        {{ st('home.showroom.title_line_2', 'в нашому шоурумі') }}
                     </span>
                 </h2>
             </div>
@@ -232,7 +232,7 @@
                 <img
                     class="h-full w-full object-cover"
                     src="{{ asset('vendor/frontend-sevia/images/showroom-mobile.png') }}"
-                    alt="Шоурум Sevia"
+                    alt="{{ st('home.showroom.image_alt', 'Шоурум Sevia') }}"
                 >
             </figure>
 
@@ -291,9 +291,7 @@
                             max-sm:text-[#7A4751]
                         "
                     >
-                        «Sevia починалася з моєї власної шафи з парфумами та маленького Instagram-акаунту.
-                        Мені хотілося, щоб люди могли спробувати нішевий парфум, не платячи одразу
-                        за повний флакон.»
+                        {{ st('home.showroom.quote', '«Sevia починалася з моєї власної шафи з парфумами та маленького Instagram-акаунту. Мені хотілося, щоб люди могли спробувати нішевий парфум, не платячи одразу за повний флакон.»') }}
                     </p>
 
                     <footer
@@ -317,7 +315,7 @@
                             max-sm:tracking-[1px]
                         "
                     >
-                        — наталія, засновниця Sevia
+                        {{ st('home.showroom.quote_author', '— наталія, засновниця Sevia') }}
                     </footer>
                 </blockquote>
 
@@ -400,7 +398,7 @@
                                     max-sm:leading-[22px]
                                 "
                             >
-                                Гарантія оригіналу.
+                                {{ st('home.showroom.benefit_1.title', 'Гарантія оригіналу.') }}
                             </strong>
 
                             <span
@@ -420,7 +418,7 @@
                                     max-sm:text-[#A98088]
                                 "
                             >
-                                Лише офіційні дистрибʼютори та європейські бутики.
+                                {{ st('home.showroom.benefit_1.text', 'Лише офіційні дистрибʼютори та європейські бутики.') }}
                             </span>
                         </span>
                     </li>
@@ -482,7 +480,7 @@
                                     max-sm:leading-[22px]
                                 "
                             >
-                                Розпив від 3 мл.
+                                {{ st('home.showroom.benefit_2.title', 'Розпив від 3 мл.') }}
                             </strong>
 
                             <span
@@ -502,7 +500,7 @@
                                     max-sm:text-[#A98088]
                                 "
                             >
-                                Спробуй вдома й повертайся за більшим обʼємом, коли впевнишся, що це твоє.
+                                {{ st('home.showroom.benefit_2.text', 'Спробуй вдома й повертайся за більшим обʼємом, коли впевнишся, що це твоє.') }}
                             </span>
                         </span>
                     </li>
@@ -563,7 +561,7 @@
                                     max-sm:leading-[22px]
                                 "
                             >
-                                Тепла консультація.
+                                {{ st('home.showroom.benefit_3.title', 'Тепла консультація.') }}
                             </strong>
 
                             <span
@@ -583,7 +581,7 @@
                                     max-sm:text-[#A98088]
                                 "
                             >
-                                Допоможемо знайти аромат під настрій, сезон і твою шкіру.
+                                {{ st('home.showroom.benefit_3.text', 'Допоможемо знайти аромат під настрій, сезон і твою шкіру.') }}
                             </span>
                         </span>
                     </li>
@@ -641,7 +639,7 @@
             max-sm:tracking-[1.4px]
         "
     >
-        Перейти в каталог
+        {{ st('home.showroom.catalog_cta', 'Перейти в каталог') }}
     </span>
 
                     <span

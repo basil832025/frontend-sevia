@@ -2,7 +2,8 @@
     $cartInfo = app(\App\Services\CartService::class)->info();
     $cartQty = (int) ($cartInfo['qty'] ?? 0);
     $headerClientUrl = auth()->check() ? route('account.overview') : route('auth.phone');
-    $headerClientLabel = auth()->check() ? 'Особистий кабінет' : 'Увійти';
+    $headerText = static fn (string $key, string $default): string => st("header.$key", $default);
+    $headerClientLabel = auth()->check() ? $headerText('account', 'Особистий кабінет') : $headerText('login', 'Увійти');
     $favoriteIds = auth()->check()
         ? auth()->user()->favorites()->pluck('bs_products.id')->map(fn ($id) => (int) $id)->all()
         : \App\Support\GuestFavoritesStore::idsFromRequest();
@@ -10,6 +11,29 @@
     $favoritesUrl = route('account.favorites');
     $freeShippingFrom = max(0, (float) \App\Models\Setting::admin('cart.free_shipping_from', 0));
     $freeShippingLabel = number_format($freeShippingFrom, 0, '.', ' ') . ' ₴';
+    $isSalePage = request()->routeIs('sale.index', 'sale.*');
+    $isCatalogPage = request()->routeIs('catalog.index', 'catalog.*');
+    $isDiscoveryPage = request()->routeIs('discovery-53', 'discovery-53.*');
+    $headerMenuItems = \App\Support\Menus::bySlug('header-menu');
+    $headerMenuItems = $headerMenuItems !== [] ? $headerMenuItems : [
+        ['label' => $headerText('catalog', 'Каталог'), 'href' => route('catalog.index'), 'auth_only' => false],
+        ['label' => 'Sale', 'href' => route('sale.index'), 'auth_only' => false],
+        ['label' => 'Discovery 5×3', 'href' => route('discovery-53'), 'auth_only' => false],
+        ['label' => $headerText('collections', 'Колекції'), 'href' => route('collections.index'), 'auth_only' => false],
+    ];
+    $headerMenuItems = array_map(function (array $item): array {
+        if (str_contains(mb_strtolower((string) ($item['label'] ?? '')), 'колекц')) {
+            $item['href'] = route('collections.index');
+        }
+
+        return $item;
+    }, $headerMenuItems);
+    $headerPath = trim((string) parse_url(url()->current(), PHP_URL_PATH), '/');
+    $isHeaderMenuItemActive = static function (array $item) use ($headerPath): bool {
+        $path = trim((string) parse_url($item['href'] ?? '', PHP_URL_PATH), '/');
+
+        return $path !== '' && ($headerPath === $path || str_starts_with($headerPath, $path . '/'));
+    };
 @endphp
 
 <header class="sticky top-0 z-40 m-0 bg-white sm:max-lg:border-b sm:max-lg:border-[#7A4751]/10 sm:max-lg:bg-[#FDFBF8] lg:border-b lg:border-[#7A4751]/10 lg:bg-[#FDFBF8]" data-site-header>
@@ -17,7 +41,7 @@
         <div class="mx-auto grid min-h-[41px] w-full max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-7 px-[68px] text-[12px] uppercase leading-[19px] tracking-[2.16px] text-[#A98088] sm:max-lg:min-h-[28px] sm:max-lg:gap-5 sm:max-lg:px-[49px] sm:max-lg:text-[8.6px] sm:max-lg:leading-[13px] sm:max-lg:tracking-[1.55px]">
             <span>UA · UAH</span>
             @if ($freeShippingFrom > 0)
-                <strong class="text-[13px] font-medium normal-case leading-[20px] tracking-[0.78px] text-[#7A4751] sm:max-lg:text-[9.4px] sm:max-lg:leading-[14px] sm:max-lg:tracking-[0.56px]">Безкоштовна доставка від {{ $freeShippingLabel }}</strong>
+                 <strong class="text-[13px] font-medium normal-case leading-[20px] tracking-[0.78px] text-[#7A4751] sm:max-lg:text-[9.4px] sm:max-lg:leading-[14px] sm:max-lg:tracking-[0.56px]">{{ $headerText('free_shipping_from', 'Безкоштовна доставка від') }} {{ $freeShippingLabel }}</strong>
             @else
                 <span></span>
             @endif
@@ -27,7 +51,7 @@
 
     @if ($freeShippingFrom > 0)
         <div class="flex h-[33px] items-center justify-center bg-[#F8EDE7] px-4 py-2.5 sm:hidden">
-            <strong class="text-[11px] font-medium leading-[13px] tracking-[0.3px] text-[#7A4751]">Безкоштовна доставка від {{ $freeShippingLabel }}</strong>
+             <strong class="text-[11px] font-medium leading-[13px] tracking-[0.3px] text-[#7A4751]">{{ $headerText('free_shipping_from', 'Безкоштовна доставка від') }} {{ $freeShippingLabel }}</strong>
         </div>
     @endif
 
@@ -37,21 +61,22 @@
         </a>
 
         <nav class="flex items-center justify-start gap-[38px] text-[14px] leading-[22px] tracking-[0.56px] text-[#7A4751] sm:max-lg:gap-[22px] sm:max-lg:text-[10.1px] sm:max-lg:leading-4 sm:max-lg:tracking-[0.4px] [&>a:nth-child(1)]:order-1 [&>a:nth-child(n+3)]:order-2" aria-label="Primary navigation">
-            <a class="order-1 hover:text-[#5B2730]" href="{{ route('sale.index') }}">Sale</a>
-            <a class="hover:text-[#5B2730]" href="{{ route('catalog.index') }}">Каталог</a>
-            <a class="whitespace-nowrap font-semibold hover:text-[#5B2730]" href="{{ route('discovery-53') }}">Discovery 5×3</a>
-            <a class="hover:text-[#5B2730]" href="#collections">Колекції</a>
+            @foreach ($headerMenuItems as $item)
+                @continue(($item['auth_only'] ?? false) && ! auth()->check())
+                @php($itemActive = $isHeaderMenuItemActive($item))
+                <a class="whitespace-nowrap {{ $itemActive ? 'font-semibold text-[#5B2730]' : '' }} hover:text-[#5B2730]" href="{{ $item['href'] }}" @if ($itemActive) aria-current="page" @endif>{{ $item['label'] }}</a>
+            @endforeach
         </nav>
 
         <div class="flex items-center justify-end gap-[22px] text-[14px] leading-[22px] tracking-[0.56px] text-[#7A4751] sm:max-lg:gap-3 sm:max-lg:text-[10.1px] sm:max-lg:leading-4 sm:max-lg:tracking-[0.4px]">
-            <button class="whitespace-nowrap hover:text-[#5B2730]" type="button" data-search-open>Пошук</button>
+             <button class="whitespace-nowrap hover:text-[#5B2730]" type="button" data-search-open>{{ $headerText('search', 'Пошук') }}</button>
             <a class="whitespace-nowrap hover:text-[#5B2730]" href="{{ $headerClientUrl }}">{{ $headerClientLabel }}</a>
             <a class="inline-flex items-center gap-1.5 whitespace-nowrap hover:text-[#5B2730]" href="{{ $favoritesUrl }}">
-                <span>Обране</span>
+                 <span>{{ $headerText('favorites', 'Обране') }}</span>
                 <b class="{{ $favoritesQty > 0 ? 'grid' : 'hidden' }} h-[18px] min-w-[18px] place-items-center rounded-full bg-[#A85D66] px-[5px] text-[10px] font-medium leading-none text-[#FDFBF8] sm:max-lg:h-[13px] sm:max-lg:min-w-[13px] sm:max-lg:px-[3px] sm:max-lg:text-[7.2px]" data-favorites-count>{{ $favoritesQty }}</b>
             </a>
             <a class="inline-flex items-center gap-1.5 whitespace-nowrap hover:text-[#5B2730]" href="{{ route('cart.page') }}" data-cart-link>
-                <span>Кошик</span>
+                 <span>{{ $headerText('cart', 'Кошик') }}</span>
                 <b class="{{ $cartQty > 0 ? 'grid' : 'hidden' }} h-[18px] min-w-[18px] place-items-center rounded-full bg-[#A85D66] px-[5px] text-[10px] font-medium leading-none text-[#FDFBF8] sm:max-lg:h-[13px] sm:max-lg:min-w-[13px] sm:max-lg:px-[3px] sm:max-lg:text-[7.2px]" data-cart-count>{{ $cartQty }}</b>
             </a>
         </div>
@@ -61,15 +86,15 @@
         <div class="absolute left-[21px] top-[27px] grid size-[30px] place-items-center rounded-full bg-[#A85D66] text-[14px] leading-[22px] text-[#FDFBF8]" aria-hidden="true">✓</div>
 
         <div class="absolute left-[67px] right-[21px] top-[18px] grid gap-[3px]">
-            <strong class="text-[15px] font-semibold leading-[23px] text-[#5B2730]">Додано в кошик</strong>
+             <strong class="text-[15px] font-semibold leading-[23px] text-[#5B2730]">{{ $headerText('added_to_cart', 'Додано в кошик') }}</strong>
             <p class="m-0 truncate text-[13px] leading-5 text-[#A98088]" data-cart-status-line></p>
         </div>
 
         <a class="absolute left-[67px] top-[73px] inline-flex h-[34px] items-center justify-center text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730]" href="{{ route('cart.page') }}">
-            Перейти в кошик →
+             {{ $headerText('go_to_cart', 'Перейти в кошик') }} →
         </a>
 
-        <button class="absolute right-[11px] top-[9px] grid size-[26px] place-items-center text-[18px] leading-[18px] text-[#A98088]" type="button" aria-label="Закрити" data-cart-status-close>×</button>
+         <button class="absolute right-[11px] top-[9px] grid size-[26px] place-items-center text-[18px] leading-[18px] text-[#A98088]" type="button" aria-label="{{ $headerText('close', 'Закрити') }}" data-cart-status-close>×</button>
     </div>
 
     <div class="hidden h-[57px] items-center justify-between bg-white px-4 py-[14px] max-sm:flex">
@@ -84,10 +109,10 @@
         </a>
 
         <div class="flex h-6 w-16 items-center justify-end gap-4">
-            <a class="block size-5" href="{{ route('search.index') }}" aria-label="Пошук">
+             <a class="block size-5" href="{{ route('search.index') }}" aria-label="{{ $headerText('search', 'Пошук') }}">
                 <img class="block size-5" src="{{ asset('vendor/frontend-sevia/images/search.svg') }}" alt="">
             </a>
-            <a class="relative block size-5" href="{{ route('cart.page') }}" data-cart-link aria-label="Кошик">
+             <a class="relative block size-5" href="{{ route('cart.page') }}" data-cart-link aria-label="{{ $headerText('cart', 'Кошик') }}">
                 <img class="block size-5" src="{{ asset('vendor/frontend-sevia/images/cart.svg') }}" alt="">
                 <b class="{{ $cartQty > 0 ? 'grid' : 'hidden' }} absolute -right-2 -top-2 h-[16px] min-w-[16px] place-items-center rounded-full bg-[#A85D66] px-[4px] text-[9px] font-medium leading-none text-[#FDFBF8]" data-cart-count>{{ $cartQty }}</b>
             </a>
@@ -100,11 +125,11 @@
                 <circle cx="8" cy="8" r="7" stroke="#FFFFFF" stroke-width="1.2"/>
                 <path d="M5 8.1L7.1 10.2L11 6.2" stroke="#FFFFFF" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span class="text-[12px] font-medium uppercase leading-[15px] tracking-[0.8px] text-white">Додано в кошик</span>
+             <span class="text-[12px] font-medium uppercase leading-[15px] tracking-[0.8px] text-white">{{ $headerText('added_to_cart', 'Додано в кошик') }}</span>
         </div>
 
         <a class="text-[11px] font-medium uppercase leading-[13px] tracking-[0.8px] text-white" href="{{ route('cart.page') }}">
-            Переглянути
+                 {{ $headerText('view', 'Переглянути') }}
         </a>
     </div>
 
@@ -114,49 +139,35 @@
         <aside class="relative flex w-full max-w-[393px] flex-col items-start bg-white shadow-[18px_0_60px_-40px_rgba(42,31,25,0.45)]" aria-label="Mobile navigation">
             <div class="flex h-[63px] w-full items-center justify-between px-5 pb-4 pt-[18px]">
                 <a class="font-cormorant text-[24px] font-medium leading-[29px] tracking-[4px] text-[#5B2730]" href="{{ route('home') }}" aria-label="Sevia">SÉVIA</a>
-                <button class="w-4 text-[18px] leading-[22px] text-[#7A4751]" type="button" aria-label="Закрити меню" data-menu-close>×</button>
+                 <button class="w-4 text-[18px] leading-[22px] text-[#7A4751]" type="button" aria-label="{{ $headerText('close_menu', 'Закрити меню') }}" data-menu-close>×</button>
             </div>
 
             <form class="w-full px-5 pb-3" action="{{ route('search.index') }}" method="GET" role="search">
                 <label class="flex h-10 w-full items-center gap-[9px] rounded-full border border-[#E8DAD0] bg-[#FDFBF8] px-3.5">
                     <img class="size-[15px]" src="{{ asset('vendor/frontend-sevia/images/search.svg') }}" alt="">
-                    <input class="min-w-0 flex-1 bg-transparent text-[13px] leading-4 text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" type="search" name="q" placeholder="Шукати аромат, бренд" autocomplete="off">
+                     <input class="min-w-0 flex-1 bg-transparent text-[13px] leading-4 text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" type="search" name="q" placeholder="{{ $headerText('search_placeholder', 'Шукати аромат, бренд') }}" autocomplete="off">
                 </label>
             </form>
 
             <nav class="w-full" aria-label="Mobile menu links">
-                <a class="flex h-[62px] w-full items-center justify-between border-t border-[#E8DAD0] px-5 py-[17px]" href="{{ route('catalog.index') }}">
-                    <span class="font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Каталог</span>
-                    <span class="text-[16px] leading-[19px] text-[#A98088]">›</span>
-                </a>
-                <a class="flex h-[62px] w-full items-center justify-between border-t border-[#E8DAD0] px-5 py-[17px]" href="{{ route('discovery-53') }}">
-                    <span class="flex items-center gap-[9px]">
-                        <span class="font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Discovery 5×3</span>
-                        <span class="bg-[#B08C57] px-1.5 py-0.5 text-[8px] font-medium uppercase leading-[10px] tracking-[0.4px] text-white">New</span>
-                    </span>
-                    <span class="text-[16px] leading-[19px] text-[#A98088]">›</span>
-                </a>
-                <a class="flex h-[62px] w-full items-center justify-between border-t border-[#E8DAD0] px-5 py-[17px]" href="#collections">
-                    <span class="font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Колекції</span>
-                    <span class="text-[16px] leading-[19px] text-[#A98088]">›</span>
-                </a>
-                <a class="flex h-[62px] w-full items-center justify-between border-t border-[#E8DAD0] px-5 py-[17px]" href="{{ route('sale.index') }}">
-                    <span class="flex items-center gap-[9px]">
-                        <span class="font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Sale</span>
-                        <span class="bg-[#B03B45] px-1.5 py-0.5 text-[8px] font-medium uppercase leading-[10px] tracking-[0.4px] text-white">50%</span>
-                    </span>
-                    <span class="text-[16px] leading-[19px] text-[#A98088]">›</span>
-                </a>
+                @foreach ($headerMenuItems as $item)
+                    @continue(($item['auth_only'] ?? false) && ! auth()->check())
+                    @php($itemActive = $isHeaderMenuItemActive($item))
+                    <a class="flex h-[62px] w-full items-center justify-between border-t border-[#E8DAD0] px-5 py-[17px]" href="{{ $item['href'] }}" @if ($itemActive) aria-current="page" @endif>
+                        <span class="font-cormorant text-[23px] {{ $itemActive ? 'font-semibold' : 'font-medium' }} leading-7 text-[#5B2730]">{{ $item['label'] }}</span>
+                        <span class="text-[16px] leading-[19px] text-[#A98088]">›</span>
+                    </a>
+                @endforeach
                 <a class="flex h-[62px] w-full items-center justify-between border-y border-[#E8DAD0] px-5 py-[17px]" href="#about">
-                    <span class="font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Про нас</span>
+                     <span class="font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">{{ $headerText('about', 'Про нас') }}</span>
                     <span class="text-[16px] leading-[19px] text-[#A98088]">›</span>
                 </a>
             </nav>
 
             <div class="flex h-[46px] w-full items-start gap-5 px-5 pb-3.5 pt-[18px] text-[11.5px] font-medium uppercase leading-[14px] tracking-[0.6px] text-[#7A4751]">
                 <a href="{{ $headerClientUrl }}">{{ $headerClientLabel }}</a>
-                <a class="inline-flex items-center gap-1.5" href="{{ $favoritesUrl }}">Обране <b class="{{ $favoritesQty > 0 ? 'inline-flex' : 'hidden' }} min-w-4 items-center justify-center rounded-full bg-[#A85D66] px-1 text-[9px] leading-4 text-white" data-favorites-count>{{ $favoritesQty }}</b></a>
-                <a href="{{ route('cart.page') }}" data-cart-link>Кошик</a>
+                 <a class="inline-flex items-center gap-1.5" href="{{ $favoritesUrl }}">{{ $headerText('favorites', 'Обране') }} <b class="{{ $favoritesQty > 0 ? 'inline-flex' : 'hidden' }} min-w-4 items-center justify-center rounded-full bg-[#A85D66] px-1 text-[9px] leading-4 text-white" data-favorites-count>{{ $favoritesQty }}</b></a>
+                 <a href="{{ route('cart.page') }}" data-cart-link>{{ $headerText('cart', 'Кошик') }}</a>
             </div>
 
             <div class="flex h-[68px] w-full flex-col items-start gap-1.5 px-5 pb-7 pt-2 text-[11px] leading-[13px] text-[#A98088]">
@@ -173,9 +184,9 @@
             <div class="mx-auto w-full max-w-[1304px]">
                 <form class="flex h-[83px] items-center gap-4 border-b border-[#5B2730] px-0.5 pb-[18px] pt-1.5" action="{{ route('search.index') }}" method="GET" role="search">
                     <span class="flex h-10 w-4 items-center text-[26px] leading-10 text-[#5B2730]" aria-hidden="true">⌕</span>
-                    <input class="min-w-0 flex-1 bg-transparent font-cormorant text-[48px] leading-[58px] tracking-[0.48px] text-[#5B2730] outline-none placeholder:text-[#5B2730]" type="search" name="q" value="{{ request('q') }}" placeholder="Пошук" autocomplete="off" data-search-input>
+                     <input class="min-w-0 flex-1 bg-transparent font-cormorant text-[48px] leading-[58px] tracking-[0.48px] text-[#5B2730] outline-none placeholder:text-[#5B2730]" type="search" name="q" value="{{ request('q') }}" placeholder="{{ $headerText('search', 'Пошук') }}" autocomplete="off" data-search-input>
                     <span class="mx-2 h-11 w-px bg-[#A85D66]" aria-hidden="true"></span>
-                    <button class="h-[19px] w-[86px] text-center text-[12px] uppercase leading-[19px] tracking-[2.4px] text-[#A98088]" type="button" data-search-close>Закрити ×</button>
+                     <button class="h-[19px] w-[86px] text-center text-[12px] uppercase leading-[19px] tracking-[2.4px] text-[#A98088]" type="button" data-search-close>{{ $headerText('close', 'Закрити') }} ×</button>
                 </form>
 
                 <div class="grid min-h-[386px] grid-cols-[522px_minmax(0,1fr)] gap-[75px] pt-12">

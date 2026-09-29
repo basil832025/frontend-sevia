@@ -3,6 +3,8 @@ import { Russian } from 'flatpickr/dist/l10n/ru.js';
 import { Ukrainian } from 'flatpickr/dist/l10n/uk.js';
 import 'flatpickr/dist/flatpickr.min.css';
 
+const siteText = (key, fallback) => window.seviaText?.[key] || fallback;
+
 flatpickr.l10ns.ru = Russian;
 flatpickr.l10ns.uk = Ukrainian;
 
@@ -359,7 +361,7 @@ document.querySelectorAll('[data-brand-toggle]').forEach((toggle) => {
     const fieldset = toggle.closest('fieldset');
     const extras = fieldset?.querySelectorAll('[data-brand-extra]') ?? [];
     const collapsedLabel = toggle.dataset.collapsedLabel || toggle.textContent;
-    const expandedLabel = toggle.dataset.expandedLabel || 'Згорнути';
+    const expandedLabel = toggle.dataset.expandedLabel || siteText('collapse', 'Згорнути');
 
     toggle.addEventListener('click', () => {
         const expanded = toggle.getAttribute('aria-expanded') === 'true';
@@ -505,28 +507,28 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             body: JSON.stringify(payload),
         });
         const data = await response.json();
-        if (!response.ok || data.ok === false) throw new Error(data.message || 'Не вдалося виконати запит.');
+        if (!response.ok || data.ok === false) throw new Error(data.message || siteText('request_error', 'Не вдалося виконати запит.'));
         return data;
     };
 
     const sendCode = async () => {
         formatPhone(phone.value);
         if (!validPhone()) {
-            message.textContent = 'Введіть номер повністю: +380 XX XXX XX XX.';
+            message.textContent = siteText('phone_full', 'Введіть номер повністю: +380 XX XXX XX XX.');
             phone.focus();
             return;
         }
 
         submit.disabled = true;
-        message.textContent = 'Надсилаємо код...';
+        message.textContent = siteText('sending_code', 'Надсилаємо код...');
         try {
             await post(form.action, { phone: `380${phoneDigits()}` });
             verifyMode = true;
             codeWrap.classList.remove('hidden');
-            submit.textContent = 'Підтвердити';
+            submit.textContent = siteText('confirm', 'Підтвердити');
             resend.classList.remove('hidden');
             code.focus();
-            message.textContent = 'Код надіслано. Введіть 4 цифри з СМС.';
+            message.textContent = siteText('code_sent', 'Код надіслано. Введіть 4 цифри з СМС.');
         } catch (error) {
             message.textContent = error.message;
         } finally {
@@ -542,9 +544,9 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         }
 
         submit.disabled = true;
-        message.textContent = 'Перевіряємо код...';
+        message.textContent = siteText('checking_code', 'Перевіряємо код...');
         if (!validCode()) {
-            message.textContent = 'Введіть 4 цифри з СМС.';
+            message.textContent = siteText('code_digits', 'Введіть 4 цифри з СМС.');
             submit.disabled = false;
             code.focus();
             return;
@@ -599,7 +601,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
 
                 button.textContent = data.favorite ? '♥' : '♡';
                 button.setAttribute('aria-pressed', data.favorite ? 'true' : 'false');
-                button.setAttribute('aria-label', data.favorite ? 'Видалити з обраного' : 'Додати в обране');
+                button.setAttribute('aria-label', data.favorite ? siteText('favorite_remove', 'Видалити з обраного') : siteText('favorite_add', 'Додати в обране'));
                 button.classList.toggle('text-[#B03B45]', data.favorite);
                 button.classList.toggle('text-[#7A4751]', !data.favorite);
                 syncCount(Number(data.count ?? 0));
@@ -688,7 +690,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         titleNode.textContent = title;
         const metaNode = document.createElement('span');
         metaNode.className = 'text-[12px] leading-[18px] text-[#A98088]';
-        metaNode.textContent = meta || 'Нова Пошта';
+        metaNode.textContent = meta || siteText('nova_poshta', 'Нова Пошта');
         button.append(titleNode, metaNode);
         button.addEventListener('click', onClick);
         menu?.appendChild(button);
@@ -698,11 +700,11 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         if (!cityMenu) return;
         cityMenu.innerHTML = '';
         if (!cities.length) {
-            message(cityMenu, 'Місто не знайдено');
+            message(cityMenu, siteText('city_not_found', 'Місто не знайдено'));
             return;
         }
         cities.forEach((city, index) => {
-            const details = city.details || [city.area ? `${city.area} обл.` : '', city.region ? `${city.region} р-н.` : ''].filter(Boolean).join(', ');
+            const details = city.details || [city.area ? `${city.area} ${siteText('oblast', 'обл.')}` : '', city.region ? `${city.region} ${siteText('district', 'р-н.')}` : ''].filter(Boolean).join(', ');
             const name = city.display_name || city.name || city.label || '';
             resultButton(cityMenu, name, details, () => {
                 cityInput.value = city.label || city.name || name;
@@ -721,12 +723,12 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         if (!warehouseMenu) return;
         warehouseMenu.innerHTML = '';
         if (!warehouses.length) {
-            message(warehouseMenu, 'Відділення не знайдено');
+            message(warehouseMenu, siteText('warehouse_not_found', 'Відділення не знайдено'));
             return;
         }
         warehouses.forEach((warehouse, index) => {
             const name = warehouse.label || warehouse.name || '';
-            const meta = warehouse.schedule?.weekday ? `Пн - Пт: ${warehouse.schedule.weekday}` : 'Нова Пошта';
+            const meta = warehouse.schedule?.weekday ? `${siteText('weekdays', 'Пн - Пт')}: ${warehouse.schedule.weekday}` : siteText('nova_poshta', 'Нова Пошта');
             resultButton(warehouseMenu, name, meta, () => {
                 warehouseInput.value = name;
                 warehouseRef.value = warehouse.ref || '';
@@ -745,31 +747,31 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         }
         cityController?.abort();
         cityController = new AbortController();
-        message(cityMenu, 'Завантажуємо міста...');
+        message(cityMenu, siteText('load_cities', 'Завантажуємо міста...'));
         try {
             const response = await fetch(`${cityWrap.dataset.citiesUrl}?${new URLSearchParams({ q: query, limit: '20' })}`, { headers: { Accept: 'application/json' }, signal: cityController.signal });
             const data = response.ok ? await response.json() : {};
             renderCities(Array.isArray(data.cities) ? data.cities : []);
         } catch (error) {
-            if (error.name !== 'AbortError') message(cityMenu, 'Не вдалося завантажити міста');
+            if (error.name !== 'AbortError') message(cityMenu, siteText('load_error', 'Не вдалося завантажити дані'));
         }
     };
 
     const fetchWarehouses = async () => {
         const ref = cityRef.value.trim();
         if (!ref) {
-            message(warehouseMenu, 'Спочатку оберіть місто.');
+        message(warehouseMenu, siteText('choose_city', 'Спочатку оберіть місто.'));
             return;
         }
         warehouseController?.abort();
         warehouseController = new AbortController();
-        message(warehouseMenu, 'Завантажуємо відділення...');
+        message(warehouseMenu, siteText('load_warehouses', 'Завантажуємо відділення...'));
         try {
             const response = await fetch(`${warehouseWrap.dataset.warehousesUrl}?${new URLSearchParams({ city_ref: ref, q: warehouseInput.value.trim(), limit: '30', type: 'warehouse' })}`, { headers: { Accept: 'application/json' }, signal: warehouseController.signal });
             const data = response.ok ? await response.json() : {};
             renderWarehouses(Array.isArray(data.warehouses) ? data.warehouses : []);
         } catch (error) {
-            if (error.name !== 'AbortError') message(warehouseMenu, 'Не вдалося завантажити відділення');
+            if (error.name !== 'AbortError') message(warehouseMenu, siteText('load_error', 'Не вдалося завантажити дані'));
         }
     };
 
@@ -860,7 +862,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
     const request = async (url, payload) => {
         const response = await fetch(url, { method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify(payload) });
         const data = await response.json();
-        if (!response.ok || data.ok === false) throw new Error(data.message || 'Не вдалося виконати запит.');
+        if (!response.ok || data.ok === false) throw new Error(data.message || siteText('request_error', 'Не вдалося виконати запит.'));
         return data;
     };
     const startTimer = (seconds) => {
@@ -869,22 +871,22 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         codeActions?.classList.add('hidden');
         if (codeActions) codeActions.style.display = 'none';
         resend?.classList.add('hidden');
-        timer.textContent = `Надіслати повторно можна через 0:${String(left).padStart(2, '0')}`;
+        timer.textContent = `${siteText('resend_timer', 'Надіслати повторно можна через')} 0:${String(left).padStart(2, '0')}`;
         timerId = setInterval(() => {
             left -= 1;
             if (left <= 0) {
                 clearInterval(timerId);
-                timer.textContent = 'Можна надіслати код повторно.';
+                timer.textContent = siteText('resend_ready', 'Можна надіслати код повторно.');
                 codeActions?.classList.remove('hidden');
                 if (codeActions) codeActions.style.display = 'flex';
                 resend?.classList.remove('hidden');
             } else {
-                timer.textContent = `Надіслати повторно можна через 0:${String(left).padStart(2, '0')}`;
+                timer.textContent = `${siteText('resend_timer', 'Надіслати повторно можна через')} 0:${String(left).padStart(2, '0')}`;
             }
         }, 1000);
     };
     const sendCode = async () => {
-        if (phoneDigits().length !== 9) { message.textContent = 'Введіть номер повністю: +380 XX XXX XX XX.'; phone.focus(); return; }
+        if (phoneDigits().length !== 9) { message.textContent = siteText('phone_full', 'Введіть номер повністю: +380 XX XXX XX XX.'); phone.focus(); return; }
         submit.disabled = true;
         try {
             const data = await request(form.action, { phone: `380${phoneDigits()}` });
@@ -945,7 +947,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
     confirm?.classList.add('hidden');
     form.addEventListener('submit', (event) => { event.preventDefault(); sendCode(); });
     confirm?.addEventListener('click', async () => {
-        if (!/^\d{4}$/.test(codeValue())) { codeMessage.textContent = 'Введіть 4 цифри з СМС.'; return; }
+        if (!/^\d{4}$/.test(codeValue())) { codeMessage.textContent = siteText('code_digits', 'Введіть 4 цифри з СМС.'); return; }
         confirm.disabled = true;
         try {
             const data = await request('/auth/phone-sms/verify', { phone: `380${phoneDigits()}`, code: codeValue() });
@@ -1085,7 +1087,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
 
             if (!response.ok || data.ok === false) {
                 showServerErrors(data.errors || {});
-                throw new Error(data.message || 'Не вдалося зберегти контактні дані.');
+                throw new Error(data.message || siteText('contact_save_error', 'Не вдалося зберегти контактні дані.'));
             }
 
             window.location.assign(data.redirect || '/checkout');
@@ -1140,7 +1142,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
 
     const formatMoney = (value) => `${Math.round(Number(value) || 0).toLocaleString('uk-UA').replace(/\u00a0/g, ' ')} ₴`;
     const deliveryPriceValue = (price) => (hasFreeShipping ? 0 : Number(price) || 0);
-    const deliveryPriceLabel = (price) => (hasFreeShipping ? 'безкоштовно' : `від ${formatMoney(price)}`);
+        const deliveryPriceLabel = (price) => (hasFreeShipping ? siteText('free', 'безкоштовно') : `від ${formatMoney(price)}`);
     const summaryLabelFor = (title) => {
         if (title.startsWith('Нова Пошта')) return 'Нова Пошта';
         if (title.startsWith('Шоу-рум')) return 'Самовивіз';
@@ -1478,7 +1480,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         clearMenu();
 
         if (cities.length === 0) {
-            renderMessage('Місто не знайдено');
+            renderMessage(siteText('city_not_found', 'Місто не знайдено'));
             return;
         }
 
@@ -1499,7 +1501,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             const details = cityDetails(city);
 
             title.textContent = city.display_name || city.name || city.label || '';
-            meta.textContent = details || 'Нова Пошта';
+            meta.textContent = details || siteText('nova_poshta', 'Нова Пошта');
 
             button.addEventListener('click', () => {
                 input.value = city.label || city.name || '';
@@ -1537,7 +1539,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             });
 
             if (!response.ok) {
-                renderMessage('Не вдалося завантажити міста');
+                renderMessage(siteText('load_cities_error', 'Не вдалося завантажити міста'));
                 return;
             }
 
@@ -1545,7 +1547,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             renderCities(Array.isArray(data.cities) ? data.cities : []);
         } catch (error) {
             if (error.name !== 'AbortError') {
-                renderMessage('Не вдалося завантажити міста');
+                renderMessage(siteText('load_cities_error', 'Не вдалося завантажити міста'));
             }
         }
     };
@@ -1639,7 +1641,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         streetMenu.innerHTML = '';
 
         if (streets.length === 0) {
-            renderMessage('Вулиці не знайдено');
+            renderMessage(siteText('street_not_found', 'Вулиці не знайдено'));
             return;
         }
 
@@ -1672,14 +1674,14 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         }
 
         if (!cityRef) {
-            renderMessage('Спочатку оберіть місто.');
+            renderMessage(siteText('choose_city', 'Спочатку оберіть місто.'));
             setMenuOpen(true);
             return;
         }
 
         activeController?.abort();
         activeController = new AbortController();
-        renderMessage('Шукаємо вулиці...');
+        renderMessage(siteText('searching_streets', 'Шукаємо вулиці...'));
         setMenuOpen(true);
 
         try {
@@ -1689,7 +1691,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             });
 
             if (!response.ok) {
-                renderMessage('Не вдалося завантажити вулиці');
+                renderMessage(siteText('load_streets_error', 'Не вдалося завантажити вулиці'));
                 return;
             }
 
@@ -1697,7 +1699,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             renderStreets(Array.isArray(data.streets) ? data.streets : []);
         } catch (error) {
             if (error.name !== 'AbortError') {
-                renderMessage('Не вдалося завантажити вулиці');
+                renderMessage(siteText('load_streets_error', 'Не вдалося завантажити вулиці'));
             }
         }
     };
@@ -1732,8 +1734,8 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         const hasStreet = (streetInput?.value.trim() || '') !== '';
         const hasHouse = (houseInput?.value.trim() || '') !== '';
 
-        setFieldError('street', hasStreet ? '' : 'Вкажіть вулицю.');
-        setFieldError('house', hasHouse ? '' : 'Вкажіть будинок.');
+        setFieldError('street', hasStreet ? '' : siteText('street_required', 'Вкажіть вулицю.'));
+        setFieldError('house', hasHouse ? '' : siteText('house_required', 'Вкажіть будинок.'));
 
         if (!hasStreet || !hasHouse) {
             event.preventDefault();
@@ -1781,18 +1783,18 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
     };
 
     const warehouseType = () => deliveryMethodInput?.value === 'nova_postomat' ? 'postomat' : 'warehouse';
-    const warehouseLabel = () => warehouseType() === 'postomat' ? 'Поштомат' : 'Відділення';
-    const warehousePlaceholder = () => warehouseType() === 'postomat' ? 'Оберіть поштомат' : 'Оберіть відділення';
-    const warehouseEmptyMessage = () => warehouseType() === 'postomat' ? 'Поштомати не знайдено' : 'Відділення не знайдено';
-    const warehouseLoadingMessage = () => warehouseType() === 'postomat' ? 'Завантажуємо поштомати...' : 'Завантажуємо відділення...';
-    const warehouseErrorMessage = () => warehouseType() === 'postomat' ? 'Оберіть поштомат Нової Пошти.' : 'Оберіть відділення Нової Пошти.';
+    const warehouseLabel = () => warehouseType() === 'postomat' ? siteText('postomat', 'Поштомат') : siteText('warehouse', 'Відділення');
+    const warehousePlaceholder = () => warehouseType() === 'postomat' ? siteText('choose_postomat', 'Оберіть поштомат') : siteText('choose_warehouse', 'Оберіть відділення');
+    const warehouseEmptyMessage = () => warehouseType() === 'postomat' ? siteText('postomats_not_found', 'Поштомати не знайдено') : siteText('warehouse_not_found', 'Відділення не знайдено');
+    const warehouseLoadingMessage = () => warehouseType() === 'postomat' ? siteText('load_postomats', 'Завантажуємо поштомати...') : siteText('load_warehouses', 'Завантажуємо відділення...');
+    const warehouseErrorMessage = () => warehouseType() === 'postomat' ? siteText('choose_postomat_error', 'Оберіть поштомат Нової Пошти.') : siteText('choose_warehouse_error', 'Оберіть відділення Нової Пошти.');
 
     const syncWarehouseCopy = () => {
         if (label) label.textContent = warehouseLabel();
         if (searchInput) {
             searchInput.placeholder = warehouseType() === 'postomat'
-                ? 'Введіть адресу або номер поштомата'
-                : 'Введіть адресу або номер відділення';
+                ? siteText('postomat_search', 'Введіть адресу або номер поштомата')
+                : siteText('warehouse_search', 'Введіть адресу або номер відділення');
         }
     };
 
@@ -1800,7 +1802,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         if (refInput) refInput.value = '';
         if (nameInput) nameInput.value = '';
         if (selected) {
-            selected.textContent = 'Оберіть відділення';
+            selected.textContent = siteText('choose_warehouse', 'Оберіть відділення');
             selected.textContent = warehousePlaceholder();
             selected.classList.add('text-[#C9A9B0]');
             selected.classList.remove('text-[#5B2730]');
@@ -1842,7 +1844,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             const title = button.querySelector('span:first-child');
             const meta = button.querySelector('span:last-child');
             title.textContent = warehouse.label || warehouse.name || '';
-            meta.textContent = warehouse.schedule?.weekday ? `Пн - Пт: ${warehouse.schedule.weekday}` : 'Нова Пошта';
+            meta.textContent = warehouse.schedule?.weekday ? `${siteText('weekdays', 'Пн - Пт')}: ${warehouse.schedule.weekday}` : siteText('nova_poshta', 'Нова Пошта');
 
             button.addEventListener('click', () => {
                 if (refInput) refInput.value = warehouse.ref || '';
@@ -1866,7 +1868,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         const query = searchInput?.value.trim() || '';
 
         if (!cityRef) {
-            renderMessage('Спочатку оберіть місто.');
+            renderMessage(siteText('choose_city', 'Спочатку оберіть місто.'));
             setOpen(true);
             return;
         }
@@ -1882,7 +1884,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             });
 
             if (!response.ok) {
-                renderMessage('Не вдалося завантажити відділення');
+                renderMessage(siteText('load_warehouses_error', 'Не вдалося завантажити відділення'));
                 return;
             }
 
@@ -1890,7 +1892,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             renderWarehouses(Array.isArray(data.warehouses) ? data.warehouses : []);
         } catch (error) {
             if (error.name !== 'AbortError') {
-                renderMessage('Не вдалося завантажити відділення');
+                renderMessage(siteText('load_warehouses_error', 'Не вдалося завантажити відділення'));
             }
         }
     };
@@ -2041,11 +2043,11 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
             panel.querySelector('[name="other_recipient_patronymic"]')?.value.trim(),
         ].filter(Boolean);
 
-        summary.textContent = parts.length > 0 ? parts.join(' ') : 'Новий отримувач';
+        summary.textContent = parts.length > 0 ? parts.join(' ') : siteText('new_recipient', 'Новий отримувач');
     };
 
     const validateField = (field) => {
-        const label = field.dataset.otherRecipientLabel || 'Поле';
+        const label = field.dataset.otherRecipientLabel || siteText('field', 'Поле');
         const value = field.value.trim();
 
         if (value === '') {
@@ -2054,7 +2056,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         }
 
         if (field === phoneInput && !phoneIsValid()) {
-            setError(field, 'Введіть коректний мобільний номер.');
+            setError(field, siteText('phone_invalid', 'Введіть коректний мобільний номер.'));
             return false;
         }
 
@@ -2195,7 +2197,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok || data.ok === false) {
-            const message = data.message || Object.values(data.errors || {})?.[0]?.[0] || 'Не вдалося оформити замовлення.';
+            const message = data.message || Object.values(data.errors || {})?.[0]?.[0] || siteText('order_error', 'Не вдалося оформити замовлення.');
             throw new Error(message);
         }
 
@@ -2223,7 +2225,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
         form.querySelector('[data-checkout-submit-error]')?.remove();
         confirmButton.disabled = true;
         confirmButton.classList.add('opacity-70', 'cursor-wait');
-        confirmButton.innerHTML = 'Оформлюємо...';
+        confirmButton.innerHTML = siteText('submitting', 'Оформлюємо...');
 
         try {
             await postJson(form.dataset.deliverySaveUrl, payload());
@@ -2236,7 +2238,7 @@ document.querySelectorAll('[data-cart-remove-form]').forEach((form) => {
 
             window.location.assign('/checkout');
         } catch (error) {
-            setFormError(error.message || 'Не вдалося оформити замовлення.');
+            setFormError(error.message || siteText('order_error', 'Не вдалося оформити замовлення.'));
             confirmButton.disabled = false;
             confirmButton.classList.remove('opacity-70', 'cursor-wait');
             confirmButton.innerHTML = originalHtml;
@@ -2349,9 +2351,9 @@ document.querySelectorAll('[data-review-modal]').forEach((modal) => {
                 return;
             }
 
-            showErrors({ content: ['Не вдалося відправити відгук. Спробуйте пізніше.'] });
+            showErrors({ content: [siteText('review_error', 'Не вдалося відправити відгук. Спробуйте пізніше.')] });
         } catch (error) {
-            showErrors({ content: ['Мережа недоступна. Спробуйте пізніше.'] });
+            showErrors({ content: [siteText('network_error', 'Мережа недоступна. Спробуйте пізніше.')] });
         } finally {
             if (submitButton) {
                 submitButton.disabled = false;
@@ -2696,10 +2698,10 @@ document.querySelectorAll('[data-volume-option]').forEach((button) => {
         cartLabel: card.dataset.cartLabel || '',
     });
     const labelForMissing = (missing) => {
-        if (missing <= 0) return 'У кошик';
-        if (missing === 1) return 'Оберіть ще 1 аромат';
-        if (missing < 5) return `Оберіть ще ${missing} аромати`;
-        return `Оберіть ще ${missing} ароматів`;
+        if (missing <= 0) return siteText('to_cart', 'У кошик');
+        if (missing === 1) return siteText('choose_one_more', 'Оберіть ще 1 аромат');
+        if (missing < 5) return `${siteText('choose_more', 'Оберіть ще')} ${missing} ${siteText('fragrances_few', 'аромати')}`;
+        return `${siteText('choose_more', 'Оберіть ще')} ${missing} ${siteText('fragrances_many', 'ароматів')}`;
     };
     const remove = (productId) => {
         selected = selected.filter((item) => String(item.productId) !== String(productId));
@@ -2789,7 +2791,7 @@ document.querySelectorAll('[data-volume-option]').forEach((button) => {
             const selectedCard = ids.has(String(card.dataset.productId));
             card.dataset.selected = selectedCard ? 'true' : 'false';
             const label = card.querySelector('[data-discovery-toggle-label]');
-            if (label) label.textContent = selectedCard ? '- Прибрати' : '+ Додати';
+            if (label) label.textContent = selectedCard ? `- ${siteText('remove', 'Прибрати')}` : `+ ${siteText('add', 'Додати')}`;
         });
     };
     const render = () => {
@@ -2803,8 +2805,8 @@ document.querySelectorAll('[data-volume-option]').forEach((button) => {
 
         if (title) {
             title.textContent = selected.length >= maxItems
-                ? `Сет зібрано — ${selected.length} із ${maxItems}`
-                : `Обери ароматів · лишилось ${missing}`;
+                ? `${siteText('set_ready', 'Сет зібрано')} — ${selected.length} ${siteText('of', 'із')} ${maxItems}`
+                : `${siteText('choose_fragrances', 'Обери ароматів')} · ${siteText('remaining', 'лишилось')} ${missing}`;
         }
         if (totalNode) totalNode.textContent = money(total);
         if (discountedNode) discountedNode.textContent = money(discounted);
@@ -2851,7 +2853,7 @@ document.querySelectorAll('[data-volume-option]').forEach((button) => {
         if (cartButton.disabled || selected.length !== maxItems) return;
 
         cartButton.disabled = true;
-        cartButton.textContent = 'Додаємо...';
+        cartButton.textContent = siteText('adding', 'Додаємо...');
         const setId = editSetId || `discovery53-${Date.now()}`;
         let lastData = null;
 

@@ -1,21 +1,21 @@
 @extends('front.sevia::layouts.app')
 
-@section('title', 'Парфуми | Sevia')
-@section('meta_description', 'Каталог парфумів Sevia з фільтрами за статтю, ароматом, брендом і ціною.')
+@section('title', st('catalog.meta.title', 'Парфуми | Sevia'))
+@section('meta_description', st('catalog.meta.description', 'Каталог парфумів Sevia з фільтрами за статтю, ароматом, брендом і ціною.'))
 
 @php
     $sortLabels = [
-        'popular' => 'За популярністю',
-        'price_asc' => 'Ціна ↑',
-        'price_desc' => 'Ціна ↓',
-        'new' => 'Новинки',
+        'popular' => st('catalog.sort.popular_short', 'За популярністю'),
+        'price_asc' => st('catalog.sort.price_asc_short', 'Ціна ↑'),
+        'price_desc' => st('catalog.sort.price_desc_short', 'Ціна ↓'),
+        'new' => st('catalog.sort.new_short', 'Новинки'),
     ];
 
     $mobileSortLabels = [
-        'popular' => 'За популярністю',
-        'price_asc' => 'Спочатку дешевші',
-        'price_desc' => 'Спочатку дорожчі',
-        'new' => 'Спершу новинки',
+        'popular' => st('catalog.sort.popular_mobile', 'За популярністю'),
+        'price_asc' => st('catalog.sort.price_asc_mobile', 'Спочатку дешевші'),
+        'price_desc' => st('catalog.sort.price_desc_mobile', 'Спочатку дорожчі'),
+        'new' => st('catalog.sort.new_mobile', 'Спершу новинки'),
     ];
 
     $selectedChips = collect($filterGroups)->flatMap(function ($group) use ($selectedFilters) {
@@ -51,7 +51,7 @@
 @endphp
 
 @section('content')
-    <nav class="flex h-[50px] items-center gap-2.5 px-[68px] pb-2 pt-[22px] text-[13px] leading-5 max-lg:px-6 max-sm:hidden sm:max-lg:h-9 sm:max-lg:px-[49px] sm:max-lg:pb-1.5 sm:max-lg:pt-4 sm:max-lg:text-[9.4px] sm:max-lg:leading-[14px]" aria-label="Breadcrumb">
+    <nav class="flex h-[50px] items-center gap-2.5 px-[68px] pb-2 pt-[22px] text-[13px] leading-5 max-lg:px-6 max-sm:hidden sm:max-lg:h-9 sm:max-lg:px-[49px] sm:max-lg:pb-1.5 sm:max-lg:pt-4 sm:max-lg:text-[9.4px] sm:max-lg:leading-[14px]" aria-label="{{ st('common.navigation', 'Навігація') }}">
         @foreach ($breadcrumbs as $item)
             @if (! $loop->first)
                 <span class="text-[#E8DAD0]">/</span>
@@ -65,15 +65,40 @@
         @endforeach
     </nav>
 
-    <nav class="hidden h-[31px] items-start gap-1.5 px-5 pb-1 pt-3.5 text-[11px] leading-[13px] max-sm:flex" aria-label="Breadcrumb">
-        <a class="text-[#A98088]" href="{{ route('home') }}">Sevia</a>
+    <nav class="hidden h-[31px] items-start gap-1.5 px-5 pb-1 pt-3.5 text-[11px] leading-[13px] max-sm:flex" aria-label="{{ st('common.navigation', 'Навігація') }}">
+        <a class="text-[#A98088]" href="{{ route('home') }}">{{ st('common.brand', 'Sevia') }}</a>
         <span class="text-[#A98088]">/</span>
-        <span class="font-cormorant font-semibold text-[#7A4751]">Парфуми</span>
+        <span class="font-cormorant font-semibold text-[#7A4751]">{{ st('catalog.breadcrumb.current', 'Парфуми') }}</span>
     </nav>
 
-    @if ($productsTotal > 0)
+    @if (! empty($collection))
+        <section class="relative overflow-hidden bg-[#F8EDE7] px-5 py-10 sm:px-[68px] sm:py-[56px]">
+            <img class="pointer-events-none absolute left-[calc(24%+200px)] top-[-15px] h-auto w-[680px] max-w-none opacity-60 max-sm:left-[4%] max-sm:top-0 max-sm:w-[420px]" src="{{ asset('vendor/frontend-sevia/images/collection-hero-decoration.png') }}" alt="" aria-hidden="true">
+            <div class="relative z-[1] mx-auto grid w-full max-w-[1304px] gap-8 sm:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] sm:items-center sm:gap-16">
+                <div>
+                    <p class="m-0 text-[11px] font-medium uppercase tracking-[2.5px] text-[#A98088]">{{ $collection['capsule'] }}</p>
+                    <h1 class="m-0 mt-3 font-cormorant text-[54px] font-medium uppercase leading-none text-[#5B2730] sm:text-[76px]">{{ $collection['title'] }}</h1>
+                    <p class="m-0 mt-5 max-w-[520px] text-[14px] leading-6 text-[#7A4751]">{{ $collection['description'] }}</p>
+                    <dl class="mt-7 flex gap-7 text-[#7A4751]">
+                        <div><dt class="text-[9px] uppercase tracking-[1.8px] text-[#A98088]">Ароматів</dt><dd class="m-0 mt-1 font-cormorant text-[20px]">{{ $productsTotal }}</dd></div>
+                        <div><dt class="text-[9px] uppercase tracking-[1.8px] text-[#A98088]">Об’єм розливу</dt><dd class="m-0 mt-1 font-cormorant text-[20px]">3–30 мл</dd></div>
+                    </dl>
+                </div>
+                <img class="aspect-[0.78] w-full border-[7px] border-white object-cover p-0 shadow-sm" src="{{ asset('vendor/frontend-sevia/images/' . $collection['image']) }}" alt="{{ $collection['title'] }}">
+            </div>
+        </section>
+        <section class="border-b border-[#EFE4D9] bg-white px-5 py-6 sm:px-[68px]">
+            <div class="mx-auto flex w-full max-w-[1304px] flex-wrap gap-x-8 gap-y-3">
+                @foreach ($collection['accords'] as $accord)
+                    <span class="text-[12px] text-[#7A4751]"><b class="block font-cormorant text-[20px] font-medium text-[#5B2730]">{{ $accord }}</b>акорд колекції</span>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if ($productsTotal > 0 && empty($collection))
         <div class="hidden w-full gap-2 overflow-x-auto px-5 pb-3 max-sm:flex">
-            @foreach (['Усі', 'Жіночі', 'Чоловічі', 'Унісекс', 'Sale'] as $tab)
+            @foreach ([st('catalog.tabs.all', 'Усі'), st('catalog.tabs.women', 'Жіночі'), st('catalog.tabs.men', 'Чоловічі'), st('catalog.tabs.unisex', 'Унісекс'), st('catalog.tabs.sale', 'Sale')] as $tab)
                 <a class="inline-flex h-[33px] shrink-0 items-center justify-center rounded-full px-4 text-[12px] font-medium leading-[15px] tracking-[0.3px] {{ $loop->first ? 'bg-[#5B2730] text-white' : 'border border-[#E8DAD0] text-[#7A4751]' }}" href="{{ route('catalog.index') }}">
                     {{ $tab }}
                 </a>
@@ -85,17 +110,21 @@
         <div class="{{ ($saleOnly ?? false) ? 'relative block h-full max-w-none max-sm:h-auto' : 'mx-auto flex w-full max-w-[1304px] items-end justify-between gap-8 max-md:flex-col max-md:items-start' }} sm:max-lg:mx-auto sm:max-lg:flex sm:max-lg:h-[168.8px] sm:max-lg:w-full sm:max-lg:max-w-[700px] sm:max-lg:flex-col sm:max-lg:items-stretch sm:max-lg:gap-[20.16px]">
             <div class="{{ ($saleOnly ?? false) ? 'absolute left-0 top-[44.56px] max-w-[839.05px] max-sm:relative max-sm:left-auto max-sm:top-auto max-sm:max-w-none' : 'max-w-[620px]' }} sm:max-lg:flex sm:max-lg:h-[107.35px] sm:max-lg:w-full sm:max-lg:max-w-[700px] sm:max-lg:flex-col sm:max-lg:items-start sm:max-lg:gap-[9.35px]">
                 @if ($saleOnly ?? false)
-                    <h1 class="m-0 h-[76px] font-cormorant text-[75.6px] font-medium leading-[76px] tracking-[-1.134px] text-[#5B2730] max-sm:h-auto max-sm:text-[36px] max-sm:leading-[44px]">Sale · Знижки</h1>
+                    <h1 class="m-0 h-[76px] font-cormorant text-[75.6px] font-medium leading-[76px] tracking-[-1.134px] text-[#5B2730] max-sm:h-auto max-sm:text-[36px] max-sm:leading-[44px]">{{ st('catalog.sale.title', 'Sale · Знижки') }}</h1>
+                @elseif (! empty($collection))
+                    <h2 class="m-0 font-cormorant text-[36px] font-medium leading-none text-[#5B2730]">{{ $collection['title'] }}</h2>
                 @else
                 <h1 class="m-0 font-cormorant text-[78px] font-medium leading-none text-[#5B2730] max-sm:text-[36px] max-sm:leading-[44px] sm:max-lg:flex sm:max-lg:h-[50px] sm:max-lg:w-full sm:max-lg:items-center sm:max-lg:text-[49.4px] sm:max-lg:leading-[49px] sm:max-lg:tracking-[-0.741px]">
-                    Парфуми
+                    {{ st('catalog.title', 'Парфуми') }}
                 </h1>
                 @endif
                 @if ($saleOnly ?? false)
-                    <p class="m-0 mt-[14px] h-[50px] max-w-[518px] text-[16px] leading-[25px] text-[#7A4751] max-sm:h-auto max-sm:max-w-[530px] max-sm:mt-1.5 max-sm:text-[13px] max-sm:leading-[18px]">Обрані аромати за зниженою ціною, поки є в наявності. Без таймерів і галасу — просто гарна нагода.</p>
+                    <p class="m-0 mt-[14px] h-[50px] max-w-[518px] text-[16px] leading-[25px] text-[#7A4751] max-sm:h-auto max-sm:max-w-[530px] max-sm:mt-1.5 max-sm:text-[13px] max-sm:leading-[18px]">{{ st('catalog.sale.description', 'Обрані аромати за зниженою ціною, поки є в наявності. Без таймерів і галасу — просто гарна нагода.') }}</p>
+                @elseif (! empty($collection))
+                    <p class="m-0 mt-2 max-w-[530px] text-[14px] leading-5 text-[#7A4751]">{{ $productsTotal }} {{ st('catalog.count.positions', 'позицій') }}</p>
                 @else
                 <p class="m-0 mt-4 max-w-[530px] text-[16px] leading-[25px] text-[#7A4751] max-sm:mt-1.5 max-sm:text-[13px] max-sm:leading-[18px] sm:max-lg:mt-0 sm:max-lg:h-12 sm:max-lg:w-[368px] sm:max-lg:max-w-[404.23px] sm:max-lg:text-[15.2px] sm:max-lg:leading-6">
-                    {{ $productsTotal }} ароматів від нішевих і люксових домів<span class="max-sm:hidden">. Спробуй на розлив від 3 мл або забери повним флаконом.</span>
+                    {{ $productsTotal }} {{ st('catalog.description.count_suffix', 'ароматів від нішевих і люксових домів') }}<span class="max-sm:hidden">{{ st('catalog.description.extra', '. Спробуй на розлив від 3 мл або забери повним флаконом.') }}</span>
                 </p>
                 @endif
             </div>
@@ -113,9 +142,9 @@
                     @endif
                 @endforeach
 
-                <span class="sm:max-lg:flex sm:max-lg:h-[18px] sm:max-lg:items-center sm:max-lg:text-[11.4px] sm:max-lg:font-normal sm:max-lg:leading-[18px] sm:max-lg:tracking-[2.508px] sm:max-lg:text-[#8A5D66]">{{ $productsTotal }} позицій</span>
+                <span class="sm:max-lg:flex sm:max-lg:h-[18px] sm:max-lg:items-center sm:max-lg:text-[11.4px] sm:max-lg:font-normal sm:max-lg:leading-[18px] sm:max-lg:tracking-[2.508px] sm:max-lg:text-[#8A5D66]">{{ $productsTotal }} {{ st('catalog.count.positions', 'позицій') }}</span>
                 <label class="flex items-center gap-3 sm:max-lg:h-[40.29px] sm:max-lg:gap-[8.64px]">
-                    <span class="sm:max-lg:flex sm:max-lg:h-[18px] sm:max-lg:items-center sm:max-lg:text-[11.4px] sm:max-lg:font-normal sm:max-lg:leading-[18px] sm:max-lg:tracking-[2.508px] sm:max-lg:text-[#8A5D66]">Сортування</span>
+                    <span class="sm:max-lg:flex sm:max-lg:h-[18px] sm:max-lg:items-center sm:max-lg:text-[11.4px] sm:max-lg:font-normal sm:max-lg:leading-[18px] sm:max-lg:tracking-[2.508px] sm:max-lg:text-[#8A5D66]">{{ st('common.sorting', 'Сортування') }}</span>
                     <select class="h-[42px] border border-[#E8DAD0] bg-[#FDFBF8] px-4 text-[13px] normal-case tracking-normal text-[#5B2730] sm:max-lg:h-[40.29px] sm:max-lg:w-[153.37px] sm:max-lg:px-[13.68px] sm:max-lg:py-[8.64px] sm:max-lg:text-[13.3px] sm:max-lg:font-medium sm:max-lg:leading-[21px] sm:max-lg:tracking-[0.266px]" name="sort" onchange="this.form.submit()">
                         @foreach ($sortLabels as $value => $label)
                             <option value="{{ $value }}" @selected($sort === $value)>{{ $label }}</option>
@@ -131,7 +160,7 @@
             <svg class="h-2 w-[13px]" width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M0.5625 0.5625H9M0.5625 3.84375H11.8125M0.5625 7.125H6.1875" stroke="#5B2730" stroke-width="1.125" stroke-linecap="round"/>
             </svg>
-            <span>Фільтри</span>
+            <span>{{ st('common.filters', 'Фільтри') }}</span>
         </button>
 
         <button class="flex items-center gap-1.5 text-[11.5px] font-medium leading-[14px] tracking-[0.2px] text-[#7A4751]" type="button" data-sort-open>
@@ -143,12 +172,12 @@
     </section>
 
     <div class="fixed inset-0 z-[76] hidden bg-[rgba(42,31,25,0.28)] max-lg:data-[open=true]:flex" hidden data-filter-drawer>
-        <button class="absolute inset-0 h-full w-full" type="button" aria-label="Закрити фільтри" data-filter-close></button>
+        <button class="absolute inset-0 h-full w-full" type="button" aria-label="{{ st('common.close_filters', 'Закрити фільтри') }}" data-filter-close></button>
 
-        <aside class="relative flex h-full w-full max-w-[393px] flex-col bg-white" aria-label="Фільтри каталогу">
+        <aside class="relative flex h-full w-full max-w-[393px] flex-col bg-white" aria-label="{{ st('catalog.filters.drawer_label', 'Фільтри каталогу') }}">
             <div class="flex h-[61px] w-full items-center justify-between border-b border-[#E8DAD0] bg-white px-5 py-4">
-                <h2 class="m-0 font-cormorant text-[24px] font-medium leading-[29px] text-[#5B2730]">Фільтри</h2>
-                <button class="text-[16px] leading-[19px] text-[#7A4751]" type="button" aria-label="Закрити фільтри" data-filter-close>×</button>
+                <h2 class="m-0 font-cormorant text-[24px] font-medium leading-[29px] text-[#5B2730]">{{ st('common.filters', 'Фільтри') }}</h2>
+                <button class="text-[16px] leading-[19px] text-[#7A4751]" type="button" aria-label="{{ st('common.close_filters', 'Закрити фільтри') }}" data-filter-close>×</button>
             </div>
 
             <form class="flex min-h-0 flex-1 flex-col" method="GET" action="{{ url()->current() }}" data-filter-count-form data-filter-count-url="{{ route('catalog.count') }}">
@@ -176,7 +205,7 @@
                             @elseif (($group['role'] ?? null) === 'brand')
                                 <div class="mb-2.5 flex h-[37px] w-full items-center gap-2 border border-[#E8DAD0] px-3">
                                     <img class="size-[15px]" src="{{ asset('vendor/frontend-sevia/images/search.svg') }}" alt="">
-                                    <input class="min-w-0 flex-1 bg-transparent text-[12.5px] leading-[15px] text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" type="search" placeholder="Пошук бренду..." data-brand-search>
+                                    <input class="min-w-0 flex-1 bg-transparent text-[12.5px] leading-[15px] text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" type="search" placeholder="{{ st('common.search_brand', 'Пошук бренду...') }}" data-brand-search>
                                 </div>
 
                                 <div class="grid gap-1" data-brand-list>
@@ -202,12 +231,12 @@
                     @endforeach
 
                     <fieldset class="w-full" data-price-filter data-price-min="{{ $priceMin }}" data-price-max="{{ $priceMax }}">
-                        <legend class="mb-3 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">Ціна, ₴</legend>
+                        <legend class="mb-3 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ st('common.price_uah', 'Ціна, ₴') }}</legend>
                         <div class="sevia-price-range relative h-5 w-full">
                             <span class="absolute left-2 right-2 top-[9px] h-0.5 rounded bg-[#E8DAD0]"></span>
                             <span class="absolute top-[9px] h-0.5 rounded bg-[#5B2730]" data-price-range-fill></span>
-                            <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMin }}" step="1" aria-label="Мінімальна ціна" data-price-min-range>
-                            <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMax }}" step="1" aria-label="Максимальна ціна" data-price-max-range>
+                            <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMin }}" step="1" aria-label="{{ st('common.min_price', 'Мінімальна ціна') }}" data-price-min-range>
+                            <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMax }}" step="1" aria-label="{{ st('common.max_price', 'Максимальна ціна') }}" data-price-max-range>
                         </div>
                         <div class="mt-2 flex justify-between text-[11.5px] font-medium leading-[14px] text-[#7A4751]">
                             <span>{{ $currentPriceMin }} ₴</span>
@@ -215,11 +244,11 @@
                         </div>
                         <div class="mt-3 flex items-center gap-3">
                             <label class="flex h-10 min-w-0 flex-1 items-center justify-between border border-[#E8DAD0] px-3.5">
-                                <span class="text-[13px] leading-4 text-[#C9A9B0]">Від</span>
+                                <span class="text-[13px] leading-4 text-[#C9A9B0]">{{ st('common.from', 'Від') }}</span>
                                 <input class="min-w-0 flex-1 bg-transparent text-right text-[13px] leading-4 text-[#5B2730] outline-none" type="number" min="{{ $priceMin }}" max="{{ $priceMax }}" name="price_min" value="{{ $currentPriceMin }}" data-price-min-input>
                             </label>
                             <label class="flex h-10 min-w-0 flex-1 items-center justify-between border border-[#E8DAD0] px-3.5">
-                                <span class="text-[13px] leading-4 text-[#C9A9B0]">До</span>
+                                <span class="text-[13px] leading-4 text-[#C9A9B0]">{{ st('common.to', 'До') }}</span>
                                 <input class="min-w-0 flex-1 bg-transparent text-right text-[13px] leading-4 text-[#5B2730] outline-none" type="number" min="{{ $priceMin }}" max="{{ $priceMax }}" name="price_max" value="{{ $currentPriceMax }}" data-price-max-input>
                             </label>
                         </div>
@@ -227,21 +256,21 @@
                 </div>
 
                 <div class="flex h-[79px] items-center gap-3.5 border-t border-[#E8DAD0] bg-white px-5 pb-5 pt-3.5">
-                    <a class="inline-flex h-[43px] items-center px-1 text-[12px] font-medium uppercase leading-[15px] tracking-[1px] text-[#7A4751]" href="{{ url()->current() }}">Скинути</a>
-                    <button class="inline-flex h-[45px] flex-1 items-center justify-center bg-[#5B2730] text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-white" type="submit">Показати <span class="ml-1" data-filter-count>{{ $productsTotal }}</span></button>
+                    <a class="inline-flex h-[43px] items-center px-1 text-[12px] font-medium uppercase leading-[15px] tracking-[1px] text-[#7A4751]" href="{{ url()->current() }}">{{ st('common.reset', 'Скинути') }}</a>
+                    <button class="inline-flex h-[45px] flex-1 items-center justify-center bg-[#5B2730] text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-white" type="submit">{{ st('common.show', 'Показати') }} <span class="ml-1" data-filter-count>{{ $productsTotal }}</span></button>
                 </div>
             </form>
         </aside>
     </div>
 
     <div class="fixed inset-0 z-[75] hidden items-center justify-center bg-[rgba(42,31,25,0.28)] px-5 max-sm:data-[open=true]:flex" hidden data-sort-sheet>
-        <button class="absolute inset-0 h-full w-full" type="button" aria-label="Закрити сортування" data-sort-close></button>
-        <section class="relative flex w-full max-w-[353px] flex-col items-start rounded-[18px] bg-white pb-7 shadow-[0_24px_80px_-40px_rgba(42,31,25,0.7)]" aria-label="Сортування">
+        <button class="absolute inset-0 h-full w-full" type="button" aria-label="{{ st('common.close_sorting', 'Закрити сортування') }}" data-sort-close></button>
+        <section class="relative flex w-full max-w-[353px] flex-col items-start rounded-[18px] bg-white pb-7 shadow-[0_24px_80px_-40px_rgba(42,31,25,0.7)]" aria-label="{{ st('common.sorting', 'Сортування') }}">
             <div class="flex h-5 w-full justify-center px-0 pb-1.5 pt-2.5">
                 <span class="h-1 w-10 rounded-sm bg-[#C9A9B0]"></span>
             </div>
             <div class="flex h-[50px] w-full items-start px-5 pb-3.5 pt-2">
-                <h2 class="m-0 font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Сортування</h2>
+                <h2 class="m-0 font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">{{ st('common.sorting', 'Сортування') }}</h2>
             </div>
             @foreach ($mobileSortLabels as $value => $label)
                 <a class="flex h-11 w-full items-center gap-3 border-t border-[#E8DAD0] px-5 py-[13px]" href="{{ request()->fullUrlWithQuery(['sort' => $value, 'page' => null]) }}" data-sort-option data-selected="{{ $sort === $value ? 'true' : 'false' }}">
@@ -256,28 +285,28 @@
 
     <section class="border-b border-[#EFE4D9] {{ ($saleOnly ?? false) ? 'bg-[#F3E3DF]' : 'bg-[#FDFBF8]' }} px-[68px] py-[18px] max-lg:px-6 max-sm:border-0 max-sm:bg-white max-sm:px-5 max-sm:pb-2 max-sm:pt-3 sm:max-lg:px-[49px] sm:max-lg:pb-[13.68px] sm:max-lg:pt-[12.96px]">
         <div class="mx-auto flex min-h-[44px] w-full max-w-[1304px] items-center gap-4 text-[11px] uppercase tracking-[2px] text-[#A98088] max-sm:min-h-[25px] max-sm:justify-between max-sm:gap-3 max-sm:tracking-normal sm:max-lg:min-h-[34.52px] sm:max-lg:max-w-[700px] sm:max-lg:flex-wrap sm:max-lg:content-center sm:max-lg:gap-x-[12.96px] sm:max-lg:gap-y-0 sm:max-lg:text-[11.4px] sm:max-lg:leading-[18px] sm:max-lg:tracking-[2.508px] sm:max-lg:text-[#8A5D66]">
-            <span class="max-sm:hidden">Обрано:</span>
+            <span class="max-sm:hidden">{{ st('common.selected', 'Обрано:') }}</span>
 
             @if ($saleOnly ?? false)
                 <a class="inline-flex h-[38px] items-center gap-2 border border-[#E8DAD0] bg-[#F8EDE7] px-3.5 text-[13px] font-medium normal-case tracking-normal text-[#5B2730] max-sm:h-[25px] max-sm:px-2.5 max-sm:text-[10.5px]" href="{{ route('sale.index') }}">
-                    Sale <span class="text-[14px] font-medium leading-[22px] text-[#A98088]">{{ $productsTotal }}</span>
+                    {{ st('catalog.tabs.sale', 'Sale') }} <span class="text-[14px] font-medium leading-[22px] text-[#A98088]">{{ $productsTotal }}</span>
                 </a>
-                <a class="ml-1 text-[12px] font-normal uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] max-sm:text-[10px] max-sm:tracking-[1px]" href="{{ route('sale.index') }}">Скинути все</a>
+                <a class="ml-1 text-[12px] font-normal uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] max-sm:text-[10px] max-sm:tracking-[1px]" href="{{ route('sale.index') }}">{{ st('common.reset_all', 'Скинути все') }}</a>
             @else
             @forelse ($selectedChips as $chip)
                 <a class="inline-flex h-8 items-center border border-[#E8DAD0] bg-[#F8EDE7] px-3 text-[12px] normal-case tracking-normal text-[#5B2730] max-sm:h-[25px] max-sm:border-0 max-sm:px-2.5 max-sm:text-[10.5px] max-sm:uppercase max-sm:leading-[13px] max-sm:tracking-[0.5px] max-sm:text-[#7A4751] sm:max-lg:h-[34.52px] sm:max-lg:px-[10.8px] sm:max-lg:py-[5.76px] sm:max-lg:text-[12.4px] sm:max-lg:font-medium sm:max-lg:leading-[19px]">
                     {{ $chip['title'] }} <span class="ml-1 text-[#A98088]">×</span>
                 </a>
             @empty
-                <span class="normal-case tracking-normal text-[#7A4751] max-sm:hidden">Фільтри не вибрані</span>
+                <span class="normal-case tracking-normal text-[#7A4751] max-sm:hidden">{{ st('catalog.selected.empty', 'Фільтри не вибрані') }}</span>
             @endforelse
 
             @if ($selectedChips->isNotEmpty() || request()->hasAny(['price_min', 'price_max']))
-                <a class="ml-1 text-[#5B2730] underline underline-offset-4 max-sm:hidden" href="{{ url()->current() }}">Скинути все</a>
+                <a class="ml-1 text-[#5B2730] underline underline-offset-4 max-sm:hidden" href="{{ url()->current() }}">{{ st('common.reset_all', 'Скинути все') }}</a>
             @endif
             @endif
 
-            <span class="ml-auto hidden text-[11px] normal-case leading-[13px] tracking-normal text-[#A98088] max-sm:block">{{ $productsTotal }} позицій</span>
+            <span class="ml-auto hidden text-[11px] normal-case leading-[13px] tracking-normal text-[#A98088] max-sm:block">{{ $productsTotal }} {{ st('catalog.count.positions', 'позицій') }}</span>
         </div>
     </section>
 
@@ -292,7 +321,7 @@
                             <legend class="mb-4 pb-3 text-[11px] font-semibold uppercase leading-[17px] tracking-[3.08px] text-[#5B2730]">{{ $group['title'] }}</legend>
 
                             @if (($group['role'] ?? null) === 'brand')
-                                <input class="mb-4 h-[38px] w-full border border-[#E8DAD0] bg-[#FDFBF8] px-3 text-[13px] leading-4 text-[#5B2730] outline-none placeholder:text-[#A98088]" type="search" placeholder="Пошук бренду..." data-brand-search>
+                                <input class="mb-4 h-[38px] w-full border border-[#E8DAD0] bg-[#FDFBF8] px-3 text-[13px] leading-4 text-[#5B2730] outline-none placeholder:text-[#A98088]" type="search" placeholder="{{ st('common.search_brand', 'Пошук бренду...') }}" data-brand-search>
                             @endif
 
                             <div class="grid gap-2.5" @if (($group['role'] ?? null) === 'brand') data-brand-list @endif>
@@ -308,23 +337,23 @@
                             </div>
 
                             @if (($group['role'] ?? null) === 'brand' && collect($group['values'])->count() > 5)
-                                <button class="mt-2.5 text-[12px] uppercase leading-[19px] tracking-[2.16px] text-[#5B2730]" type="button" data-brand-toggle data-expanded-label="Згорнути" data-collapsed-label="Показати всі ({{ collect($group['values'])->count() }}) +">Показати всі ({{ collect($group['values'])->count() }}) +</button>
+                                <button class="mt-2.5 text-[12px] uppercase leading-[19px] tracking-[2.16px] text-[#5B2730]" type="button" data-brand-toggle data-expanded-label="{{ st('common.collapse', 'Згорнути') }}" data-collapsed-label="{{ st('common.show_all', 'Показати всі') }} ({{ collect($group['values'])->count() }}) +">{{ st('common.show_all', 'Показати всі') }} ({{ collect($group['values'])->count() }}) +</button>
                             @endif
                         </fieldset>
                     @endforeach
 
                     <fieldset class="w-full" data-price-filter data-price-min="{{ $priceMin }}" data-price-max="{{ $priceMax }}">
-                        <legend class="mb-4 pb-3 text-[11px] font-semibold uppercase leading-[17px] tracking-[3.08px] text-[#5B2730]">Ціна</legend>
+                        <legend class="mb-4 pb-3 text-[11px] font-semibold uppercase leading-[17px] tracking-[3.08px] text-[#5B2730]">{{ st('common.price', 'Ціна') }}</legend>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="grid h-[65px] gap-1 border border-[#E8DAD0] bg-[#FDFBF8] px-3 py-2.5">
-                                <span class="text-[11px] uppercase leading-[17px] tracking-[2.42px] text-[#A98088]">від</span>
+                                <span class="text-[11px] uppercase leading-[17px] tracking-[2.42px] text-[#A98088]">{{ st('common.from_lower', 'від') }}</span>
                                 <span class="flex items-center gap-1 text-[14px] font-medium leading-[22px] text-[#5B2730]">
                                     <input class="w-full bg-transparent outline-none" type="number" min="{{ $priceMin }}" max="{{ $priceMax }}" name="price_min" value="{{ $currentPriceMin }}" data-price-min-input>
                                     <span>₴</span>
                                 </span>
                             </label>
                             <label class="grid h-[65px] gap-1 border border-[#E8DAD0] bg-[#FDFBF8] px-3 py-2.5">
-                                <span class="text-[11px] uppercase leading-[17px] tracking-[2.42px] text-[#A98088]">до</span>
+                                <span class="text-[11px] uppercase leading-[17px] tracking-[2.42px] text-[#A98088]">{{ st('common.to_lower', 'до') }}</span>
                                 <span class="flex items-center gap-1 text-[14px] font-medium leading-[22px] text-[#5B2730]">
                                     <input class="w-full bg-transparent outline-none" type="number" min="{{ $priceMin }}" max="{{ $priceMax }}" name="price_max" value="{{ $currentPriceMax }}" data-price-max-input>
                                     <span>₴</span>
@@ -334,20 +363,20 @@
                         <div class="sevia-price-range relative mt-5 h-[30px] w-full">
                             <span class="absolute left-0 right-0 top-[15px] h-0.5 bg-[#E8DAD0]"></span>
                             <span class="absolute top-[15px] h-0.5 bg-[#5B2730]" data-price-range-fill></span>
-                            <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMin }}" step="1" aria-label="Мінімальна ціна" data-price-min-range>
-                            <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMax }}" step="1" aria-label="Максимальна ціна" data-price-max-range>
+                            <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMin }}" step="1" aria-label="{{ st('common.min_price', 'Мінімальна ціна') }}" data-price-min-range>
+                            <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMax }}" step="1" aria-label="{{ st('common.max_price', 'Максимальна ціна') }}" data-price-max-range>
                         </div>
                     </fieldset>
 
-                    <a class="inline-flex h-[34px] items-center text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730]" href="{{ url()->current() }}">Скинути фільтри</a>
+                    <a class="inline-flex h-[34px] items-center text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730]" href="{{ url()->current() }}">{{ st('common.reset_filters', 'Скинути фільтри') }}</a>
                 </form>
             </aside>
 
             <div>
                 @if ($productsTotal > 0)
-                    <aside class="hidden w-full flex-col items-start gap-[13px] pb-[18px] sm:max-lg:flex" aria-label="Фільтри каталогу">
+                    <aside class="hidden w-full flex-col items-start gap-[13px] pb-[18px] sm:max-lg:flex" aria-label="{{ st('catalog.filters.drawer_label', 'Фільтри каталогу') }}">
                         <button class="inline-flex h-[37px] items-center gap-[6px] border border-[#5B2730] bg-[#FDFBF8] px-[13px] text-[12.4px] font-medium uppercase leading-[19px] tracking-[1.48px] text-[#5B2730]" type="button" data-filter-open>
-                            <span>Фільтри</span>
+                            <span>{{ st('common.filters', 'Фільтри') }}</span>
                             @if ($selectedChips->isNotEmpty())
                                 <span class="inline-flex size-4 items-center justify-center rounded-full bg-[#5B2730] pb-px text-[10.5px] leading-[13px] tracking-[1.48px] text-[#FDFBF8]">{{ $selectedChips->count() }}</span>
                             @endif
@@ -366,7 +395,7 @@
                                 @endif
                             @endforeach
 
-                            <h4 class="m-0 h-[25px] text-[10.5px] font-semibold uppercase leading-4 tracking-[2.93px] text-[#5B2730]">Обʼєм розпиву</h4>
+                            <h4 class="m-0 h-[25px] text-[10.5px] font-semibold uppercase leading-4 tracking-[2.93px] text-[#5B2730]">{{ st('catalog.filters.decant_volume', 'Обʼєм розпиву') }}</h4>
                             <div class="grid w-full grid-cols-6 gap-[4px]">
                                 @foreach ($volumeAmounts as $amount)
                                     <button class="h-[36px] border px-2 text-center text-[12.4px] font-medium leading-[19px] tracking-[0.49px] {{ $selectedVolume === $amount ? 'border-[#5B2730] bg-[#5B2730] text-[#FDFBF8]' : 'border-[#E8DAD0] bg-[#FDFBF8] text-[#7A4751]' }}" type="submit" name="volume" value="{{ $amount }}">{{ $amount }} мл</button>
@@ -376,7 +405,7 @@
 
                         <div class="flex h-[33px] w-full items-center gap-[7px] border-t border-dashed border-[#EFE4D9] pt-[11px]">
                             <span class="block size-[10px] border border-[#E8DAD0] bg-[#FDFBF8]" aria-hidden="true"></span>
-                            <span class="text-[13.3px] leading-[21px] text-[#7A4751]">Повний флакон 50-100 мл</span>
+                            <span class="text-[13.3px] leading-[21px] text-[#7A4751]">{{ st('catalog.filters.full_bottle', 'Повний флакон 50-100 мл') }}</span>
                             <span class="ml-auto text-[11.4px] leading-[18px] tracking-[0.46px] text-[#8A5D66]">41</span>
                         </div>
                     </aside>
@@ -392,11 +421,11 @@
                             </svg>
                         </div>
 
-                        <h2 class="m-0 text-center font-cormorant text-[25px] font-medium leading-[30px] text-[#5B2730]">Нічого не знайдено</h2>
+                        <h2 class="m-0 text-center font-cormorant text-[25px] font-medium leading-[30px] text-[#5B2730]">{{ st('catalog.empty.mobile_title', 'Нічого не знайдено') }}</h2>
                         <p class="m-0 w-full max-w-[321px] text-center text-[13px] leading-[20px] text-[#7A4751]">
-                            За обраними фільтрами ароматів немає. Спробуй змінити параметри або скинути фільтри.
+                            {{ st('catalog.empty.mobile_text', 'За обраними фільтрами ароматів немає. Спробуй змінити параметри або скинути фільтри.') }}
                         </p>
-                        <a class="inline-flex h-[43px] items-center justify-center border border-[#5B2730] px-[26px] text-[12px] font-medium uppercase leading-[15px] tracking-[1.4px] text-[#5B2730]" href="{{ url()->current() }}">Скинути фільтри</a>
+                        <a class="inline-flex h-[43px] items-center justify-center border border-[#5B2730] px-[26px] text-[12px] font-medium uppercase leading-[15px] tracking-[1.4px] text-[#5B2730]" href="{{ url()->current() }}">{{ st('common.reset_filters', 'Скинути фільтри') }}</a>
                     </section>
 
                     <section class="box-border flex h-[603px] w-full flex-col items-center border border-[#EFE4D9] bg-white px-[72px] py-24 text-center max-md:h-auto max-md:min-h-[560px] max-md:px-6 max-sm:hidden">
@@ -406,28 +435,28 @@
                             </svg>
                         </div>
                         <div class="flex h-[31px] w-[170px] flex-col items-start pb-3.5">
-                            <p class="m-0 flex h-[17px] w-[170px] items-center justify-center text-center text-[11px] font-medium uppercase leading-[17px] tracking-[3.08px] text-[#A98088]">Нічого не знайдено</p>
+                            <p class="m-0 flex h-[17px] w-[170px] items-center justify-center text-center text-[11px] font-medium uppercase leading-[17px] tracking-[3.08px] text-[#A98088]">{{ st('catalog.empty.eyebrow', 'Нічого не знайдено') }}</p>
                         </div>
                         <div class="flex h-[122px] w-full max-w-[524px] flex-col items-start pb-[18px]">
                             <h2 class="m-0 flex h-[104px] w-full items-center justify-center text-center font-cormorant text-[46px] font-medium leading-[52px] tracking-normal text-[#5B2730] max-sm:text-[34px] max-sm:leading-10">
-                                За вибраними фільтрами поки нічого немає.
+                                {{ st('catalog.empty.title', 'За вибраними фільтрами поки нічого немає.') }}
                             </h2>
                         </div>
                         <div class="flex h-[74px] w-full max-w-[460px] flex-col items-start pb-[26px]">
                             <p class="m-0 flex h-12 w-full items-center justify-center px-[31px] text-center font-sans text-[15px] font-normal leading-6 tracking-normal text-[#A98088] max-sm:px-0">
-                                Можливо, варто прибрати частину фільтрів або перевірити написання. Ось що шукають найчастіше:
+                                {{ st('catalog.empty.text', 'Можливо, варто прибрати частину фільтрів або перевірити написання. Ось що шукають найчастіше:') }}
                             </p>
                         </div>
                         <div class="flex h-[70px] w-full max-w-[479px] flex-col items-start pb-[34px]">
                             <div class="flex h-[36px] w-full flex-wrap justify-center gap-x-2 gap-y-2 overflow-hidden">
-                                @foreach (['Жіночі', 'Унісекс', 'Деревні', 'Свіжі', 'Musk'] as $hint)
+                                @foreach ([st('catalog.empty.hint_women', 'Жіночі'), st('catalog.empty.hint_unisex', 'Унісекс'), st('catalog.empty.hint_woody', 'Деревні'), st('catalog.empty.hint_fresh', 'Свіжі'), st('catalog.empty.hint_musk', 'Musk')] as $hint)
                                     <a class="inline-flex h-[36px] items-center justify-center border border-[#E8DAD0] bg-[#F8EDE7] px-3.5 text-[13px] font-medium leading-5 text-[#5B2730]" href="{{ route('catalog.index') }}">{{ $hint }}</a>
                                 @endforeach
                             </div>
                         </div>
                         <div class="flex h-[50px] w-full max-w-[418px] flex-wrap justify-center gap-x-3.5 gap-y-3 overflow-hidden">
-                            <a class="inline-flex h-[50px] items-center justify-center bg-[#5B2730] px-7 text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#FDFBF8]" href="{{ url()->current() }}">Скинути фільтри</a>
-                            <a class="inline-flex h-[50px] items-center justify-center px-0.5 text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730]" href="{{ route('catalog.index') }}">До всіх парфумів</a>
+                            <a class="inline-flex h-[50px] items-center justify-center bg-[#5B2730] px-7 text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#FDFBF8]" href="{{ url()->current() }}">{{ st('common.reset_filters', 'Скинути фільтри') }}</a>
+                            <a class="inline-flex h-[50px] items-center justify-center px-0.5 text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730]" href="{{ route('catalog.index') }}">{{ st('catalog.empty.all_perfumes', 'До всіх парфумів') }}</a>
                         </div>
                     </section>
                 @else
@@ -446,7 +475,7 @@
                                     @if (($saleOnly ?? false) || $product['badge'])
                                         <span class="absolute left-0 top-0 border border-[rgba(91,39,48,0.16)] bg-[#F3E3DF] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[1.3px] text-[#5B2730] max-sm:left-2 max-sm:top-2 max-sm:border-0 max-sm:bg-[#B08C57] max-sm:px-[7px] max-sm:py-1 max-sm:text-[8px] max-sm:leading-[10px] max-sm:tracking-[0.4px] max-sm:text-white">{{ ($saleOnly ?? false) ? '-'.$product['discount_percent'].'%' : $product['badge'] }}</span>
                                     @endif
-                                    <button class="absolute right-0 top-0 grid size-9 place-items-center rounded-full border border-[#E8DAD0] bg-white text-[#7A4751] max-sm:right-2 max-sm:top-2 max-sm:size-7 max-sm:text-[13px] max-sm:text-[#5B2730]" type="button" aria-label="Додати в обране" aria-pressed="{{ in_array((int) $product['id'], $favoriteIds ?? [], true) ? 'true' : 'false' }}" data-favorite-toggle data-favorite-url="{{ route('favorites.toggle') }}" data-product-id="{{ $product['id'] }}">{{ in_array((int) $product['id'], $favoriteIds ?? [], true) ? '♥' : '♡' }}</button>
+                                    <button class="absolute right-0 top-0 grid size-9 place-items-center rounded-full border border-[#E8DAD0] bg-white text-[#7A4751] max-sm:right-2 max-sm:top-2 max-sm:size-7 max-sm:text-[13px] max-sm:text-[#5B2730]" type="button" aria-label="{{ st('common.add_to_favorites', 'Додати в обране') }}" aria-pressed="{{ in_array((int) $product['id'], $favoriteIds ?? [], true) ? 'true' : 'false' }}" data-favorite-toggle data-favorite-url="{{ route('favorites.toggle') }}" data-product-id="{{ $product['id'] }}">{{ in_array((int) $product['id'], $favoriteIds ?? [], true) ? '♥' : '♡' }}</button>
                                     <img class="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-[1.03]" src="{{ $product['image'] }}" alt="{{ $product['brand'] }} {{ $product['name'] }}">
                                 </a>
 
@@ -455,12 +484,12 @@
                                     <p class="m-0 mt-1 text-[12px] font-semibold uppercase leading-[19px] tracking-[0.5px] text-[#5B2730] max-sm:mt-0 max-sm:text-[9px] max-sm:font-medium max-sm:leading-[11px] max-sm:tracking-[0.6px] max-sm:text-[#7A4751]">{{ $product['brand'] }}</p>
                                     <h2 class="m-0 min-h-[46px] font-cormorant text-[21px] font-medium leading-[24px] text-[#5B2730] max-sm:min-h-[40px] max-sm:text-[17px] max-sm:leading-5 sm:max-lg:min-h-[34px] sm:max-lg:text-[15.1px] sm:max-lg:leading-[17px]">{{ $product['name'] }}</h2>
                                     @if (! empty($product['sku']))
-                                        <p class="m-0 -mt-1 text-[10px] uppercase leading-4 tracking-[1.4px] text-[#A98088] max-sm:hidden">Арт. {{ $product['sku'] }}</p>
+                                        <p class="m-0 -mt-1 text-[10px] uppercase leading-4 tracking-[1.4px] text-[#A98088] max-sm:hidden">{{ st('common.article', 'Арт.') }} {{ $product['sku'] }}</p>
                                     @endif
                                      <p class="m-0 min-h-[38px] text-[12px] font-light leading-[18px] text-[#7A4751] max-sm:min-h-0 max-sm:truncate max-sm:text-[9px] max-sm:font-normal max-sm:leading-[11px] max-sm:text-[#A98088]">{{ $product['notes'] }}</p>
 
                                     @if ($defaultVolume)
-                                        <div class="mt-3 flex flex-wrap gap-1 max-sm:mt-2 max-sm:grid max-sm:w-full max-sm:grid-cols-3 max-sm:gap-1" role="group" aria-label="Volume">
+                                        <div class="mt-3 flex flex-wrap gap-1 max-sm:mt-2 max-sm:grid max-sm:w-full max-sm:grid-cols-3 max-sm:gap-1" role="group" aria-label="{{ st('common.volume', 'Обʼєм') }}">
                                             @foreach ($volumes as $volume)
                                                 @php
                                                     $volumeAmount = (int) preg_replace('/\D+/', '', (string) ($volume['label'] ?? ''));
@@ -480,11 +509,11 @@
                                             <span class="text-[10.5px] leading-4 text-[#A98088]" data-product-volume-label>/ {{ $defaultVolume['label'] ?? $product['unit'] }}</span>
                                         </p>
                                         <div class="hidden items-center justify-center gap-2 rounded-full border border-[#5B2730] bg-[#FDFBF8] px-3 h-[34px]" data-cart-quantity-controls>
-                                            <button class="text-[19px] leading-[19px] text-[#959595]" type="button" aria-label="Decrease quantity" data-cart-quantity-minus>-</button>
+                                            <button class="text-[19px] leading-[19px] text-[#959595]" type="button" aria-label="{{ st('common.decrease_quantity', 'Зменшити кількість') }}" data-cart-quantity-minus>-</button>
                                             <span class="min-w-[7px] text-center text-[19px] leading-[19px] text-[#5B2730]" data-cart-quantity>0</span>
-                                            <button class="text-[19px] leading-[19px] text-[#5B2730]" type="button" aria-label="Increase quantity" data-cart-quantity-plus>+</button>
+                                            <button class="text-[19px] leading-[19px] text-[#5B2730]" type="button" aria-label="{{ st('common.increase_quantity', 'Збільшити кількість') }}" data-cart-quantity-plus>+</button>
                                         </div>
-                                        <button class="grid size-[34px] place-items-center rounded-full border border-[#A85D66] text-[20px] leading-none text-[#A85D66] max-sm:size-[34px] max-sm:border-[#5B2730] max-sm:text-[20px] max-sm:text-[#5B2730]" type="button" aria-label="Add to cart" data-cart-add data-cart-add-url="{{ route('cart.add') }}" data-product-id="{{ $defaultVolume['id'] ?? $product['cart_product_id'] }}" data-product-price="{{ $defaultVolume['price'] ?? $product['cart_price'] }}" data-volume-label="{{ $defaultVolume['label'] ?? $product['unit'] }}" data-cart-product-label="{{ $product['brand'] }} {{ $product['name'] }} / {{ $defaultVolume['label'] ?? $product['unit'] }}">+</button>
+                                        <button class="grid size-[34px] place-items-center rounded-full border border-[#A85D66] text-[20px] leading-none text-[#A85D66] max-sm:size-[34px] max-sm:border-[#5B2730] max-sm:text-[20px] max-sm:text-[#5B2730]" type="button" aria-label="{{ st('common.add_to_cart', 'Додати в кошик') }}" data-cart-add data-cart-add-url="{{ route('cart.add') }}" data-product-id="{{ $defaultVolume['id'] ?? $product['cart_product_id'] }}" data-product-price="{{ $defaultVolume['price'] ?? $product['cart_price'] }}" data-volume-label="{{ $defaultVolume['label'] ?? $product['unit'] }}" data-cart-product-label="{{ $product['brand'] }} {{ $product['name'] }} / {{ $defaultVolume['label'] ?? $product['unit'] }}">+</button>
                                     </div>
                                 </div>
                             </article>
@@ -493,8 +522,8 @@
                 @endif
 
                 @if ($productsTotal > 0 && $lastPage > 1)
-                    <nav class="mt-[72px] flex items-center justify-between border-t border-[#EFE4D9] pt-9 text-[12px] font-semibold uppercase tracking-[2px] text-[#7A4751] max-sm:mt-2 max-sm:h-[78px] max-sm:justify-center max-sm:gap-1.5 max-sm:border-0 max-sm:pb-9 max-sm:pt-2 max-sm:text-[13px] max-sm:font-normal max-sm:normal-case max-sm:tracking-normal" aria-label="Pagination">
-                        <a class="{{ $page <= 1 ? 'pointer-events-none opacity-40' : '' }} max-sm:px-1 max-sm:text-[#A98088]" href="{{ $pageUrl(max(1, $page - 1)) }}">← <span class="max-sm:hidden">Назад</span></a>
+                    <nav class="mt-[72px] flex items-center justify-between border-t border-[#EFE4D9] pt-9 text-[12px] font-semibold uppercase tracking-[2px] text-[#7A4751] max-sm:mt-2 max-sm:h-[78px] max-sm:justify-center max-sm:gap-1.5 max-sm:border-0 max-sm:pb-9 max-sm:pt-2 max-sm:text-[13px] max-sm:font-normal max-sm:normal-case max-sm:tracking-normal" aria-label="{{ st('common.pagination', 'Пагінація') }}">
+                        <a class="{{ $page <= 1 ? 'pointer-events-none opacity-40' : '' }} max-sm:px-1 max-sm:text-[#A98088]" href="{{ $pageUrl(max(1, $page - 1)) }}">← <span class="max-sm:hidden">{{ st('common.prev', 'Назад') }}</span></a>
                         <div class="flex items-center gap-4 max-sm:gap-1.5">
                             @for ($i = 1; $i <= $lastPage; $i++)
                                 @if ($i <= 3 || $i === $lastPage || abs($i - $page) <= 1)
@@ -504,10 +533,44 @@
                                 @endif
                             @endfor
                         </div>
-                        <a class="{{ $page >= $lastPage ? 'pointer-events-none opacity-40' : '' }} max-sm:px-1 max-sm:text-[#5B2730]" href="{{ $pageUrl(min($lastPage, $page + 1)) }}"><span class="max-sm:hidden">Далі</span> →</a>
+                        <a class="{{ $page >= $lastPage ? 'pointer-events-none opacity-40' : '' }} max-sm:px-1 max-sm:text-[#5B2730]" href="{{ $pageUrl(min($lastPage, $page + 1)) }}"><span class="max-sm:hidden">{{ st('common.next', 'Далі') }}</span> →</a>
                     </nav>
                 @endif
             </div>
         </div>
     </section>
+
+    @if (! empty($collection))
+        @php
+            $otherCollections = [
+                ['key' => 'muskusni', 'title' => 'Мускусні', 'image' => 'collection-muskusni.png'],
+                ['key' => 'kvitkovi', 'title' => 'Квіткові', 'image' => 'collection-kvitkovi.png'],
+                ['key' => 'solodki', 'title' => 'Солодкі', 'image' => 'collection-solodki.png'],
+                ['key' => 'svigi-citrusovi', 'title' => 'Свіжі/Цитрусові', 'image' => 'collection-svigi.png'],
+                ['key' => 'shkiriani', 'title' => 'Шкіряні', 'image' => 'collection-shkira.png'],
+                ['key' => 'derevni', 'title' => 'Деревні', 'image' => 'collection-derevo.png'],
+            ];
+        @endphp
+        <section class="border-t border-[#EFE4D9] bg-white px-5 py-14 sm:px-[68px] sm:py-[88px]">
+            <div class="mx-auto w-full max-w-[1304px]">
+                <p class="m-0 text-[11px] font-medium uppercase tracking-[2.5px] text-[#A98088]">Далі</p>
+                <h2 class="m-0 mt-2 font-cormorant text-[45px] font-medium uppercase text-[#5B2730]">Інші капсули</h2>
+                <div class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
+                    @foreach ($otherCollections as $other)
+                        @continue($other['key'] === ($collectionKey ?? ''))
+                        <a class="group overflow-hidden border border-[#E8DAD0] bg-[#FDFBF8]" href="{{ route('collections.show', ['collection' => $other['key']]) }}">
+                            <img class="aspect-[0.78] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" src="{{ asset('vendor/frontend-sevia/images/' . $other['image']) }}" alt="{{ $other['title'] }}">
+                            <span class="flex items-center justify-between px-3 py-3 font-cormorant text-[19px] text-[#5B2730]">{{ $other['title'] }} <b class="font-sans text-[15px] font-normal">→</b></span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+        <section class="bg-[#F8EDE7] px-5 py-10 sm:px-[68px] sm:py-14">
+            <div class="mx-auto grid w-full max-w-[900px] grid-cols-[150px_minmax(0,1fr)] items-center gap-7">
+                <img class="w-full" src="{{ asset('vendor/frontend-sevia/images/discovery-band.png') }}" alt="Discovery 5×3">
+                <div><p class="m-0 text-[11px] uppercase tracking-[2px] text-[#A98088]">Discovery 5×3</p><h2 class="m-0 mt-2 font-cormorant text-[32px] leading-none text-[#5B2730]">П’ять ароматів капсули по 3 мл — −15%</h2><a class="mt-5 inline-flex border-b border-[#5B2730] pb-1 text-[12px] uppercase tracking-[1.5px] text-[#5B2730]" href="{{ route('discovery-53') }}">Зібрати сет →</a></div>
+            </div>
+        </section>
+    @endif
 @endsection

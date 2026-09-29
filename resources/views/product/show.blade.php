@@ -3,7 +3,8 @@
 @section('title', $detail['title'] . ' | Sevia')
 @section('meta_description', $detail['description'])
 
-@php
+    @php
+        $productText = static fn (string $key, string $default): string => st("product.$key", $default);
     $reviewsTotal = (int) ($stats->total ?? 0);
     $averageRating = $reviewsTotal > 0 ? round((float) ($stats->avg_rating ?? 0), 1) : 0.0;
     $reviewBuckets = [
@@ -25,13 +26,13 @@
     <nav class="flex h-[50px] items-center gap-2.5 px-[68px] pb-2 pt-[22px] text-[13px] leading-5 max-lg:px-6 max-sm:hidden" aria-label="Breadcrumb">
         <a class="text-[#7A4751] hover:text-[#5B2730]" href="{{ route('home') }}">Sevia</a>
         <span class="text-[#E8DAD0]">/</span>
-        <a class="text-[#7A4751] hover:text-[#5B2730]" href="{{ route('catalog.index') }}">Парфуми</a>
+        <a class="text-[#7A4751] hover:text-[#5B2730]" href="{{ route('catalog.index') }}">{{ $productText('perfumes', 'Парфуми') }}</a>
         <span class="text-[#E8DAD0]">/</span>
         <span class="text-[#5B2730]">{{ $detail['name'] }}</span>
     </nav>
 
     <nav class="flex h-[35px] items-start gap-1.5 px-5 pb-2.5 pt-3 text-[10.5px] leading-[13px] sm:hidden" aria-label="Breadcrumb">
-        <a class="text-[#A98088]" href="{{ route('catalog.index') }}">Парфуми</a>
+        <a class="text-[#A98088]" href="{{ route('catalog.index') }}">{{ $productText('perfumes', 'Парфуми') }}</a>
         <span class="text-[#A98088]">/</span>
         @if($detail['meta'] !== '')
             <span class="max-w-[82px] truncate text-[#A98088]">{{ \Illuminate\Support\Str::before($detail['meta'], ' · ') }}</span>
@@ -43,7 +44,7 @@
     <section class="sm:hidden">
         <div class="relative flex h-[408px] items-center justify-center bg-[#FBF1ED] px-[71px] py-[29px]">
             <img class="max-h-[350px] max-w-[250px] object-contain" src="{{ $detail['image'] }}" alt="{{ $detail['title'] }}">
-            <button class="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-white text-[24px] leading-none text-[#5B2730]" type="button" aria-label="Додати в обране">♡</button>
+            <button class="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-white text-[24px] leading-none {{ ($isFavorite ?? false) ? 'text-[#B03B45]' : 'text-[#5B2730]' }}" type="button" aria-label="{{ ($isFavorite ?? false) ? 'Видалити з обраного' : 'Додати в обране' }}" aria-pressed="{{ ($isFavorite ?? false) ? 'true' : 'false' }}" data-favorite-toggle data-favorite-url="{{ route('favorites.toggle') }}" data-product-id="{{ $product->id }}">{{ ($isFavorite ?? false) ? '♥' : '♡' }}</button>
             @if ($detail['gallery']->isNotEmpty())
                 <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-[7px]">
                     @foreach ($detail['gallery'] as $image)
@@ -64,7 +65,7 @@
             <div class="mt-2.5 flex items-center gap-1.5">
                 <span class="text-[13px] leading-4 tracking-[1px] text-[#5B2730]">{{ $starsText((int) round($averageRating)) }}</span>
                 <span class="text-[12px] font-medium leading-[15px] text-[#5B2730]">{{ number_format($averageRating, 1) }}</span>
-                <span class="text-[12px] leading-[15px] text-[#A98088]">{{ $reviewsTotal }} відгуків</span>
+                 <span class="text-[12px] leading-[15px] text-[#A98088]">{{ $reviewsTotal }} {{ $productText('reviews', 'відгуків') }}</span>
             </div>
 
             <p class="m-0 mt-2.5 text-[13px] leading-[148%] text-[#7A4751]">{{ $detail['short'] }}</p>
@@ -78,13 +79,13 @@
 
             <p class="m-0 mt-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase leading-[13px] tracking-[0.6px] text-[#7A4751]">
                 <span class="size-[7px] rounded-full bg-[#6B9973]"></span>
-                В наявності
+                 {{ $productText('in_stock', 'В наявності') }}
             </p>
         </div>
 
         <div class="px-5 pb-2 pt-[18px]">
             <div class="mb-3 flex items-center justify-between">
-                <h2 class="m-0 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">Обʼєм розпиву</h2>
+                 <h2 class="m-0 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ $productText('decant_volume', 'Обʼєм розпиву') }}</h2>
             </div>
             <div class="grid grid-cols-6 gap-1">
                 @foreach ($detail['volumes'] as $volume)
@@ -108,7 +109,7 @@
 
         <div class="flex items-center gap-3 px-5 pb-2.5 pt-3.5">
             <button class="h-[49px] flex-1 bg-[#5B2730] text-[12.5px] font-medium uppercase leading-[15px] tracking-[1.4px] text-white" type="button" data-cart-add data-cart-add-url="{{ route('cart.add') }}" data-product-id="{{ $selectedCartProductId }}" data-product-price="{{ $selectedCartPrice }}" data-cart-product-label="{{ $selectedCartLabel }}">Додати в кошик</button>
-            <button class="flex size-[52px] items-center justify-center border border-[#5B2730] text-[24px] leading-none text-[#5B2730]" type="button" aria-label="Додати в обране">♡</button>
+            <button class="flex size-[52px] items-center justify-center border border-[#5B2730] text-[24px] leading-none {{ ($isFavorite ?? false) ? 'text-[#B03B45]' : 'text-[#5B2730]' }}" type="button" aria-label="{{ ($isFavorite ?? false) ? 'Видалити з обраного' : 'Додати в обране' }}" aria-pressed="{{ ($isFavorite ?? false) ? 'true' : 'false' }}" data-favorite-toggle data-favorite-url="{{ route('favorites.toggle') }}" data-product-id="{{ $product->id }}">{{ ($isFavorite ?? false) ? '♥' : '♡' }}</button>
         </div>
 
         <ol class="m-0 list-none px-5 pb-5 pt-2.5">
@@ -160,7 +161,7 @@
                     <div class="pt-6">
                         <div class="mb-3 flex items-center justify-between">
                             <h2 class="m-0 text-[11px] font-semibold uppercase leading-[17px] tracking-[3.08px] text-[#5B2730]">Обʼєм розпиву</h2>
-                            <a class="text-[12px] leading-[19px] tracking-[0.48px] text-[#7A4751]" href="{{ route('faq') }}">Як обрати?</a>
+                            <a class="text-[12px] leading-[19px] tracking-[0.48px] text-[#7A4751]" href="{{ route('faq') }}">{{ $productText('how_to_choose', 'Як обрати?') }}</a>
                         </div>
 
                         <div class="grid grid-cols-6 gap-1.5 max-sm:grid-cols-3">
@@ -183,14 +184,14 @@
                         </div>
 
                         {{-- <label class="mt-2.5 flex h-[52px] items-center justify-between border border-[#E8DAD0] bg-[#FDFBF8] px-4">
-                            <span class="flex items-center gap-3 text-[13px] leading-5 text-[#7A4751]"><span class="size-3.5 border border-[#E8DAD0]"></span> Повний флакон 100 мл</span>
+                             <span class="flex items-center gap-3 text-[13px] leading-5 text-[#7A4751]"><span class="size-3.5 border border-[#E8DAD0]"></span> {{ $productText('full_bottle', 'Повний флакон 100 мл') }}</span>
                             <span class="font-cormorant text-[18px] font-medium leading-7 text-[#5B2730]">7 800 ₴</span>
                         </label> --}}
                     </div>
 
                     <div class="mt-4 grid grid-cols-[1fr_56px] gap-2">
                         <button class="h-[61px] bg-[#5B2730] text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#FDFBF8]" type="button" data-cart-add data-cart-add-url="{{ route('cart.add') }}" data-product-id="{{ $selectedCartProductId }}" data-product-price="{{ $selectedCartPrice }}" data-cart-product-label="{{ $selectedCartLabel }}">Додати в кошик</button>
-                        <button class="h-[61px] border border-[#5B2730] text-[22px] leading-none text-[#5B2730]" type="button" aria-label="Додати в обране">♡</button>
+                        <button class="h-[61px] border border-[#5B2730] text-[22px] leading-none {{ ($isFavorite ?? false) ? 'text-[#B03B45]' : 'text-[#5B2730]' }}" type="button" aria-label="{{ ($isFavorite ?? false) ? 'Видалити з обраного' : 'Додати в обране' }}" aria-pressed="{{ ($isFavorite ?? false) ? 'true' : 'false' }}" data-favorite-toggle data-favorite-url="{{ route('favorites.toggle') }}" data-product-id="{{ $product->id }}">{{ ($isFavorite ?? false) ? '♥' : '♡' }}</button>
                     </div>
                 </div>
 
@@ -211,7 +212,7 @@
     <section class="bg-[#F8EDE7] px-[68px] py-[90px] max-lg:px-6 max-sm:px-5 max-sm:py-11">
         <div class="mx-auto max-w-[1304px]">
             <div class="mb-11 flex items-end justify-between gap-8 max-sm:mb-5 max-sm:block">
-                <h2 class="m-0 font-cormorant text-[60px] font-medium leading-[63px] tracking-[-0.6px] text-[#5B2730] max-sm:text-[27px] max-sm:leading-[33px]">Ноти аромату</h2>
+                 <h2 class="m-0 font-cormorant text-[60px] font-medium leading-[63px] tracking-[-0.6px] text-[#5B2730] max-sm:text-[27px] max-sm:leading-[33px]">{{ $productText('notes', 'Ноти аромату') }}</h2>
                 <p class="m-0 pb-1 text-[12px] uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] max-sm:mt-3 max-sm:text-[13px] max-sm:normal-case max-sm:leading-[148%] max-sm:tracking-normal max-sm:text-[#7A4751]">{{ $detail['description'] }}</p>
             </div>
 
@@ -234,8 +235,8 @@
         <section class="px-[68px] py-[120px] max-lg:px-6 max-sm:bg-[#FDFBF8] max-sm:px-0 max-sm:py-12">
             <div class="mx-auto max-w-[1304px]">
                 <div class="mb-11 flex items-end justify-between gap-8 max-sm:mb-[18px] max-sm:justify-center">
-                    <h2 class="m-0 font-cormorant text-[60px] font-medium leading-[63px] tracking-[-0.6px] text-[#5B2730] max-sm:text-center max-sm:text-[27px] max-sm:leading-[33px]">Схожі аромати</h2>
-                    <a class="hidden pb-1 text-[12px] uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] sm:block" href="{{ route('catalog.index') }}">Усі аромати</a>
+                     <h2 class="m-0 font-cormorant text-[60px] font-medium leading-[63px] tracking-[-0.6px] text-[#5B2730] max-sm:text-center max-sm:text-[27px] max-sm:leading-[33px]">{{ $productText('similar', 'Схожі аромати') }}</h2>
+                     <a class="hidden pb-1 text-[12px] uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] sm:block" href="{{ route('catalog.index') }}">{{ $productText('all_fragrances', 'Усі аромати') }}</a>
                 </div>
 
                 <div class="grid grid-cols-5 gap-[21px] max-xl:grid-cols-4 max-lg:grid-cols-3 max-sm:grid-cols-2 max-sm:gap-2">
@@ -265,7 +266,7 @@
     <section class="border-t border-[#EFE4D9] px-[68px] py-[105px] max-lg:px-6 max-sm:border-t-0 max-sm:px-5 max-sm:py-11">
         <div class="mx-auto grid max-w-[1304px] grid-cols-[320px_1fr] gap-[76px] max-lg:grid-cols-1 max-sm:gap-[18px]">
             <aside>
-                <p class="m-0 mb-[18px] text-[11px] font-medium uppercase leading-[17px] tracking-[3.08px] text-[#A98088] max-sm:font-cormorant max-sm:text-[27px] max-sm:normal-case max-sm:leading-[33px] max-sm:tracking-normal max-sm:text-[#5B2730]">Відгуки</p>
+                 <p class="m-0 mb-[18px] text-[11px] font-medium uppercase leading-[17px] tracking-[3.08px] text-[#A98088] max-sm:font-cormorant max-sm:text-[27px] max-sm:normal-case max-sm:leading-[33px] max-sm:tracking-normal max-sm:text-[#5B2730]">{{ $productText('reviews_title', 'Відгуки') }}</p>
                 <div class="flex items-center gap-[18px] max-sm:gap-4">
                     <div class="max-sm:flex max-sm:w-[65px] max-sm:flex-col max-sm:items-center max-sm:gap-0.5">
                         <span class="font-cormorant text-[64px] font-medium leading-none tracking-[-1.28px] text-[#5B2730] max-sm:text-[52px] max-sm:leading-[63px] max-sm:tracking-normal">{{ number_format($averageRating, 1) }}</span>
@@ -274,7 +275,7 @@
                     </div>
                     <div class="max-sm:hidden">
                         <p class="m-0 text-[16px] leading-[25px] tracking-[0.96px] text-[#A85D66]">{{ $starsText((int) round($averageRating)) }}</p>
-                        <p class="m-0 text-[13px] leading-5 text-[#A98088]">На основі {{ $reviewsTotal }} відгуків</p>
+                         <p class="m-0 text-[13px] leading-5 text-[#A98088]">{{ $productText('based_on', 'На основі') }} {{ $reviewsTotal }} {{ $productText('reviews', 'відгуків') }}</p>
                     </div>
                 </div>
                 <div class="my-5 grid gap-2 max-sm:ml-[81px] max-sm:-mt-[94px] max-sm:mb-0 max-sm:gap-1.5">
@@ -286,7 +287,7 @@
                         </div>
                     @endforeach
                 </div>
-                <button class="h-[50px] w-full bg-[#5B2730] text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#FDFBF8] max-sm:hidden" type="button" data-review-open>Залишити відгук</button>
+                 <button class="h-[50px] w-full bg-[#5B2730] text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#FDFBF8] max-sm:hidden" type="button" data-review-open>{{ $productText('leave_review', 'Залишити відгук') }}</button>
             </aside>
 
             <div class="border-t border-[#EFE4D9] max-sm:border-t-0">
@@ -300,13 +301,13 @@
                     </article>
                 @empty
                     <div class="py-8">
-                        <h3 class="m-0 font-cormorant text-[24px] font-medium leading-8 text-[#5B2730]">Поки що немає відгуків</h3>
-                        <p class="m-0 mt-2 max-w-[520px] text-[14px] leading-[22px] text-[#7A4751]">Станьте першим, хто поділиться враженням про цей аромат.</p>
+                         <h3 class="m-0 font-cormorant text-[24px] font-medium leading-8 text-[#5B2730]">{{ $productText('no_reviews', 'Поки що немає відгуків') }}</h3>
+                         <p class="m-0 mt-2 max-w-[520px] text-[14px] leading-[22px] text-[#7A4751]">{{ $productText('no_reviews_hint', 'Станьте першим, хто поділиться враженням про цей аромат.') }}</p>
                     </div>
                 @endforelse
 
                 <div class="mt-2 flex items-center justify-between sm:hidden">
-                    <button class="h-10 border border-[#5B2730] px-[22px] text-[11.5px] font-medium uppercase leading-[14px] tracking-[1.2px] text-[#5B2730]" type="button" data-review-open>Залишити відгук</button>
+                     <button class="h-10 border border-[#5B2730] px-[22px] text-[11.5px] font-medium uppercase leading-[14px] tracking-[1.2px] text-[#5B2730]" type="button" data-review-open>{{ $productText('leave_review', 'Залишити відгук') }}</button>
                     @if ($reviewsTotal > 0)
                         <span class="text-[11px] font-medium uppercase leading-[13px] tracking-[0.8px] text-[#7A4751]">Усі {{ $reviewsTotal }}</span>
                     @endif
@@ -315,10 +316,10 @@
                 @if ($reviews->hasPages())
                     <nav class="mt-6 flex items-center gap-2 text-[13px] font-medium uppercase leading-5 tracking-[1.4px] text-[#5B2730] max-sm:hidden" aria-label="Reviews pagination">
                         @if ($reviews->previousPageUrl())
-                            <a class="border border-[#E8DAD0] px-4 py-2" href="{{ $reviews->previousPageUrl() }}">Назад</a>
+                             <a class="border border-[#E8DAD0] px-4 py-2" href="{{ $reviews->previousPageUrl() }}">{{ $productText('back', 'Назад') }}</a>
                         @endif
                         @if ($reviews->nextPageUrl())
-                            <a class="border border-[#5B2730] px-4 py-2" href="{{ $reviews->nextPageUrl() }}">Ще відгуки</a>
+                             <a class="border border-[#5B2730] px-4 py-2" href="{{ $reviews->nextPageUrl() }}">{{ $productText('more_reviews', 'Ще відгуки') }}</a>
                         @endif
                     </nav>
                 @endif
@@ -331,8 +332,8 @@
 
         <section class="relative w-full max-w-[540px] bg-white p-0 shadow-[0_24px_80px_-40px_rgba(42,31,25,0.7)]" aria-label="Форма відгуку">
             <div class="flex h-[61px] items-center justify-between border-b border-[#E8DAD0] px-5">
-                <h2 class="m-0 font-cormorant text-[24px] font-medium leading-[29px] text-[#5B2730]">Залишити відгук</h2>
-                <button class="text-[22px] leading-none text-[#7A4751]" type="button" aria-label="Закрити" data-review-close>×</button>
+                 <h2 class="m-0 font-cormorant text-[24px] font-medium leading-[29px] text-[#5B2730]">{{ $productText('leave_review', 'Залишити відгук') }}</h2>
+                 <button class="text-[22px] leading-none text-[#7A4751]" type="button" aria-label="{{ $productText('close', 'Закрити') }}" data-review-close>×</button>
             </div>
 
             <form class="p-5" action="{{ route('sevia.product.reviews.store', ['product' => $product->slug]) }}" method="POST" data-review-form>
@@ -351,8 +352,8 @@
 
                 <div class="grid gap-3">
                     <label>
-                        <span class="mb-1.5 block text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">Імʼя</span>
-                        <input class="h-11 w-full border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 text-[14px] leading-5 text-[#5B2730] outline-none placeholder:text-[#C9A9B0] focus:border-[#5B2730]" type="text" name="name" autocomplete="name" placeholder="Ваше імʼя" required>
+                         <span class="mb-1.5 block text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ $productText('name', 'Імʼя') }}</span>
+                         <input class="h-11 w-full border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 text-[14px] leading-5 text-[#5B2730] outline-none placeholder:text-[#C9A9B0] focus:border-[#5B2730]" type="text" name="name" autocomplete="name" placeholder="{{ $productText('your_name', 'Ваше імʼя') }}" required>
                         <span class="mt-1 hidden text-[12px] leading-4 text-[#B03B45]" data-error-for="name"></span>
                     </label>
 
@@ -363,17 +364,17 @@
                     </label>
 
                     <label>
-                        <span class="mb-1.5 block text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">Відгук</span>
-                        <textarea class="min-h-[132px] w-full resize-none border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 py-3 text-[14px] leading-[22px] text-[#5B2730] outline-none placeholder:text-[#C9A9B0] focus:border-[#5B2730]" name="content" placeholder="Поділіться враженням про аромат" required></textarea>
+                         <span class="mb-1.5 block text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ $productText('review', 'Відгук') }}</span>
+                         <textarea class="min-h-[132px] w-full resize-none border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 py-3 text-[14px] leading-[22px] text-[#5B2730] outline-none placeholder:text-[#C9A9B0] focus:border-[#5B2730]" name="content" placeholder="{{ $productText('review_placeholder', 'Поділіться враженням про аромат') }}" required></textarea>
                         <span class="mt-1 hidden text-[12px] leading-4 text-[#B03B45]" data-error-for="content"></span>
                     </label>
                 </div>
 
-                <p class="m-0 mt-4 text-[12px] leading-[18px] text-[#A98088]">Відгук зʼявиться після модерації. Зазвичай це займає до 48 годин.</p>
+                 <p class="m-0 mt-4 text-[12px] leading-[18px] text-[#A98088]">{{ $productText('moderation_hint', 'Відгук зʼявиться після модерації. Зазвичай це займає до 48 годин.') }}</p>
 
                 <div class="mt-5 grid grid-cols-[1fr_auto] items-center gap-4">
-                    <p class="m-0 hidden text-[13px] leading-5 text-[#6BA070]" data-review-success>Дякуємо. Відгук відправлено на модерацію.</p>
-                    <button class="h-[50px] bg-[#5B2730] px-8 text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-white disabled:opacity-60" type="submit" data-review-submit>Надіслати</button>
+                     <p class="m-0 hidden text-[13px] leading-5 text-[#6BA070]" data-review-success>{{ $productText('review_sent', 'Дякуємо. Відгук відправлено на модерацію.') }}</p>
+                     <button class="h-[50px] bg-[#5B2730] px-8 text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-white disabled:opacity-60" type="submit" data-review-submit>{{ $productText('send', 'Надіслати') }}</button>
                 </div>
             </form>
         </section>

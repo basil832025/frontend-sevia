@@ -1,63 +1,63 @@
 @extends('front.sevia::layouts.app')
 
-@section('title', 'Особисті дані | Sevia')
-@section('meta_description', 'Особисті дані в кабінеті Sevia')
+@section('title', st('account.meta.profile_title', 'Особисті дані | Sevia'))
+@section('meta_description', st('account.meta.profile_description', 'Особисті дані в кабінеті Sevia'))
 
 @section('content')
     <div class="bg-white text-[#5B2730]">
-        <nav class="mx-auto flex h-[50px] max-w-[1440px] items-center gap-2.5 px-[68px] pb-2 pt-[22px] text-[13px] leading-5 text-[#7A4751] max-lg:px-6 max-sm:hidden" aria-label="Breadcrumb">
-            <a class="hover:text-[#5B2730]" href="{{ route('home') }}">Sevia</a>
+        <nav class="mx-auto flex h-[50px] max-w-[1440px] items-center gap-2.5 px-[68px] pb-2 pt-[22px] text-[13px] leading-5 text-[#7A4751] max-lg:px-6 max-sm:hidden" aria-label="{{ st('common.navigation', 'Навігація') }}">
+            <a class="hover:text-[#5B2730]" href="{{ route('home') }}">{{ st('common.brand', 'Sevia') }}</a>
             <span class="text-[#E8DAD0]">/</span>
-            <a class="hover:text-[#5B2730]" href="{{ route('account.overview') }}">Особистий кабінет</a>
+            <a class="hover:text-[#5B2730]" href="{{ route('account.overview') }}">{{ st('account.nav.account', 'Особистий кабінет') }}</a>
             <span class="text-[#E8DAD0]">/</span>
-            <strong class="font-normal text-[#5B2730]">Особисті дані</strong>
+            <strong class="font-normal text-[#5B2730]">{{ st('account.nav.profile', 'Особисті дані') }}</strong>
         </nav>
 
         <header class="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)_160px] items-end gap-8 px-[68px] pb-[35px] pt-[30px] max-lg:px-6 max-sm:flex max-sm:h-[90px] max-sm:flex-col max-sm:items-stretch max-sm:gap-2 max-sm:px-5 max-sm:pb-3.5 max-sm:pt-4">
             <div>
-                <div class="text-[11px] font-medium uppercase leading-[17px] tracking-[3.08px] text-[#A98088] max-sm:text-[11px] max-sm:leading-[13px] max-sm:tracking-[0.8px]">Особистий кабінет</div>
+                <div class="text-[11px] font-medium uppercase leading-[17px] tracking-[3.08px] text-[#A98088] max-sm:text-[11px] max-sm:leading-[13px] max-sm:tracking-[0.8px]">{{ st('account.nav.account', 'Особистий кабінет') }}</div>
                 <div class="max-sm:mt-2 max-sm:flex max-sm:items-baseline max-sm:justify-between">
-                    <h1 class="m-0 mt-2 font-cormorant text-[64px] font-medium leading-none tracking-[-0.96px] text-[#5B2730] max-sm:m-0 max-sm:text-[32px] max-sm:leading-[39px] max-sm:tracking-normal">Особисті дані</h1>
-                    <a class="hidden text-[11px] font-medium uppercase leading-[13px] tracking-[0.6px] text-[#7A4751] no-underline max-sm:inline-flex" href="{{ route('account.profile.edit') }}">Редагувати →</a>
+                    <h1 class="m-0 mt-2 font-cormorant text-[64px] font-medium leading-none tracking-[-0.96px] text-[#5B2730] max-sm:m-0 max-sm:text-[32px] max-sm:leading-[39px] max-sm:tracking-normal">{{ st('account.nav.profile', 'Особисті дані') }}</h1>
+                    <a class="hidden text-[11px] font-medium uppercase leading-[13px] tracking-[0.6px] text-[#7A4751] no-underline max-sm:inline-flex" href="{{ route('account.profile.edit') }}">{{ st('common.edit', 'Редагувати') }} →</a>
                 </div>
             </div>
 
-            <a class="mb-1 justify-self-end text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730] no-underline max-sm:hidden" href="{{ route('account.profile.edit') }}">Редагувати →</a>
+            <a class="mb-1 justify-self-end text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730] no-underline max-sm:hidden" href="{{ route('account.profile.edit') }}">{{ st('common.edit', 'Редагувати') }} →</a>
         </header>
 
         <section class="mx-auto grid max-w-[1440px] grid-cols-[240px_minmax(0,1fr)] gap-16 px-[68px] pb-[91px] pt-14 max-lg:grid-cols-[220px_minmax(0,1fr)] max-lg:gap-8 max-lg:px-6 max-sm:block max-sm:px-5 max-sm:pb-12 max-sm:pt-2">
-            <aside class="self-start max-sm:hidden" aria-label="Account navigation">
+            <aside class="self-start max-sm:hidden" aria-label="{{ st('account.nav.aria', 'Навігація кабінету') }}">
                 <ul class="m-0 list-none divide-y divide-[#EFE4D9] border-y border-[#EFE4D9] p-0">
                     <li>
                         <a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[#7A4751] no-underline" href="{{ route('account.overview') }}">
                             <span class="font-cormorant text-[16px] font-medium leading-[25px] tracking-[0.14px] text-[#A85D66]">01</span>
-                            <span class="text-[14px] leading-[22px] tracking-[0.14px]">Огляд</span>
+                            <span class="text-[14px] leading-[22px] tracking-[0.14px]">{{ st('account.nav.overview', 'Огляд') }}</span>
                         </a>
                     </li>
                     <li>
                         <a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[#7A4751] no-underline" href="{{ route('account.orders') }}">
                             <span class="font-cormorant text-[16px] font-medium leading-[25px] tracking-[0.14px] text-[#A85D66]">02</span>
-                            <span class="text-[14px] leading-[22px] tracking-[0.14px]">Замовлення</span>
+                            <span class="text-[14px] leading-[22px] tracking-[0.14px]">{{ st('account.nav.orders', 'Замовлення') }}</span>
                             <span class="text-[11px] uppercase leading-[17px] tracking-[1.98px] text-[#A98088]">{{ $ordersCount }}</span>
                         </a>
                     </li>
                     <li>
                         <a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[#7A4751] no-underline" href="{{ route('account.favorites') }}">
                             <span class="font-cormorant text-[16px] font-medium leading-[25px] tracking-[0.14px] text-[#A85D66]">03</span>
-                            <span class="text-[14px] leading-[22px] tracking-[0.14px]">Обране</span>
+                            <span class="text-[14px] leading-[22px] tracking-[0.14px]">{{ st('account.nav.favorites', 'Обране') }}</span>
                             <span class="text-[11px] uppercase leading-[17px] tracking-[1.98px] text-[#A98088]">{{ $favoritesCount }}</span>
                         </a>
                     </li>
                     <li>
                         <a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[#5B2730] no-underline" href="{{ route('account.profile') }}">
                             <span class="font-cormorant text-[16px] font-medium leading-[25px] tracking-[0.14px] text-[#5B2730]">05</span>
-                            <span class="text-[14px] font-semibold leading-[22px] tracking-[0.14px]">Особисті дані</span>
+                            <span class="text-[14px] font-semibold leading-[22px] tracking-[0.14px]">{{ st('account.nav.profile', 'Особисті дані') }}</span>
                         </a>
                     </li>
                 </ul>
                 <form method="POST" action="{{ route('account.logout') }}">
                     @csrf
-                    <button class="mt-4 border-0 bg-transparent p-0 text-left text-[12px] uppercase leading-[19px] tracking-[2.16px] text-[#7A4751]" type="submit">← Вийти</button>
+                    <button class="mt-4 border-0 bg-transparent p-0 text-left text-[12px] uppercase leading-[19px] tracking-[2.16px] text-[#7A4751]" type="submit">← {{ st('account.nav.logout', 'Вийти') }}</button>
                 </form>
             </aside>
 
@@ -80,15 +80,15 @@
                             </defs>
                         </svg>
                         <div class="flex flex-col gap-[3px] pt-px max-sm:block max-sm:p-0">
-                            <strong class="text-[16px] font-semibold leading-[25px] text-[#5B2730] max-sm:text-[12px] max-sm:font-medium max-sm:leading-[15px] max-sm:!text-[#4D8566]">Зміни збережено</strong>
-                            <span class="text-[14px] leading-[21px] text-[#A98088] max-sm:hidden">Оновили твій профіль щойно. Тепер рекомендації стануть точнішими.</span>
+                            <strong class="text-[16px] font-semibold leading-[25px] text-[#5B2730] max-sm:text-[12px] max-sm:font-medium max-sm:leading-[15px] max-sm:!text-[#4D8566]">{{ st('account.profile.saved_title', 'Зміни збережено') }}</strong>
+                            <span class="text-[14px] leading-[21px] text-[#A98088] max-sm:hidden">{{ st('account.profile.saved_text', 'Оновили твій профіль щойно. Тепер рекомендації стануть точнішими.') }}</span>
                         </div>
                     </div>
                 @endif
                 <section class="flex flex-col gap-5 max-sm:gap-2.5 max-sm:pb-3.5 max-sm:pt-2">
                     <div class="flex h-[57px] items-end border-b border-[#EFE4D9] pb-3 max-sm:h-6 max-sm:items-baseline max-sm:justify-between max-sm:border-0 max-sm:pb-0">
-                        <h2 class="m-0 font-cormorant text-[28px] font-medium leading-[43px] tracking-[-0.28px] text-[#5B2730] max-sm:text-[20px] max-sm:leading-6 max-sm:tracking-normal">Контактна інформація</h2>
-                        <a class="hidden text-[10.5px] font-medium uppercase leading-[13px] tracking-[0.6px] text-[#A98088] no-underline max-sm:inline-flex" href="{{ route('account.profile.edit') }}">Редагувати →</a>
+                        <h2 class="m-0 font-cormorant text-[28px] font-medium leading-[43px] tracking-[-0.28px] text-[#5B2730] max-sm:text-[20px] max-sm:leading-6 max-sm:tracking-normal">{{ st('account.profile.contact_info', 'Контактна інформація') }}</h2>
+                        <a class="hidden text-[10.5px] font-medium uppercase leading-[13px] tracking-[0.6px] text-[#A98088] no-underline max-sm:inline-flex" href="{{ route('account.profile.edit') }}">{{ st('common.edit', 'Редагувати') }} →</a>
                     </div>
 
                     <dl class="m-0 flex w-[376px] max-w-full flex-col gap-7 border-t border-[#EFE4D9] pt-[18px] max-sm:w-full max-sm:gap-0 max-sm:border-0 max-sm:bg-[#F8EDE7] max-sm:px-4 max-sm:pt-0">
@@ -105,8 +105,8 @@
 
                 <section class="flex flex-col gap-5 max-sm:gap-2.5 max-sm:pb-3.5 max-sm:pt-2">
                     <div class="flex h-[57px] items-end justify-between border-b border-[#EFE4D9] pb-3 max-sm:h-6 max-sm:items-baseline max-sm:border-0 max-sm:pb-0">
-                        <h2 class="m-0 font-cormorant text-[28px] font-medium leading-[43px] tracking-[-0.28px] text-[#5B2730] max-sm:text-[20px] max-sm:leading-6 max-sm:tracking-normal">Адреса доставки</h2>
-                        <a class="text-[12px] font-medium uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] no-underline max-sm:text-[10.5px] max-sm:leading-[13px] max-sm:tracking-[0.6px] max-sm:text-[#A98088]" href="{{ route('account.address.edit') }}">Змінити →</a>
+                        <h2 class="m-0 font-cormorant text-[28px] font-medium leading-[43px] tracking-[-0.28px] text-[#5B2730] max-sm:text-[20px] max-sm:leading-6 max-sm:tracking-normal">{{ st('account.profile.delivery_address', 'Адреса доставки') }}</h2>
+                        <a class="text-[12px] font-medium uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] no-underline max-sm:text-[10.5px] max-sm:leading-[13px] max-sm:tracking-[0.6px] max-sm:text-[#A98088]" href="{{ route('account.address.edit') }}">{{ st('common.change', 'Змінити') }} →</a>
                     </div>
 
                     <dl class="m-0 flex w-[376px] max-w-full flex-col gap-[26px] border-t border-[#EFE4D9] pt-[18px] max-sm:w-full max-sm:gap-0 max-sm:border-0 max-sm:bg-[#F8EDE7] max-sm:px-4 max-sm:pt-0">

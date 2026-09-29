@@ -1,11 +1,11 @@
 {
   "packages/frontend-sevia/resources/css/app.css": {
-    "file": "assets/app-BQbs8JiR.css",
+    "file": "assets/app-Dzn086zR.css",
     "src": "packages/frontend-sevia/resources/css/app.css",
     "isEntry": true
   },
   "packages/frontend-sevia/resources/js/app.js": {
-    "file": "assets/app-CHx4DeOm.js",
+    "file": "assets/app-BujAhCMP.js",
     "name": "app",
     "src": "packages/frontend-sevia/resources/js/app.js",
     "isEntry": true,

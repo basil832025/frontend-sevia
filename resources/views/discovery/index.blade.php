@@ -1,9 +1,10 @@
 @extends('front.sevia::layouts.app')
 
-@section('title', 'Discovery 5x3 мл | Sevia')
-@section('meta_description', 'Збери сет Discovery 5x3 мл з будь-яких пʼяти ароматів Sevia зі знижкою 15%.')
+@section('title', st('discovery.title', 'Discovery 5x3 мл | Sevia'))
+@section('meta_description', st('discovery.meta_description', 'Збери сет Discovery 5x3 мл з будь-яких пʼяти ароматів Sevia зі знижкою 15%.'))
 
-@php
+    @php
+        $discoveryText = static fn (string $key, string $default): string => st("discovery.$key", $default);
     $sortLabels = [
         'popular' => 'рекомендоване',
         'price_asc' => 'дешевші',
@@ -39,23 +40,37 @@
 @endphp
 
 @section('content')
-    <main class="bg-[#FDFBF8] pb-[246px] text-[#5B2730] sm:pb-[118px]" data-discovery-set data-set-size="5" data-add-url="{{ route('cart.add') }}" data-cart-url="{{ route('cart.page') }}" data-remove-set-url="{{ route('cart.discovery-set.remove') }}" data-edit-set-id="{{ $editingDiscoverySetId ?? '' }}">
+    <main class="bg-white pb-[246px] text-[#5B2730] sm:pb-[118px]" data-discovery-set data-set-size="5" data-add-url="{{ route('cart.add') }}" data-cart-url="{{ route('cart.page') }}" data-remove-set-url="{{ route('cart.discovery-set.remove') }}" data-edit-set-id="{{ $editingDiscoverySetId ?? '' }}">
         <script type="application/json" data-discovery-initial-selection>@json($editingDiscoveryItems ?? [])</script>
-        <section class="border-b border-[#E8DAD0] bg-[#FDFBF8] px-5 py-9 sm:px-[64px] sm:pb-10 sm:pt-12">
+        <nav class="flex h-[50px] items-center gap-2.5 px-[68px] pb-2 pt-[22px] text-[13px] leading-5 max-lg:px-6 max-sm:hidden sm:max-lg:h-9 sm:max-lg:px-[49px] sm:max-lg:pb-1.5 sm:max-lg:pt-4 sm:max-lg:text-[9.4px] sm:max-lg:leading-[14px]" aria-label="{{ st('common.navigation', 'Навігація') }}">
+            <a class="text-[#7A4751] hover:text-[#5B2730]" href="{{ route('home') }}">{{ st('common.brand', 'Sevia') }}</a>
+            <span class="text-[#E8DAD0]">/</span>
+            <a class="text-[#7A4751] hover:text-[#5B2730]" href="{{ route('catalog.index') }}">{{ st('catalog.breadcrumb.current', 'Парфуми') }}</a>
+            <span class="text-[#E8DAD0]">/</span>
+            <span class="text-[#5B2730]">{{ $discoveryText('breadcrumb_current', 'Discovery 5×3 мл') }}</span>
+        </nav>
+        <nav class="hidden h-[31px] items-start gap-1.5 px-5 pb-1 pt-3.5 text-[11px] leading-[13px] max-sm:flex" aria-label="{{ st('common.navigation', 'Навігація') }}">
+            <a class="text-[#A98088]" href="{{ route('home') }}">{{ st('common.brand', 'Sevia') }}</a>
+            <span class="text-[#A98088]">/</span>
+            <a class="text-[#A98088]" href="{{ route('catalog.index') }}">{{ st('catalog.breadcrumb.current', 'Парфуми') }}</a>
+            <span class="text-[#A98088]">/</span>
+            <span class="font-cormorant font-semibold text-[#7A4751]">{{ $discoveryText('breadcrumb_current', 'Discovery 5×3 мл') }}</span>
+        </nav>
+        <section class="border-b border-[#E8DAD0] bg-white px-5 py-9 sm:px-[64px] sm:pb-10 sm:pt-12">
             <div class="mx-auto grid w-full max-w-[1312px] gap-8 lg:grid-cols-[minmax(0,752px)_480px] lg:gap-20">
                 <div>
-                    <p class="m-0 text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">Discovery · парфумерний щоденник</p>
-                    <h1 class="m-0 mt-3 font-cormorant text-[42px] font-semibold leading-[44px] text-[#5B2730] sm:text-[52px] sm:leading-[55px]">Збери свій сет 5×3 мл</h1>
+                    <p class="m-0 text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">{{ $discoveryText('eyebrow', 'Discovery · парфумерний щоденник') }}</p>
+                    <h1 class="m-0 mt-3 font-cormorant text-[42px] font-semibold leading-[44px] text-[#5B2730] sm:text-[52px] sm:leading-[55px]">{{ $discoveryText('hero_title', 'Збери свій сет 5×3 мл') }}</h1>
                     <p class="m-0 mt-3 max-w-[453px] text-[13.5px] leading-[22px] text-[#7A4751]">
-                        Збери будь-які 5 ароматів по 3 мл і отримай -15% на весь сет. Спробуй удома, обери улюблений і повертайся за повним флаконом. До кожного сету додаємо подарункову мініатюру.
+                        {{ $discoveryText('hero_description', 'Збери будь-які 5 ароматів по 3 мл і отримай -15% на весь сет. Спробуй удома, обери улюблений і повертайся за повним флаконом. До кожного сету додаємо подарункову мініатюру.') }}
                     </p>
                 </div>
 
                 <ol class="m-0 grid list-none p-0 text-[13px] leading-5 text-[#7A4751]">
                     @foreach ([
-                        'Обери будь-які 5 ароматів зі списку',
-                        'Знижка -15% застосовується до всього сету автоматично',
-                        'Повернися за повним флаконом і отримай ще -10%',
+                        $discoveryText('benefit_choose', 'Обери будь-які 5 ароматів зі списку'),
+                        $discoveryText('benefit_discount', 'Знижка -15% застосовується до всього сету автоматично'),
+                        $discoveryText('benefit_return', 'Повернися за повним флаконом і отримай ще -10%'),
                     ] as $step)
                         <li class="grid grid-cols-[56px_minmax(0,1fr)] gap-3.5 border-t border-[#E8DAD0] py-[13px] last:border-b">
                             <span class="text-[#8A5D66]">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
@@ -66,12 +81,12 @@
             </div>
         </section>
 
-        <section class="hidden h-[57px] items-center justify-between border-y border-[#E8DAD0] bg-[#FDFBF8] px-5 py-3 max-sm:flex">
+        <section class="hidden h-[57px] items-center justify-between border-y border-[#E8DAD0] bg-white px-5 py-3 max-sm:flex">
             <button class="inline-flex h-[33px] items-center gap-[7px] border border-[#5B2730] px-3.5 text-[11.5px] font-medium uppercase leading-[14px] tracking-[1px] text-[#5B2730]" type="button" data-filter-open>
                 <svg class="h-2 w-[13px]" width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M0.5625 0.5625H9M0.5625 3.84375H11.8125M0.5625 7.125H6.1875" stroke="#5B2730" stroke-width="1.125" stroke-linecap="round"/>
                 </svg>
-                <span>Фільтри</span>
+                <span>{{ $discoveryText('filters', 'Фільтри') }}</span>
                 @if ($selectedChips->isNotEmpty() || request()->hasAny(['price_min', 'price_max']))
                     <span class="inline-flex size-4 items-center justify-center rounded-full bg-[#5B2730] pb-px text-[10.5px] leading-[13px] tracking-normal text-[#FDFBF8]">{{ $selectedChips->count() + (request()->hasAny(['price_min', 'price_max']) ? 1 : 0) }}</span>
                 @endif
@@ -86,12 +101,12 @@
         </section>
 
         <div class="fixed inset-0 z-[76] hidden bg-[rgba(42,31,25,0.28)] max-lg:data-[open=true]:flex" hidden data-filter-drawer>
-            <button class="absolute inset-0 h-full w-full" type="button" aria-label="Закрити фільтри" data-filter-close></button>
+             <button class="absolute inset-0 h-full w-full" type="button" aria-label="{{ $discoveryText('close_filters', 'Закрити фільтри') }}" data-filter-close></button>
 
             <aside class="relative flex h-full w-full max-w-[393px] flex-col bg-white" aria-label="Фільтри Discovery">
                 <div class="flex h-[61px] w-full items-center justify-between border-b border-[#E8DAD0] bg-white px-5 py-4">
-                    <h2 class="m-0 font-cormorant text-[24px] font-medium leading-[29px] text-[#5B2730]">Фільтри</h2>
-                    <button class="text-[16px] leading-[19px] text-[#7A4751]" type="button" aria-label="Закрити фільтри" data-filter-close>×</button>
+                    <h2 class="m-0 font-cormorant text-[24px] font-medium leading-[29px] text-[#5B2730]">{{ $discoveryText('filters', 'Фільтри') }}</h2>
+                    <button class="text-[16px] leading-[19px] text-[#7A4751]" type="button" aria-label="{{ $discoveryText('close_filters', 'Закрити фільтри') }}" data-filter-close>×</button>
                 </div>
 
                 <form class="flex min-h-0 flex-1 flex-col" method="GET" action="{{ url()->current() }}" data-filter-count-form data-filter-count-url="{{ route('discovery-53.count') }}">
@@ -122,7 +137,7 @@
                                 @elseif (($group['role'] ?? null) === 'brand')
                                     <div class="mb-2.5 flex h-[37px] w-full items-center gap-2 border border-[#E8DAD0] px-3">
                                         <img class="size-[15px]" src="{{ asset('vendor/frontend-sevia/images/search.svg') }}" alt="">
-                                        <input class="min-w-0 flex-1 bg-transparent text-[12.5px] leading-[15px] text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" type="search" placeholder="Пошук бренду..." data-brand-search>
+                                         <input class="min-w-0 flex-1 bg-transparent text-[12.5px] leading-[15px] text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" type="search" placeholder="{{ $discoveryText('brand_search_dots', 'Пошук бренду...') }}" data-brand-search>
                                     </div>
 
                                     <div class="grid gap-1" data-brand-list>
@@ -148,12 +163,12 @@
                         @endforeach
 
                         <fieldset class="w-full" data-price-filter data-price-min="{{ $priceMin }}" data-price-max="{{ $priceMax }}">
-                            <legend class="mb-3 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">Ціна, ₴</legend>
+                             <legend class="mb-3 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ $discoveryText('price', 'Ціна, ₴') }}</legend>
                             <div class="sevia-price-range relative h-5 w-full">
                                 <span class="absolute left-2 right-2 top-[9px] h-0.5 rounded bg-[#E8DAD0]"></span>
                                 <span class="absolute top-[9px] h-0.5 rounded bg-[#5B2730]" data-price-range-fill></span>
-                                <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMin }}" step="1" aria-label="Мінімальна ціна" data-price-min-range>
-                                <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMax }}" step="1" aria-label="Максимальна ціна" data-price-max-range>
+                                 <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMin }}" step="1" aria-label="{{ $discoveryText('min_price', 'Мінімальна ціна') }}" data-price-min-range>
+                                 <input class="sevia-price-range__input" type="range" min="{{ $priceMin }}" max="{{ $priceMax }}" value="{{ $currentPriceMax }}" step="1" aria-label="{{ $discoveryText('max_price', 'Максимальна ціна') }}" data-price-max-range>
                             </div>
                             <div class="mt-2 flex justify-between text-[11.5px] font-medium leading-[14px] text-[#7A4751]">
                                 <span>{{ $currentPriceMin }} ₴</span>
@@ -161,11 +176,11 @@
                             </div>
                             <div class="mt-3 flex items-center gap-3">
                                 <label class="flex h-10 min-w-0 flex-1 items-center justify-between border border-[#E8DAD0] px-3.5">
-                                    <span class="text-[13px] leading-4 text-[#C9A9B0]">Від</span>
+                                     <span class="text-[13px] leading-4 text-[#C9A9B0]">{{ $discoveryText('from', 'Від') }}</span>
                                     <input class="min-w-0 flex-1 bg-transparent text-right text-[13px] leading-4 text-[#5B2730] outline-none" type="number" min="{{ $priceMin }}" max="{{ $priceMax }}" name="price_min" value="{{ $currentPriceMin }}" data-price-min-input>
                                 </label>
                                 <label class="flex h-10 min-w-0 flex-1 items-center justify-between border border-[#E8DAD0] px-3.5">
-                                    <span class="text-[13px] leading-4 text-[#C9A9B0]">До</span>
+                                     <span class="text-[13px] leading-4 text-[#C9A9B0]">{{ $discoveryText('to', 'До') }}</span>
                                     <input class="min-w-0 flex-1 bg-transparent text-right text-[13px] leading-4 text-[#5B2730] outline-none" type="number" min="{{ $priceMin }}" max="{{ $priceMax }}" name="price_max" value="{{ $currentPriceMax }}" data-price-max-input>
                                 </label>
                             </div>
@@ -173,8 +188,8 @@
                     </div>
 
                     <div class="flex h-[79px] items-center gap-3.5 border-t border-[#E8DAD0] bg-white px-5 pb-5 pt-3.5">
-                        <a class="inline-flex h-[43px] items-center px-1 text-[12px] font-medium uppercase leading-[15px] tracking-[1px] text-[#7A4751]" href="{{ url()->current() }}">Скинути</a>
-                        <button class="inline-flex h-[45px] flex-1 items-center justify-center bg-[#5B2730] text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-white" type="submit">Показати <span class="ml-1" data-filter-count>{{ $productsTotal }}</span></button>
+                         <a class="inline-flex h-[43px] items-center px-1 text-[12px] font-medium uppercase leading-[15px] tracking-[1px] text-[#7A4751]" href="{{ url()->current() }}">{{ $discoveryText('reset', 'Скинути') }}</a>
+                         <button class="inline-flex h-[45px] flex-1 items-center justify-center bg-[#5B2730] text-[12px] font-medium uppercase leading-[15px] tracking-[1.2px] text-white" type="submit">{{ $discoveryText('show', 'Показати') }} <span class="ml-1" data-filter-count>{{ $productsTotal }}</span></button>
                     </div>
                 </form>
             </aside>
@@ -187,7 +202,7 @@
                     <span class="h-1 w-10 rounded-sm bg-[#C9A9B0]"></span>
                 </div>
                 <div class="flex h-[50px] w-full items-start px-5 pb-3.5 pt-2">
-                    <h2 class="m-0 font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">Сортування</h2>
+                    <h2 class="m-0 font-cormorant text-[23px] font-medium leading-7 text-[#5B2730]">{{ $discoveryText('sorting', 'Сортування') }}</h2>
                 </div>
                 @foreach ($mobileSortLabels as $value => $label)
                     <a class="flex h-11 w-full items-center gap-3 border-t border-[#E8DAD0] px-5 py-[13px]" href="{{ request()->fullUrlWithQuery(['sort' => $value, 'page' => null]) }}" data-sort-option data-selected="{{ $sort === $value ? 'true' : 'false' }}">
@@ -216,7 +231,7 @@
                                 @if (($group['role'] ?? null) === 'brand')
                                     <div class="mb-2.5 flex h-[41px] items-center gap-[9px] border border-[#E8DAD0] px-3">
                                         <img class="size-[14px]" src="{{ asset('vendor/frontend-sevia/images/search.svg') }}" alt="">
-                                        <input class="min-w-0 flex-1 bg-transparent text-[12.5px] leading-[15px] text-[#5B2730] outline-none placeholder:text-[#8A5D66]" type="search" placeholder="Пошук бренду" data-brand-search>
+                                         <input class="min-w-0 flex-1 bg-transparent text-[12.5px] leading-[15px] text-[#5B2730] outline-none placeholder:text-[#8A5D66]" type="search" placeholder="{{ $discoveryText('brand_search', 'Пошук бренду') }}" data-brand-search>
                                     </div>
                                 @endif
 
@@ -245,7 +260,7 @@
                                     @foreach ($selectedChips as $chip)
                                         <a class="inline-flex h-7 items-center border border-[#E8DAD0] bg-[#F8EDE7] px-2.5 text-[12px] text-[#5B2730]" href="{{ $chip['url'] }}">{{ $chip['title'] }} <span class="ml-1 text-[#A98088]">×</span></a>
                                     @endforeach
-                                    <a class="inline-flex h-7 items-center text-[11px] uppercase tracking-[1.54px] text-[#5B2730]" href="{{ url()->current() }}">Скинути все</a>
+                                     <a class="inline-flex h-7 items-center text-[11px] uppercase tracking-[1.54px] text-[#5B2730]" href="{{ url()->current() }}">{{ $discoveryText('reset_all', 'Скинути все') }}</a>
                                 </div>
                             @endif
                         </div>
@@ -276,9 +291,9 @@
                     @if ($productsTotal === 0)
                         <section class="grid min-h-[360px] place-items-center border border-[#E8DAD0] bg-[#FDFBF8] px-6 text-center">
                             <div>
-                                <h2 class="m-0 font-cormorant text-[36px] font-medium leading-10 text-[#5B2730]">Ароматів не знайдено</h2>
-                                <p class="m-0 mt-2 text-[14px] leading-6 text-[#7A4751]">Спробуй змінити фільтри або повернутися до всіх ароматів Discovery.</p>
-                                <a class="mt-5 inline-flex h-11 items-center border border-[#5B2730] px-6 text-[11.5px] font-medium uppercase tracking-[1.84px] text-[#5B2730]" href="{{ url()->current() }}">Скинути фільтри</a>
+                                 <h2 class="m-0 font-cormorant text-[36px] font-medium leading-10 text-[#5B2730]">{{ $discoveryText('not_found', 'Ароматів не знайдено') }}</h2>
+                                 <p class="m-0 mt-2 text-[14px] leading-6 text-[#7A4751]">{{ $discoveryText('not_found_hint', 'Спробуй змінити фільтри або повернутися до всіх ароматів Discovery.') }}</p>
+                                 <a class="mt-5 inline-flex h-11 items-center border border-[#5B2730] px-6 text-[11.5px] font-medium uppercase tracking-[1.84px] text-[#5B2730]" href="{{ url()->current() }}">{{ $discoveryText('reset_filters', 'Скинути фільтри') }}</a>
                             </div>
                         </section>
                     @else
@@ -289,7 +304,7 @@
                                     <a class="relative flex h-[262px] items-center justify-center bg-[#FDFBF8] p-6 group-data-[selected=true]:bg-[#F8EDE7] max-sm:h-[190px] max-sm:p-4" href="{{ $product['url'] }}">
                                         <span class="absolute left-2.5 top-2.5 hidden h-[25px] items-center gap-1.5 border border-[#5B2730] bg-white px-[9px] text-[9.5px] uppercase leading-[14px] tracking-[1.14px] text-[#5B2730] group-data-[selected=true]:inline-flex">
                                             <span aria-hidden="true">✓</span>
-                                            <span>У сеті</span>
+                                             <span>{{ $discoveryText('in_set', 'У сеті') }}</span>
                                         </span>
                                         <button class="absolute right-2.5 top-2.5 z-10 grid size-[30px] place-items-center rounded-full border border-[#E8DAD0] bg-white text-[#8A5D66]" type="button" aria-label="Додати в обране" aria-pressed="{{ in_array((int) $product['id'], $favoriteIds ?? [], true) ? 'true' : 'false' }}" data-favorite-toggle data-favorite-url="{{ route('favorites.toggle') }}" data-product-id="{{ $product['id'] }}">{{ in_array((int) $product['id'], $favoriteIds ?? [], true) ? '♥' : '♡' }}</button>
                                         <img class="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-[1.03]" src="{{ $product['image'] }}" alt="{{ $product['brand'] }} {{ $product['name'] }}">
@@ -302,7 +317,7 @@
                                         <p class="m-0 min-h-[34px] text-[11.5px] leading-[17px] text-[#7A4751]">{{ $product['notes'] }}</p>
                                         <p class="m-0 mt-auto pt-3 text-[12.5px] leading-[19px] text-[#7A4751]">{{ $volume['label'] }} · {{ $volume['price_label'] }}</p>
                                         <button class="mt-3 h-11 border border-[#5B2730] bg-[#5B2730] px-4 text-[11px] font-medium uppercase leading-4 tracking-[1.54px] text-[#FFF8F4] group-data-[selected=true]:bg-transparent group-data-[selected=true]:text-[#5B2730]" type="button" data-discovery-toggle>
-                                            <span data-discovery-toggle-label>+ Додати</span>
+                                             <span data-discovery-toggle-label>+ {{ $discoveryText('add', 'Додати') }}</span>
                                         </button>
                                     </div>
                                 </article>
@@ -332,8 +347,8 @@
         <section class="group fixed bottom-0 left-0 right-0 z-50 border-t border-[#5B2730] bg-white shadow-[0_-20px_44px_-34px_rgba(42,31,25,0.45)] max-sm:group-data-[expanded=true]:pt-6" data-discovery-bar data-expanded="false">
             <div class="hidden border-b border-[#E8DAD0] bg-[#FBF4F0]" data-discovery-details>
                 <div class="flex h-[52px] items-center justify-between px-5 sm:h-[58px] sm:px-[64px]">
-                    <p class="m-0 text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">Склад сету</p>
-                    <button class="inline-flex items-center gap-[9px] text-[10.5px] uppercase leading-4 tracking-[1.47px] text-[#7A4751] sm:text-[11px] sm:tracking-[1.54px] sm:text-[#5B2730]" type="button" data-discovery-collapse>Згорнути <span aria-hidden="true">⌄</span></button>
+                     <p class="m-0 text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">{{ $discoveryText('set_contents', 'Склад сету') }}</p>
+                     <button class="inline-flex items-center gap-[9px] text-[10.5px] uppercase leading-4 tracking-[1.47px] text-[#7A4751] sm:text-[11px] sm:tracking-[1.54px] sm:text-[#5B2730]" type="button" data-discovery-collapse>{{ $discoveryText('collapse', 'Згорнути') }} <span aria-hidden="true">⌄</span></button>
                 </div>
                 <div class="grid max-h-[305px] grid-cols-1 overflow-y-auto border-t border-[#E8DAD0] px-0 sm:min-h-[214px] sm:grid-cols-5 sm:overflow-visible sm:px-[44px]" data-discovery-detail-list></div>
             </div>
@@ -345,11 +360,11 @@
                 <div class="absolute left-5 right-14 top-3.5 flex h-[68px] justify-center gap-1.5 max-sm:group-data-[expanded=true]:hidden sm:static sm:h-[66px] sm:shrink-0 sm:justify-start sm:gap-2.5" data-discovery-slots></div>
                 <div class="absolute left-5 right-5 top-[94px] h-px bg-[#F0E6DE] max-sm:group-data-[expanded=true]:hidden sm:hidden" aria-hidden="true"></div>
                 <div class="absolute left-5 right-5 top-[106px] flex h-[41px] items-center justify-between gap-3.5 max-sm:group-data-[expanded=true]:top-3.5 sm:static sm:ml-auto sm:min-w-0 sm:flex-1 sm:justify-end sm:gap-6">
-                    <strong class="text-[10px] font-bold uppercase leading-[15px] tracking-[1.6px] text-[#B03B45] sm:text-[18px] sm:font-semibold sm:normal-case sm:leading-[18px] sm:tracking-[0.24px]">-15% знижка</strong>
+                     <strong class="text-[10px] font-bold uppercase leading-[15px] tracking-[1.6px] text-[#B03B45] sm:text-[18px] sm:font-semibold sm:normal-case sm:leading-[18px] sm:tracking-[0.24px]">{{ $discoveryText('discount', '-15% знижка') }}</strong>
                     <span class="ml-auto font-cormorant text-[24px] font-semibold leading-10 tracking-[-0.27px] text-[#B7876D] line-through sm:ml-0 sm:text-[34px] sm:leading-[41px] sm:text-[#B49381]" data-discovery-total>0 ₴</span>
                     <span class="font-cormorant text-[27px] font-semibold leading-10 tracking-[-0.27px] text-[#5B2730] sm:text-[34px] sm:leading-[41px]" data-discovery-discounted>0 ₴</span>
                 </div>
-                <button class="absolute left-5 right-5 top-[159px] h-[50px] border border-[#E8DAD0] px-[26px] text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#8A5D66] max-sm:group-data-[expanded=true]:top-[66.5px] disabled:cursor-not-allowed disabled:bg-white disabled:text-[#8A5D66] enabled:border-[#5B2730] enabled:bg-[#5B2730] enabled:text-[#FFF8F4] sm:static sm:h-14 sm:min-w-[181px] sm:px-8" type="button" disabled data-discovery-cart>Оберіть ще 5 ароматів</button>
+                 <button class="absolute left-5 right-5 top-[159px] h-[50px] border border-[#E8DAD0] px-[26px] text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#8A5D66] max-sm:group-data-[expanded=true]:top-[66.5px] disabled:cursor-not-allowed disabled:bg-white disabled:text-[#8A5D66] enabled:border-[#5B2730] enabled:bg-[#5B2730] enabled:text-[#FFF8F4] sm:static sm:h-14 sm:min-w-[181px] sm:px-8" type="button" disabled data-discovery-cart>{{ $discoveryText('choose_more', 'Оберіть ще 5 ароматів') }}</button>
             </div>
         </section>
     </main>

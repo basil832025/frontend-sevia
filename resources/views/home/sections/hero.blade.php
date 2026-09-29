@@ -40,7 +40,7 @@
                        tracking-[3.08px]
                        text-[#A98088]"
             >
-                Sevia · Maison · Est. 2026
+                {{ st('home.hero.eyebrow', 'Sevia · Maison · Est. 2026') }}
             </p>
 
             <h1
@@ -62,10 +62,10 @@
 
                        max-xl:text-[64px]"
             >
-                <span class="block">Твої улюблені</span>
-                <span class="block">парфуми</span>
+                <span class="block">{{ st('home.hero.title_line_1', 'Твої улюблені') }}</span>
+                <span class="block">{{ st('home.hero.title_line_2', 'парфуми') }}</span>
                 <span class="block text-[#D46568]">
-                    у нас на розпив
+                    {{ st('home.hero.title_accent', 'у нас на розпив') }}
                 </span>
             </h1>
 
@@ -96,7 +96,7 @@
                        min-[1600px]:tracking-[1.872px]"
                 href="{{ route('catalog.index') }}"
             >
-                <span>Перейти в каталог</span>
+                <span>{{ st('home.hero.catalog_cta', 'Перейти в каталог') }}</span>
 
                 <svg
                     class="h-2.5 w-3.5"
@@ -127,8 +127,7 @@
                        min-[1600px]:text-[28.8px]
                        min-[1600px]:leading-[39px]"
             >
-                Нішева парфумерія повними флаконами та на розпив від 3 мл.
-                Шовкова білизна, що говорить пошепки. Один простір — два світи.
+                {{ st('home.hero.description', 'Нішева парфумерія повними флаконами та на розпив від 3 мл. Шовкова білизна, що говорить пошепки. Один простір — два світи.') }}
             </p>
         </div>
 
@@ -225,7 +224,7 @@
                            font-light
                            leading-[25px]"
                 >
-                    Parfums de Marly Valaya
+                    {{ st('home.hero.product_name', 'Parfums de Marly Valaya') }}
                 </span>
 
                 <span
@@ -234,7 +233,7 @@
                            italic
                            leading-[25px]"
                 >
-                    3 мл - 320 грн
+                    {{ st('home.hero.product_price', '3 мл - 320 грн') }}
                 </span>
             </span>
 
@@ -287,7 +286,7 @@
                        tracking-[2.048px]
                        text-[#8A5D66]"
             >
-                Sevia · Maison · Est. 2026
+                {{ st('home.hero.eyebrow', 'Sevia · Maison · Est. 2026') }}
             </p>
 
             <h1
@@ -304,15 +303,15 @@
                        text-[#5B2730]"
             >
                 <span class="block">
-                    Твої улюблені
+                    {{ st('home.hero.title_line_1', 'Твої улюблені') }}
                 </span>
 
                 <span class="block">
-                    парфуми
+                    {{ st('home.hero.title_line_2', 'парфуми') }}
                 </span>
 
                 <span class="block text-[#D46568]">
-                    у нас на розпив
+                    {{ st('home.hero.title_accent', 'у нас на розпив') }}
                 </span>
             </h1>
         </div>
@@ -342,7 +341,7 @@
                    text-[#5B2730]"
         >
             <span class="whitespace-nowrap">
-                Перейти в каталог
+                {{ st('home.hero.catalog_cta', 'Перейти в каталог') }}
             </span>
 
             <svg
@@ -374,8 +373,7 @@
                    leading-[26px]
                    text-[#5B2730]"
         >
-            Нішева парфумерія повними флаконами та на розпив від 3 мл.
-            Шовкова білизна, що говорить пошепки. Один простір — два світи.
+            {{ st('home.hero.description', 'Нішева парфумерія повними флаконами та на розпив від 3 мл. Шовкова білизна, що говорить пошепки. Один простір — два світи.') }}
         </p>
 
         {{-- ================================================= --}}
@@ -478,11 +476,11 @@
             >
     <span class="flex flex-1 flex-col items-end">
         <span class="text-[14.3px] font-normal leading-[24px] text-[#7A4751]">
-            Parfums de Marly Valaya
+            {{ st('home.hero.product_name', 'Parfums de Marly Valaya') }}
         </span>
 
         <span class="font-cormorant text-[16.2px] font-semibold italic leading-[24px] text-[#5B2730]">
-            3 мл - 320 грн
+            {{ st('home.hero.product_price', '3 мл - 320 грн') }}
         </span>
     </span>
 
@@ -521,7 +519,7 @@
                    tracking-[2.4px]
                    text-[#A98088]"
         >
-            Sevia · Maison · Est. 2026
+            {{ st('home.hero.eyebrow', 'Sevia · Maison · Est. 2026') }}
         </p>
 
         <div
@@ -546,15 +544,15 @@
                        text-[#5B2730]"
             >
                 <span class="block">
-                    Твої улюблені
+                    {{ st('home.hero.title_line_1', 'Твої улюблені') }}
                 </span>
 
                 <span class="block">
-                    парфуми
+                    {{ st('home.hero.title_line_2', 'парфуми') }}
                 </span>
 
                 <span class="block text-[#D46568]">
-                    у нас на розпив
+                    {{ st('home.hero.title_accent', 'у нас на розпив') }}
                 </span>
             </h1>
 
@@ -566,8 +564,7 @@
                        leading-[148%]
                        text-[#7A4751]"
             >
-                Нішева парфумерія повними флаконами та на розпив від 3 мл.
-                Шовкова білизна, що говорить пошепки. Один простір — два світи.
+                {{ st('home.hero.description', 'Нішева парфумерія повними флаконами та на розпив від 3 мл. Шовкова білизна, що говорить пошепки. Один простір — два світи.') }}
             </p>
         </div>
 
@@ -593,7 +590,7 @@
             href="{{ route('catalog.index') }}"
         >
             <span>
-                Перейти в каталог
+                {{ st('home.hero.catalog_cta', 'Перейти в каталог') }}
             </span>
 
             <svg
@@ -676,7 +673,7 @@
                 href="#product-valaya"
             >
                 <span>
-                    Parfums de Marly Valaya · 3 мл — 320 грн →
+                    {{ st('home.hero.product_link', 'Parfums de Marly Valaya · 3 мл — 320 грн →') }}
                 </span>
             </a>
         </div>

@@ -1,9 +1,10 @@
 @extends('front.sevia::layouts.app')
 
-@section('title', 'Кошик | Sevia')
-@section('meta_description', 'Кошик Sevia')
+@section('title', st('frontend-sevia-cart.title', 'Кошик | Sevia'))
+@section('meta_description', st('frontend-sevia-cart.meta_description', 'Кошик Sevia'))
 
-@php
+    @php
+        $cartText = static fn (string $key, string $default): string => st("frontend-sevia-cart.$key", $default);
     $money = fn ($value): string => number_format((float) $value, 0, '.', ' ') . ' ₴';
     $countLabel = static function (int $count): string {
         $last = $count % 10;
@@ -94,18 +95,18 @@
                 </svg>
             </div>
 
-            <h1 class="m-0 pt-8 font-cormorant text-[46px] font-semibold leading-[47px] tracking-[-0.69px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">Кошик порожній</h1>
-            <p class="m-0 mt-4 max-w-[356px] text-[14px] leading-[22px] text-[#7A4751]">Розпив 5 мл - найпростіший спосіб спробувати аромат, не купуючи повний флакон.</p>
+            <h1 class="m-0 pt-8 font-cormorant text-[46px] font-semibold leading-[47px] tracking-[-0.69px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-10">{{ $cartText('empty_title', 'Кошик порожній') }}</h1>
+            <p class="m-0 mt-4 max-w-[356px] text-[14px] leading-[22px] text-[#7A4751]">{{ $cartText('empty_hint', 'Розпив 5 мл - найпростіший спосіб спробувати аромат, не купуючи повний флакон.') }}</p>
 
             <div class="mt-[26px] flex w-full max-w-[437px] justify-center gap-[18px] max-sm:flex-col">
                 <a class="flex min-h-[52px] flex-1 items-center justify-center gap-3 bg-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#FFF8F4]" href="{{ route('catalog.index') }}">
-                    До каталогу
+                    {{ $cartText('catalog', 'До каталогу') }}
                     <svg class="size-[15px]" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
                         <path d="M2.8 7.5H12.2M8.4 3.3L12.2 7.5L8.4 11.7" stroke="#FFF8F4" stroke-width="1.3125" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </a>
                 <a class="flex min-h-[52px] flex-1 items-center justify-center border border-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#5B2730]" href="{{ route('home') }}#discovery">
-                    Discovery 5x3 мл
+                    {{ $cartText('discovery_offer', 'Discovery 5x3 мл') }}
                 </a>
             </div>
         </section>
@@ -114,8 +115,8 @@
         <main class="w-full max-w-[700px] flex-1 max-sm:max-w-none">
             <div class="flex min-h-[104px] items-end justify-between border-b border-[#E8DAD0] pb-6 max-sm:min-h-[99px] max-sm:flex-col max-sm:items-start max-sm:justify-between max-sm:gap-1 max-sm:pb-[18px]">
                 <div class="grid gap-2.5">
-                    <p class="m-0 text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">Крок 1 із 3</p>
-                    <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[33px] max-sm:leading-[34px] max-sm:tracking-[-0.495px]">Кошик</h1>
+                    <p class="m-0 text-[10.5px] font-medium uppercase leading-4 tracking-[1.89px] text-[#A98088]">{{ $cartText('step', 'Крок 1 із 3') }}</p>
+                    <h1 class="m-0 font-cormorant text-[52px] font-semibold leading-[53px] tracking-[-0.78px] text-[#5B2730] max-sm:text-[33px] max-sm:leading-[34px] max-sm:tracking-[-0.495px]">{{ $cartText('title', 'Кошик') }}</h1>
                 </div>
                 <p class="m-0 text-[13px] leading-5 text-[#A98088] max-sm:w-full">{{ $countLabel((int) $qty) }}</p>
             </div>
@@ -129,16 +130,16 @@
                                     <p class="m-0 text-[10px] uppercase leading-[15px] tracking-[1.5px] text-[#7A4751]">Discovery 5×3</p>
                                     <span class="inline-flex h-[19px] items-center bg-[#5B2730] px-[7px] text-[9.5px] uppercase leading-[14px] tracking-[0.95px] text-[#FFF8F4]">15%</span>
                                 </div>
-                                <h2 class="m-0 mt-1 font-cormorant text-[21px] font-medium leading-6 text-[#5B2730]">Мій сет</h2>
-                                <p class="m-0 mt-1 text-[12px] leading-[18px] text-[#7A4751]">Пʼять ароматів по 3 мл · атомайзери в комплекті</p>
+                                <h2 class="m-0 mt-1 font-cormorant text-[21px] font-medium leading-6 text-[#5B2730]">{{ $cartText('my_set', 'Мій сет') }}</h2>
+                                <p class="m-0 mt-1 text-[12px] leading-[18px] text-[#7A4751]">{{ $cartText('set_hint', 'Пʼять ароматів по 3 мл · атомайзери в комплекті') }}</p>
                             </div>
 
                             <form class="flex h-[30px] items-center border border-[#E8DAD0]" method="POST" action="{{ route('cart.discovery-set.quantity') }}">
                                 @csrf
                                 <input type="hidden" name="discovery_set_id" value="{{ $set['id'] }}">
-                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="-1" aria-label="Менше">-</button>
+                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="-1" aria-label="{{ $cartText('less', 'Менше') }}">-</button>
                                 <span class="grid h-7 min-w-[26px] place-items-center px-2 text-[13px] leading-5 text-[#5B2730]">{{ $set['qty'] }}</span>
-                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="1" aria-label="Більше">+</button>
+                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="1" aria-label="{{ $cartText('more', 'Більше') }}">+</button>
                             </form>
 
                             <div class="min-w-24 text-right">
@@ -149,17 +150,17 @@
                             <form class="relative z-30" method="POST" action="{{ route('cart.discovery-set.remove') }}" data-cart-remove-form>
                                 @csrf
                                 <input type="hidden" name="discovery_set_id" value="{{ $set['id'] }}">
-                                <button class="grid size-[30px] place-items-center text-[#A98088]" type="button" aria-label="Прибрати сет" data-cart-remove-open>
+                                 <button class="grid size-[30px] place-items-center text-[#A98088]" type="button" aria-label="{{ $cartText('remove_set', 'Прибрати сет') }}" data-cart-remove-open>
                                     <svg class="size-[13px]" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M3.25 3.25L9.75 9.75M9.75 3.25L3.25 9.75" stroke="#A98088" stroke-width="1.1375" stroke-linecap="round"/>
                                     </svg>
                                 </button>
                                 <div class="absolute right-0 top-9 z-50 hidden w-[218px] border border-[#E8DAD0] bg-white p-3.5 text-left shadow-[0_12px_30px_rgba(91,39,48,0.14)]" hidden data-cart-remove-confirm>
-                                    <p class="m-0 font-cormorant text-[20px] font-medium leading-6 text-[#5B2730]">Видалити сет?</p>
-                                    <p class="m-0 mt-1 text-[12px] leading-[18px] text-[#7A4751]">Усі 5 ароматів буде прибрано з кошика.</p>
+                                    <p class="m-0 font-cormorant text-[20px] font-medium leading-6 text-[#5B2730]">{{ $cartText('remove_set_title', 'Видалити сет?') }}</p>
+                                    <p class="m-0 mt-1 text-[12px] leading-[18px] text-[#7A4751]">{{ $cartText('remove_set_hint', 'Усі 5 ароматів буде прибрано з кошика.') }}</p>
                                     <div class="mt-3 flex items-center justify-between gap-2">
-                                        <button class="h-9 flex-1 border border-[#E8DAD0] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#7A4751]" type="button" data-cart-remove-cancel>Скасувати</button>
-                                        <button class="h-9 flex-1 bg-[#5B2730] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#FFF8F4]" type="submit">Видалити</button>
+                                        <button class="h-9 flex-1 border border-[#E8DAD0] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#7A4751]" type="button" data-cart-remove-cancel>{{ $cartText('cancel', 'Скасувати') }}</button>
+                                        <button class="h-9 flex-1 bg-[#5B2730] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#FFF8F4]" type="submit">{{ $cartText('remove', 'Видалити') }}</button>
                                     </div>
                                 </div>
                             </form>
@@ -171,7 +172,7 @@
                                     $setMeta = is_array($setItem['meta'] ?? null) ? $setItem['meta'] : [];
                                     $setLabelParts = collect(preg_split('/\s*·\s*/u', (string) ($setMeta['cart_label'] ?? '')))->filter()->values();
                                     $setBrand = (string) ($setMeta['brand'] ?? ($setLabelParts->count() >= 3 ? $setLabelParts->get(0) : ''));
-                                    $setName = (string) ($setMeta['name'] ?? ($setLabelParts->count() >= 3 ? $setLabelParts->get(1) : ($setItem['name'] ?? 'Товар')));
+                                    $setName = (string) ($setMeta['name'] ?? ($setLabelParts->count() >= 3 ? $setLabelParts->get(1) : ($setItem['name'] ?? $cartText('product_fallback', 'Товар'))));
                                     $setVolume = (string) ($setMeta['volume'] ?? ($setLabelParts->count() >= 3 ? $setLabelParts->get(2) : ($setItem['variant'] ?? '3 мл')));
                                     $setOriginalPrice = (float) data_get($setMeta, 'discovery_original_price', $setItem['price'] ?? 0);
                                 @endphp
@@ -208,7 +209,7 @@
                             $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
                             $labelParts = collect(preg_split('/\s*·\s*/u', (string) ($meta['cart_label'] ?? '')))->filter()->values();
                             $brand = (string) ($meta['brand'] ?? ($labelParts->count() >= 3 ? $labelParts->get(0) : ''));
-                            $name = (string) ($meta['name'] ?? ($labelParts->count() >= 3 ? $labelParts->get(1) : ($item['name'] ?? 'Товар')));
+                            $name = (string) ($meta['name'] ?? ($labelParts->count() >= 3 ? $labelParts->get(1) : ($item['name'] ?? $cartText('product_fallback', 'Товар'))));
                             $volume = (string) ($meta['volume'] ?? ($labelParts->count() >= 3 ? $labelParts->get(2) : ($item['variant'] ?? '')));
                             $notes = (string) ($meta['notes'] ?? '');
                             $unitPrice = (float) ($item['price'] ?? 0);
@@ -226,7 +227,7 @@
                             if ($selectedBottle) {
                                 $bottleQty = max(1, $itemQty);
                                 $bottleCount += $bottleQty;
-                                $bottleTitle = (string) data_get($selectedBottle, 'title', 'Стандартний');
+                            $bottleTitle = (string) data_get($selectedBottle, 'title', $cartText('bottle_default', 'Стандартний'));
                                 $bottleKey = (string) data_get($selectedBottle, 'id', $bottleTitle);
                                 $bottleBreakdown[$bottleKey] = [
                                     'title' => $bottleTitle,
@@ -318,9 +319,9 @@
                                 <input type="hidden" name="product_id" value="{{ $productId }}">
                                 <input type="hidden" name="price" value="{{ $unitPrice }}">
                                 <input type="hidden" name="meta[volume]" value="{{ $volume }}">
-                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="-1" aria-label="Менше">-</button>
+                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="-1" aria-label="{{ $cartText('less', 'Менше') }}">-</button>
                                 <span class="grid h-7 min-w-[26px] place-items-center px-2 text-[13px] leading-5 text-[#5B2730]">{{ $itemQty }}</span>
-                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="1" aria-label="Більше">+</button>
+                                <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="1" aria-label="{{ $cartText('more', 'Більше') }}">+</button>
                             </form>
 
                             <div class="absolute right-[50px] top-[66px] min-w-24 text-right max-sm:right-0 max-sm:top-[137px] max-sm:min-w-0">
@@ -334,17 +335,17 @@
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $productId }}">
                                 <input type="hidden" name="meta[volume]" value="{{ $volume }}">
-                                <button class="grid size-[30px] place-items-center text-[#A98088]" type="button" aria-label="Прибрати" data-cart-remove-open>
+                                 <button class="grid size-[30px] place-items-center text-[#A98088]" type="button" aria-label="{{ $cartText('remove', 'Прибрати') }}" data-cart-remove-open>
                                     <svg class="size-[13px]" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M3.25 3.25L9.75 9.75M9.75 3.25L3.25 9.75" stroke="#A98088" stroke-width="1.1375" stroke-linecap="round"/>
                                     </svg>
                                 </button>
                                 <div class="absolute right-0 top-9 hidden w-[218px] border border-[#E8DAD0] bg-white p-3.5 text-left shadow-[0_12px_30px_rgba(91,39,48,0.14)] max-sm:right-0 max-sm:top-8" hidden data-cart-remove-confirm>
-                                    <p class="m-0 font-cormorant text-[20px] font-medium leading-6 text-[#5B2730]">Видалити товар?</p>
-                                    <p class="m-0 mt-1 text-[12px] leading-[18px] text-[#7A4751]">Позицію буде прибрано з кошика.</p>
+                                    <p class="m-0 font-cormorant text-[20px] font-medium leading-6 text-[#5B2730]">{{ $cartText('remove_item_title', 'Видалити товар?') }}</p>
+                                    <p class="m-0 mt-1 text-[12px] leading-[18px] text-[#7A4751]">{{ $cartText('remove_item_hint', 'Позицію буде прибрано з кошика.') }}</p>
                                     <div class="mt-3 flex items-center justify-between gap-2">
-                                        <button class="h-9 flex-1 border border-[#E8DAD0] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#7A4751]" type="button" data-cart-remove-cancel>Скасувати</button>
-                                        <button class="h-9 flex-1 bg-[#5B2730] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#FFF8F4]" type="submit">Видалити</button>
+                                        <button class="h-9 flex-1 border border-[#E8DAD0] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#7A4751]" type="button" data-cart-remove-cancel>{{ $cartText('cancel', 'Скасувати') }}</button>
+                                        <button class="h-9 flex-1 bg-[#5B2730] px-3 text-[10.5px] font-medium uppercase leading-4 tracking-[1.2px] text-[#FFF8F4]" type="submit">{{ $cartText('remove', 'Видалити') }}</button>
                                     </div>
                                 </div>
                             </form>
@@ -352,22 +353,22 @@
                 @endforeach
             </div>
 
-            <a class="mt-[38px] inline-flex text-[13px] leading-5 text-[#7A4751] max-sm:mt-0 max-sm:py-3.5" href="{{ route('catalog.index') }}">← Продовжити добирати аромати</a>
+            <a class="mt-[38px] inline-flex text-[13px] leading-5 text-[#7A4751] max-sm:mt-0 max-sm:py-3.5" href="{{ route('catalog.index') }}">← {{ $cartText('continue_shopping', 'Продовжити добирати аромати') }}</a>
         </main>
 
         <aside class="w-full max-w-[400px] max-sm:flex max-sm:max-w-none max-sm:flex-col max-sm:items-start max-sm:gap-5">
             <div class="border border-[#E8DAD0] bg-white max-sm:-mx-5 max-sm:w-[calc(100%+40px)] max-sm:border-x-0">
                 <div class="flex h-[79px] items-baseline justify-between px-[26px] pb-5 pt-[22px] max-sm:h-[63px] max-sm:px-5 max-sm:py-4">
-                    <p class="m-0 text-[10.5px] font-medium uppercase leading-4 tracking-[1.68px] text-[#A98088]">Підсумок</p>
+                    <p class="m-0 text-[10.5px] font-medium uppercase leading-4 tracking-[1.68px] text-[#A98088]">{{ $cartText('summary', 'Підсумок') }}</p>
                     <strong class="font-cormorant text-[24px] font-semibold leading-9 tracking-[-0.24px] text-[#5B2730] max-sm:text-xl max-sm:leading-[30px] max-sm:tracking-[-0.2px]">{{ $money($cartTotalWithBottles) }}</strong>
                 </div>
 
                 <div class="{{ $freeShippingFrom > 0 ? 'block' : 'hidden' }} bg-[#FBF4F0] px-[26px] py-[18px] max-sm:px-5 max-sm:py-3.5 max-sm:pb-4">
                     <p class="m-0 text-[12.5px] leading-[18px] text-[#7A4751]">
                         @if ($freeShippingLeft > 0)
-                            Ще {{ $money($freeShippingLeft) }} і доставимо безкоштовно
+                            {{ $cartText('free_shipping_left', 'Ще') }} {{ $money($freeShippingLeft) }} {{ $cartText('free_shipping_suffix', 'і доставимо безкоштовно') }}
                         @else
-                            Доставка буде безкоштовною
+                            {{ $cartText('free_shipping', 'Доставка буде безкоштовною') }}
                         @endif
                     </p>
                     <div class="mt-3 h-0.5 w-full bg-[#EDDCD5]">
@@ -377,8 +378,8 @@
 
                 <form class="border-t border-[#E8DAD0] px-[26px] py-8 max-sm:px-5 max-sm:pb-[15px] max-sm:pt-7" action="#" method="GET">
                     <label class="flex h-12 border border-[#E8DAD0]">
-                        <input class="min-w-0 flex-1 px-4 text-[13px] leading-4 text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" type="text" name="promo" placeholder="Промокод або сертифікат">
-                        <button class="w-[120px] text-[10.5px] uppercase leading-4 tracking-[1.47px] text-[#7A4751] max-sm:w-24" type="submit">Застосувати</button>
+                        <input class="min-w-0 flex-1 px-4 text-[13px] leading-4 text-[#5B2730] outline-none placeholder:text-[#C9A9B0]" type="text" name="promo" placeholder="{{ $cartText('promo', 'Промокод або сертифікат') }}">
+                        <button class="w-[120px] text-[10.5px] uppercase leading-4 tracking-[1.47px] text-[#7A4751] max-sm:w-24" type="submit">{{ $cartText('apply', 'Застосувати') }}</button>
                     </label>
                 </form>
 
@@ -389,7 +390,7 @@
                             <dd class="m-0 text-[#5B2730]">{{ $money($regularItems->sum(fn ($item) => (float) ($item['old_subtotal'] ?? $item['subtotal'] ?? 0))) }}</dd>
                         </div>
                         <div class="flex justify-between py-[5.5px]">
-                            <dt class="text-[#7A4751]">Знижка на аромати</dt>
+                            <dt class="text-[#7A4751]">{{ $cartText('fragrance_discount', 'Знижка на аромати') }}</dt>
                             <dd class="m-0 text-[#4D8566]">{{ ($discountTotal - $discoveryDiscountTotal) > 0 ? '- ' . $money($discountTotal - $discoveryDiscountTotal) : $money(0) }}</dd>
                         </div>
                         @if ($discoverySetGroups->isNotEmpty())
@@ -407,18 +408,18 @@
                             <dd class="m-0 text-[#5B2730]">{{ $money($bottleFee) }}</dd>
                         </div>
                         <div class="flex justify-between pb-[19px] pt-[5.5px]">
-                            <dt class="text-[#7A4751]">Доставка</dt>
-                            <dd class="m-0 text-[#5B2730]">на кроці 3</dd>
+                            <dt class="text-[#7A4751]">{{ $cartText('delivery', 'Доставка') }}</dt>
+                            <dd class="m-0 text-[#5B2730]">{{ $cartText('delivery_step', 'на кроці 3') }}</dd>
                         </div>
                     </dl>
 
                     <div class="flex items-baseline justify-between border-t border-[#E8DAD0] pt-4 max-sm:pt-4">
-                        <span class="text-[10.5px] font-medium uppercase leading-4 tracking-[1.68px] text-[#7A4751]">Разом</span>
+                        <span class="text-[10.5px] font-medium uppercase leading-4 tracking-[1.68px] text-[#7A4751]">{{ $cartText('total', 'Разом') }}</span>
                         <strong class="font-cormorant text-[30px] font-semibold leading-[45px] tracking-[-0.3px] text-[#5B2730] max-sm:text-[25px] max-sm:leading-[38px] max-sm:tracking-[-0.25px]">{{ $money($cartTotalWithBottles) }}</strong>
                     </div>
 
                     <a class="mt-5 flex h-[52px] items-center justify-center gap-3 bg-[#5B2730] text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#FFF8F4]" href="{{ route('checkout') }}">
-                        Оформити замовлення
+                        {{ $cartText('checkout', 'Оформити замовлення') }}
                         <svg class="size-[15px]" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
                             <path d="M2.8 7.5H12.2M8.4 3.3L12.2 7.5L8.4 11.7" stroke="#FFF8F4" stroke-width="1.3125" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -427,7 +428,7 @@
             </div>
 
             <div class="flex min-w-0 w-full max-w-full items-center justify-between px-0.5 pt-[13px] max-sm:flex-col max-sm:items-start max-sm:gap-2.5 max-sm:px-0 max-sm:pt-[21px]">
-                <span class="text-[10px] uppercase leading-[15px] tracking-[1.4px] text-[#A98088]">Оплата захищена</span>
+                <span class="text-[10px] uppercase leading-[15px] tracking-[1.4px] text-[#A98088]">{{ $cartText('payment_secure', 'Оплата захищена') }}</span>
                 <img class="h-5 w-[162px] shrink-0 object-contain" src="{{ asset('vendor/frontend-sevia/images/oplatu.png') }}" alt="LiqPay, Visa, Mastercard">
             </div>
 

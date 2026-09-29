@@ -1,8 +1,23 @@
 @php
+    $collectionCountLabel = static function (string $key, string $fallback) use ($collectionCounts): string {
+        if (! array_key_exists($key, $collectionCounts ?? [])) {
+            return $fallback;
+        }
+
+        $count = (int) $collectionCounts[$key];
+        $mod10 = $count % 10;
+        $mod100 = $count % 100;
+        $suffix = $mod10 === 1 && $mod100 !== 11 ? 'аромат' : (($mod10 >= 2 && $mod10 <= 4) && ! ($mod100 >= 12 && $mod100 <= 14) ? 'аромати' : 'ароматів');
+
+        return "{$count} {$suffix}";
+    };
     $perfumeCollections = [
-        ['image' => 'collection-muskusni.png', 'mobileImage' => 'collection-muskusni-mobile.png', 'capsule' => 'Капсула 01', 'title' => 'Мускусні', 'count' => '24 аромати', 'tone' => 'bg-[rgba(250,215,175,0.2)]'],
-        ['image' => 'collection-kvitkovi.png', 'mobileImage' => 'collection-kvitkovi-mobile.png', 'capsule' => 'Капсула 02', 'title' => 'Квіткові', 'count' => '32 аромати', 'tone' => 'bg-[rgba(250,175,224,0.2)]'],
-        ['image' => 'collection-solodki.png', 'mobileImage' => 'collection-solodki-mobile.png', 'capsule' => 'Капсула 03', 'title' => 'Солодкі', 'count' => '26 ароматів', 'tone' => 'bg-[rgba(250,175,178,0.2)]'],
+        ['key' => 'muskusni', 'image' => 'collection-muskusni.png', 'mobileImage' => 'collection-muskusni-mobile.png', 'capsule' => st('home.collections.card_1.capsule', 'Капсула 01'), 'title' => st('home.collections.card_1.title', 'Мускусні'), 'count' => $collectionCountLabel('muskusni', st('home.collections.card_1.count', '24 аромати')), 'tone' => 'bg-[rgba(250,215,175,0.2)]'],
+        ['key' => 'kvitkovi', 'image' => 'collection-kvitkovi.png', 'mobileImage' => 'collection-kvitkovi-mobile.png', 'capsule' => st('home.collections.card_2.capsule', 'Капсула 02'), 'title' => st('home.collections.card_2.title', 'Квіткові'), 'count' => $collectionCountLabel('kvitkovi', st('home.collections.card_2.count', '32 аромати')), 'tone' => 'bg-[rgba(250,175,224,0.2)]'],
+        ['key' => 'solodki', 'image' => 'collection-solodki.png', 'mobileImage' => 'collection-solodki-mobile.png', 'capsule' => st('home.collections.card_3.capsule', 'Капсула 03'), 'title' => st('home.collections.card_3.title', 'Солодкі'), 'count' => $collectionCountLabel('solodki', st('home.collections.card_3.count', '26 ароматів')), 'tone' => 'bg-[rgba(250,175,178,0.2)]'],
+        ['key' => 'svigi-citrusovi', 'image' => 'collection-svigi.png', 'mobileImage' => 'collection-svigi.png', 'capsule' => st('home.collections.card_4.capsule', 'Капсула 04'), 'title' => st('home.collections.card_4.title', 'Свіжі/Цитрусові'), 'count' => $collectionCountLabel('svigi-citrusovi', st('home.collections.card_4.count', '24 аромати')), 'tone' => 'bg-[rgba(191,230,244,0.2)]'],
+        ['key' => 'shkiriani', 'image' => 'collection-shkira.png', 'mobileImage' => 'collection-shkira.png', 'capsule' => st('home.collections.card_5.capsule', 'Капсула 05'), 'title' => st('home.collections.card_5.title', 'Шкіряні'), 'count' => $collectionCountLabel('shkiriani', st('home.collections.card_5.count', '32 аромати')), 'tone' => 'bg-[rgba(213,182,158,0.2)]'],
+        ['key' => 'derevni', 'image' => 'collection-derevo.png', 'mobileImage' => 'collection-derevo.png', 'capsule' => st('home.collections.card_6.capsule', 'Капсула 06'), 'title' => st('home.collections.card_6.title', 'Деревні'), 'count' => $collectionCountLabel('derevni', st('home.collections.card_6.count', '26 ароматів')), 'tone' => 'bg-[rgba(208,186,156,0.2)]'],
     ];
 @endphp
 
@@ -86,7 +101,7 @@
            max-sm:w-[234px] max-sm:text-center max-sm:text-[10.5px]
            max-sm:leading-[13px] max-sm:tracking-[1.8px]"
                 >
-                    який аромат відображає тебе?
+                    {{ st('home.collections.eyebrow', 'який аромат відображає тебе?') }}
                 </p> <h2
                     class="m-0 font-cormorant text-[74px] font-normal italic uppercase
            leading-none tracking-[-1.944px] text-[#5B2730]
@@ -103,21 +118,21 @@
            max-sm:font-medium max-sm:not-italic max-sm:leading-[35px]
            max-sm:tracking-[0.5px]"
                 >
-                    Колекції парфумів
+                    {{ st('home.collections.title', 'Колекції парфумів') }}
                 </h2>
                 <p class="m-0 hidden text-center text-[13px] font-normal leading-[150%] text-[#7A4751] max-sm:block max-sm:w-[310px]">
-                    Шукай не за брендом, а за станом.
+                    {{ st('home.collections.description', 'Шукай не за брендом, а за станом.') }}
                 </p>
             </div>
         </div>
 
         <div
-            class="grid min-h-[533px] grid-cols-3 gap-6
-           min-[1600px]:min-h-[711px] min-[1600px]:gap-8
+            class="grid min-h-[533px] grid-cols-3 gap-x-6 gap-y-[136px]
+           min-[1600px]:min-h-[711px] min-[1600px]:gap-x-8 min-[1600px]:gap-y-[181px]
 
            min-[640px]:max-[1099px]:min-h-[515.45px]
            min-[640px]:max-[1099px]:grid-cols-3
-           min-[640px]:max-[1099px]:gap-[17.29px]
+           min-[640px]:max-[1099px]:gap-x-[17.29px] min-[640px]:max-[1099px]:gap-y-[100px]
 
            max-sm:z-[1] max-sm:min-h-0 max-sm:w-full
            max-sm:grid-cols-1 max-sm:gap-3.5 max-sm:pt-3"
@@ -129,7 +144,7 @@
            min-[640px]:max-[1099px]:h-[436.23px]
 
            max-sm:h-[250px] max-sm:overflow-hidden"
-                    href="#"
+                    href="{{ route('collections.show', ['collection' => $collection['key']]) }}"
                 >     <figure class="absolute inset-px m-0 flex items-center justify-center overflow-hidden {{ $collection['tone'] }} max-sm:static max-sm:h-[158px] max-sm:w-full">
                         <img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] max-sm:hidden" src="{{ asset('vendor/frontend-sevia/images/' . $collection['image']) }}" alt="{{ $collection['title'] }}">
                         <img class="hidden h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] max-sm:block" src="{{ asset('vendor/frontend-sevia/images/' . $collection['mobileImage']) }}" alt="{{ $collection['title'] }}">

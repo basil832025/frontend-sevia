@@ -13,7 +13,7 @@
 
         $posts = collect($fallbackImages)->map(fn (string $image, int $index): array => [
             'id' => 'fallback-' . $index,
-            'caption' => 'Sevia в Instagram',
+            'caption' => st('home.instagram.fallback_caption', 'Sevia в Instagram'),
             'image' => asset('vendor/frontend-sevia/images/' . $image),
             'permalink' => 'https://www.instagram.com/sevia.parfume/',
         ]);
@@ -379,16 +379,16 @@
     <div class="sevia-instagram__inner relative z-10 mx-auto flex w-full max-w-[1304px] flex-col gap-[34px] max-lg:gap-10 max-sm:gap-7">
         <header class="sevia-instagram__header flex flex-col items-start gap-[12px]">
             <p class="sevia-instagram__eyebrow m-0 text-[11px] font-medium uppercase leading-4 tracking-[2.2px] text-[#A98088] max-lg:text-[10px] max-lg:tracking-[1.9px] max-sm:text-[9px] max-sm:leading-3 max-sm:tracking-[1.4px]">
-                Slowly · Daily · sevia.parfume
+                {{ st('home.instagram.eyebrow', 'Slowly · Daily · sevia.parfume') }}
             </p>
 
             <a class="sevia-instagram__title group inline-flex flex-wrap items-baseline gap-x-2.5 gap-y-1" href="{{ $instagramUrl }}" target="_blank" rel="noopener noreferrer">
                 <h2 id="sevia-instagram-title" class="sevia-instagram__brand m-0 font-cormorant text-[40px] font-normal italic leading-none tracking-normal text-[#5B2730] max-lg:text-[42px] max-sm:text-[34px]">
-                    Sevia
+                    {{ st('home.instagram.brand', 'Sevia') }}
                 </h2>
-                <span class="font-cormorant text-[30px] font-normal leading-none tracking-normal text-[#5B2730] max-lg:text-[32px] max-sm:text-[24px]">в</span>
+                <span class="font-cormorant text-[30px] font-normal leading-none tracking-normal text-[#5B2730] max-lg:text-[32px] max-sm:text-[24px]">{{ st('home.instagram.in', 'в') }}</span>
                 <span class="font-cormorant text-[40px] font-medium uppercase leading-none tracking-normal text-[#D46568] transition group-hover:text-[#A85D66] max-lg:text-[42px] max-sm:text-[34px]">
-                    Instagram
+                    {{ st('home.instagram.network', 'Instagram') }}
                 </span>
             </a>
 
@@ -411,12 +411,12 @@
                     href="{{ $post['permalink'] }}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="{{ $post['caption'] ?: 'Sevia в Instagram' }}"
+                    aria-label="{{ $post['caption'] ?: st('home.instagram.fallback_caption', 'Sevia в Instagram') }}"
                 >
                     <img
                         class="sevia-instagram__image h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
                         src="{{ $post['image'] }}"
-                        alt="{{ $post['caption'] ?: 'Sevia в Instagram' }}"
+                        alt="{{ $post['caption'] ?: st('home.instagram.fallback_caption', 'Sevia в Instagram') }}"
                         loading="lazy"
                     >
                     <span class="sevia-instagram__gradient pointer-events-none absolute inset-0 bg-gradient-to-b from-[rgba(91,39,48,0)] from-55% to-[rgba(91,39,48,0.16)]"></span>

@@ -60,6 +60,7 @@ class SeviaCatalogController extends Controller
             'homeProducts' => $products,
             'liveDiscountProducts' => $discountProducts,
             'instagramPosts' => app(InstagramFeedService::class)->latest(6),
+            'collectionCounts' => $this->collectionCounts($locale),
         ]);
     }
 
@@ -116,6 +117,48 @@ class SeviaCatalogController extends Controller
             'selectedVolume' => (int) $request->query('volume', 0),
             'favoriteIds' => $this->favoriteIds(),
             'saleOnly' => $saleOnly,
+        ]);
+    }
+
+    public function collections()
+    {
+        return view('front.sevia::collections.index', [
+            'collectionCounts' => $this->collectionCounts(app()->getLocale() ?: 'uk'),
+        ]);
+    }
+
+    public function collection(Request $request, string $collection)
+    {
+        $definition = $this->collectionDefinition($collection);
+        abort_unless($definition, 404);
+
+        $locale = app()->getLocale() ?: 'uk';
+        $characteristic = Characteristic::query()
+            ->where('slug', 'sevia-collections')
+            ->with(['values' => fn ($query) => $query->where('is_active', true)])
+            ->firstOrFail();
+
+        $valueIds = $characteristic->values
+            ->filter(fn ($value): bool => in_array($this->normalizeCollectionName($this->label($value, 'value', $locale)), $definition['aliases'], true))
+            ->pluck('id')
+            ->map(fn ($id): int => (int) $id)
+            ->values()
+            ->all();
+
+        abort_if($valueIds === [], 404);
+
+        $filters = $this->selectedFilters($request);
+        $filters[(int) $characteristic->id] = $valueIds;
+        $request->merge(['filters' => $filters]);
+
+        return $this->index($request)->with([
+            'collection' => $definition,
+            'collectionKey' => $collection,
+            'breadcrumbs' => [
+                ['title' => 'Sevia', 'url' => route('home')],
+                ['title' => 'Колекції', 'url' => route('collections.index')],
+                ['title' => $definition['title'], 'url' => null],
+            ],
         ]);
     }
 
@@ -805,6 +848,65 @@ class SeviaCatalogController extends Controller
         }
 
         return trim((string) $raw);
+    }
+
+    private function collectionDefinition(string $key): ?array
+    {
+        $collections = [
+            'muskusni' => ['title' => 'Мускусні', 'capsule' => 'Капсула 01', 'image' => 'collection-muskusni.png', 'aliases' => ['мускусні'], 'description' => 'Тихі аромати, які лишаються на светрі, а не заходять у кімнату першими. Білий мускус, кашемірове дерево й амбра — те, що читається як «чисто» і тримається на шкірі весь день.', 'accords' => ['Білий мускус', 'Амбра', 'Кашмір', 'Сандал']],
+            'kvitkovi' => ['title' => 'Квіткові', 'capsule' => 'Капсула 02', 'image' => 'collection-kvitkovi.png', 'aliases' => ['квіткові'], 'description' => 'Квіткові композиції — від легких і прозорих до глибоких, вечірніх.', 'accords' => ['Ірис', 'Жасмин', 'Троянда', 'Півонія']],
+            'solodki' => ['title' => 'Солодкі', 'capsule' => 'Капсула 03', 'image' => 'collection-solodki.png', 'aliases' => ['солодкі'], 'description' => 'Теплі гурманські аромати з м’яким, виразним шлейфом.', 'accords' => ['Ваніль', 'Карамель', 'Пудра', 'Боби тонка']],
+            'svigi-citrusovi' => ['title' => 'Свіжі/Цитрусові', 'capsule' => 'Капсула 04', 'image' => 'collection-svigi.png', 'aliases' => ['свіжі', 'цитрусові', 'свіжі/цитрусові'], 'description' => 'Легкі, прозорі композиції для щоденного настрою.', 'accords' => ['Бергамот', 'Лимон', 'Неролі', 'Зелені ноти']],
+            'shkiriani' => ['title' => 'Шкіряні', 'capsule' => 'Капсула 05', 'image' => 'collection-shkira.png', 'aliases' => ['шкіряні'], 'description' => 'Характерні аромати з глибиною, фактурою та впізнаваним шлейфом.', 'accords' => ['Шкіра', 'Замша', 'Тютюн', 'Амбра']],
+            'derevni' => ['title' => 'Деревні', 'capsule' => 'Капсула 06', 'image' => 'collection-derevo.png', 'aliases' => ['деревні'], 'description' => 'Теплі й виразні деревні композиції на кожен день і для особливих моментів.', 'accords' => ['Кедр', 'Сандал', 'Ветивер', 'Пачулі']],
+        ];
+
+        return $collections[$key] ?? null;
+    }
+
+    private function collectionCounts(string $locale): array
+    {
+        $characteristic = Characteristic::query()
+            ->where('slug', 'sevia-collections')
+            ->with(['values' => fn ($query) => $query->where('is_active', true)])
+            ->first();
+
+        if (! $characteristic) {
+            return [];
+        }
+
+        return collect(['muskusni', 'kvitkovi', 'solodki', 'svigi-citrusovi', 'shkiriani', 'derevni'])
+            ->mapWithKeys(function (string $key) use ($characteristic, $locale): array {
+                $definition = $this->collectionDefinition($key);
+                $valueIds = $characteristic->values
+                    ->filter(fn ($value): bool => in_array($this->normalizeCollectionName($this->label($value, 'value', $locale)), $definition['aliases'], true))
+                    ->pluck('id');
+
+                if ($valueIds->isEmpty()) {
+                    return [$key => 0];
+                }
+
+                $productIds = DB::table('bs_product_characteristic_value')
+                    ->where('characteristic_id', $characteristic->id)
+                    ->whereIn('characteristic_value_id', $valueIds)
+                    ->pluck('product_id');
+
+                $count = Product::query()
+                    ->whereIn('id', $productIds)
+                    ->selectRaw('CASE WHEN parent_id IS NULL THEN id ELSE parent_id END AS root_id')
+                    ->get()
+                    ->pluck('root_id')
+                    ->unique()
+                    ->count();
+
+                return [$key => $count];
+            })
+            ->all();
+    }
+
+    private function normalizeCollectionName(string $value): string
+    {
+        return mb_strtolower(trim(preg_replace('/\s+/u', ' ', $value) ?? ''));
     }
 
     private function splitProductTitle(string $title): array

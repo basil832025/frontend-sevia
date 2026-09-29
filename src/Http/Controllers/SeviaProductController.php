@@ -5,6 +5,7 @@ namespace Basil832025\FrontendSevia\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductReview;
+use App\Support\GuestFavoritesStore;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -49,6 +50,10 @@ class SeviaProductController extends Controller
             ->latest('created_at')
             ->paginate(10, ['*'], 'reviews_page');
         $stats = $this->reviewStats($reviewProductIds);
+        $client = auth()->user();
+        $isFavorite = $client
+            ? $client->favorites()->whereKey($product->id)->exists()
+            : in_array((int) $product->id, GuestFavoritesStore::idsFromRequest(), true);
 
         return view('front.sevia::product.show', [
             'product' => $product,
@@ -56,6 +61,7 @@ class SeviaProductController extends Controller
             'relatedProducts' => $related,
             'reviews' => $reviews,
             'stats' => $stats,
+            'isFavorite' => $isFavorite,
         ]);
     }
 

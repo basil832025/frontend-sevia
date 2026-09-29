@@ -1,5 +1,6 @@
 <x-mail::message>
-# Нове замовлення №{{ $order->number ?? $order->id }}
+@php($emailText = static fn (string $key, string $default): string => st("emails.$key", $default))
+# {{ $emailText('admin_heading', 'Нове замовлення №') }}{{ $order->number ?? $order->id }}
 
 @php
     $money = fn ($value) => number_format((float) $value, 0, ',', ' ') . ' грн';
@@ -11,45 +12,45 @@
         $order->recipient_patronymic,
     ])));
     $deliveryTitle = $order->self_pickup
-        ? 'Шоу-рум Sevia, самовивіз'
+        ? $emailText('pickup', 'Шоу-рум Sevia, самовивіз')
         : match ((string) ($order->nova_delivery_type ?? 'warehouse')) {
-            'postomat' => 'Нова Пошта, поштомат',
-            'courier' => 'Курʼєр Нової Пошти',
-            default => 'Нова Пошта, відділення',
+            'postomat' => $emailText('postomat', 'Нова Пошта, поштомат'),
+            'courier' => $emailText('courier', 'Курʼєр Нової Пошти'),
+            default => $emailText('warehouse', 'Нова Пошта, відділення'),
         };
     $deliveryPlace = $order->self_pickup
-        ? 'вул. Хрещатик 22, Київ'
+        ? $emailText('pickup_address', 'вул. Хрещатик 22, Київ')
         : trim(implode(', ', array_filter([$order->nova_city, $order->nova_city_details, $order->nova_warehouse])));
 @endphp
 
-**Клієнт:** {{ trim(($client?->surname ? $client->surname . ' ' : '') . ($client?->name ?? '')) ?: '—' }}  
-**Телефон:** {{ $client?->phone ?? $order->recipient_phone ?? '—' }}  
+**{{ $emailText('client', 'Клієнт') }}:** {{ trim(($client?->surname ? $client->surname . ' ' : '') . ($client?->name ?? '')) ?: '—' }}  
+**{{ $emailText('phone', 'Телефон') }}:** {{ $client?->phone ?? $order->recipient_phone ?? '—' }}  
 **Email:** {{ $client?->email ?? '—' }}  
-**Отримувач:** {{ $recipient ?: '—' }}  
-**Доставка:** {{ $deliveryTitle }}  
+**{{ $emailText('recipient', 'Отримувач') }}:** {{ $recipient ?: '—' }}  
+**{{ $emailText('delivery', 'Доставка') }}:** {{ $deliveryTitle }}  
 @if ($deliveryPlace !== '')
-**Адреса:** {{ $deliveryPlace }}  
+**{{ $emailText('address', 'Адреса') }}:** {{ $deliveryPlace }}  
 @endif
-**Сума:** {{ $money($order->grand_total) }}
+**{{ $emailText('amount', 'Сума') }}:** {{ $money($order->grand_total) }}
 
 @if (trim((string) $order->notes) !== '')
-**Коментар:** {{ $order->notes }}
+**{{ $emailText('comment', 'Коментар') }}:** {{ $order->notes }}
 @endif
 
 <x-mail::table>
-| Товар | Кількість | Сума |
+| {{ $emailText('product', 'Товар') }} | {{ $emailText('quantity', 'Кількість') }} | {{ $emailText('amount', 'Сума') }} |
 |:--|:--:|--:|
 @foreach($order->items as $item)
 @php
     $product = $item->product;
     $parent = $product?->parent ?: $product;
-    $name = $parent?->display_name ?? $parent?->displayName ?? $parent?->title ?? 'Товар';
+    $name = $parent?->display_name ?? $parent?->displayName ?? $parent?->title ?? $emailText('product_fallback', 'Товар');
 @endphp
 | {{ $name }} | {{ (int) $item->qty }} | {{ $money((float) $item->qty * (float) $item->unit_price) }} |
 @endforeach
 </x-mail::table>
 
 <x-mail::button :url="$adminOrderUrl">
-Відкрити замовлення в адмінці
+{{ $emailText('open_admin', 'Відкрити замовлення в адмінці') }}
 </x-mail::button>
 </x-mail::message>

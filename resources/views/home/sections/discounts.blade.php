@@ -87,7 +87,7 @@
            max-sm:leading-[11px]
            max-sm:tracking-[1.2px]"
                 >
-                    Знижки на парфуми на розпив 3-30 мл у червні 2026
+                    {{ st('home.discounts.eyebrow', 'Знижки на парфуми на розпив 3-30 мл у червні 2026') }}
                 </p> <h2
                     class="m-0 w-full font-cormorant text-[74px] font-normal italic uppercase
            leading-none tracking-[-1.944px] text-[#5B2730]
@@ -106,7 +106,7 @@
            max-sm:leading-[35px]
            max-sm:tracking-[0.5px]"
                 >
-                    Знижки до -20%
+                    {{ st('home.discounts.title', 'Знижки до -20%') }}
                 </h2>
             </div>
 
@@ -134,7 +134,7 @@
            max-sm:hidden"
                 href="#"
             >
-                Переглянути знижки
+                {{ st('home.discounts.cta', 'Переглянути знижки') }}
             </a>
         </div>
     </div>
@@ -145,7 +145,7 @@
            min-[1100px]:max-[1599px]:-mt-[72px]
 
            min-[1600px]:-mt-[36px]
-           min-[1600px]:max-w-[1728px]
+           min-[1600px]:max-w-[1726.6px]
            min-[1600px]:gap-[13px]
 
            min-[640px]:max-[1099px]:!mt-[-22px]
@@ -168,6 +168,9 @@
                 class="relative flex h-[455.78px] flex-1 flex-col items-center
            gap-3 border border-[#5B2730] bg-[#FDFBF8] p-6
 
+           min-[1100px]:w-[334.92px]
+           min-[1100px]:flex-none
+
            min-[640px]:max-[1099px]:h-[455.78px]
            min-[640px]:max-[1099px]:w-full
            min-[640px]:max-[1099px]:flex-none
@@ -182,7 +185,7 @@
 
            {{ $loop->iteration > 4 ? 'max-sm:hidden' : '' }}"
             >      <span class="absolute left-6 top-6 z-10 flex h-[25px] min-w-[47px] items-center justify-center rounded-[2px] border border-[#5B2730] bg-[#5B2730] px-[9px] py-1 text-[9.5px] font-semibold uppercase leading-[15px] tracking-[1.33px] text-[#FDFBF8] max-sm:left-2 max-sm:top-2 max-sm:h-[18px] max-sm:w-[37px] max-sm:rounded-none max-sm:border-0 max-sm:bg-[#B03B45] max-sm:px-[7px] max-sm:py-1 max-sm:text-[8px] max-sm:leading-[10px] max-sm:tracking-[0.4px]">-{{ $product['discount_percent'] }}%</span>
-                <button class="absolute right-6 top-6 z-10 flex size-9 items-center justify-center rounded-full border border-[#E8DAD0] bg-white text-[#5B2730] max-sm:right-3 max-sm:top-2 max-sm:size-7" type="button" aria-label="Додати в обране">
+                <button class="absolute right-6 top-6 z-10 flex size-9 items-center justify-center rounded-full border border-[#E8DAD0] bg-white text-[#5B2730] max-sm:right-3 max-sm:top-2 max-sm:size-7" type="button" aria-label="{{ st('home.common.add_to_favorites', 'Додати в обране') }}" data-favorite-toggle data-favorite-url="{{ route('favorites.toggle') }}" data-product-id="{{ $product['id'] }}">
                     <svg class="max-sm:size-[13px]" width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M8.5 14.025C8.5 14.025 2.125 10.625 2.125 6.37502C2.125 4.50502 3.57 3.14502 5.355 3.14502C6.545 3.14502 7.65 3.82502 8.5 4.93002C9.35 3.82502 10.455 3.14502 11.645 3.14502C13.43 3.14502 14.875 4.50502 14.875 6.37502C14.875 10.625 8.5 14.025 8.5 14.025Z" stroke="#5B2730" stroke-width="1.19" stroke-linejoin="round"/>
                     </svg>
@@ -205,37 +208,17 @@
                     <h3 class="m-0 min-h-[46px] font-cormorant text-[19.7px] font-medium leading-[23px] text-[#5B2730] max-sm:mt-[5px] max-sm:min-h-[40px] max-sm:text-[17px] max-sm:leading-5">{{ $product['name'] }}</h3>
                     <p class="m-0 min-h-[38px] max-h-[38px] overflow-hidden pt-0.5 text-[12px] font-light leading-[18px] text-[#7A4751] max-sm:mt-[5px] max-sm:h-[11px] max-sm:min-h-[11px] max-sm:max-h-[11px] max-sm:truncate max-sm:p-0 max-sm:text-[9px] max-sm:font-normal max-sm:leading-[11px] max-sm:text-[#A98088]">{{ $product['notes'] }}</p>
 
-                    <div class="mt-auto flex flex-wrap gap-1 max-sm:mt-2 max-sm:grid max-sm:w-full max-sm:grid-cols-3 max-sm:gap-1" role="group" aria-label="Volume" data-volume-options>
-                        @foreach ($product['volumes'] as $volume)
-                            <button class="inline-flex h-10 min-w-[46px] flex-col items-center justify-center gap-0 border border-[#D8C4BE] px-0.5 text-[9px] font-medium leading-3 text-[#7A4751] {{ $loop->first ? 'border-[#5B2730] text-[#5B2730]' : '' }}" type="button" data-volume-option data-price-label="{{ $volume['price_label'] }}" data-volume-label="{{ $volume['label'] }}" data-product-id="{{ $volume['id'] }}" data-product-price="{{ $volume['price'] }}" data-cart-product-label="{{ collect([$product['brand'], $product['name'], $volume['label'], $volume['price_label']])->implode(' · ') }}" data-selected="{{ $loop->first ? 'true' : 'false' }}">
-                                <span>{{ $volume['label'] }}</span>
-                                <strong class="font-medium">{{ $volume['price_label'] }}</strong>
-                            </button>
-                        @endforeach
-                    </div>
-
                     <div class="relative z-10 mt-auto flex h-[47px] items-center justify-between border-t border-[#EFE4D9] bg-[#FDFBF8] pt-3 max-sm:mt-0 max-sm:h-[47px] max-sm:border-t max-sm:border-[#E8DAD0] max-sm:bg-white max-sm:pt-3">
                         <p class="m-0 flex items-end gap-[5px]">
                             <span class="text-[15px] font-semibold leading-[23px] text-[#5B2730] max-sm:text-[13.5px] max-sm:leading-4 max-sm:text-[#B03B45]">{{ $product['price_label'] }}</span>
                             <span class="text-[12px] leading-[19px] text-[#A98088] line-through max-sm:text-[9px] max-sm:leading-[11px] max-sm:text-[#C9A9B0]">{{ $product['old_price_label'] }}</span>
                             <span class="text-[10.5px] leading-4 text-[#A98088] max-sm:hidden">/ {{ $defaultVolume['label'] }}</span>
                         </p>
-                        <button
-                            class="absolute right-6 top-6 z-10 flex size-9 items-center justify-center
-           rounded-full border border-[#E8DAD0] bg-white text-[#5B2730]
-
-           min-[640px]:max-[1099px]:right-[12px]
-           min-[640px]:max-[1099px]:top-[12px]
-
-           max-sm:right-3 max-sm:top-2 max-sm:size-7"
-                            type="button"
-                            data-cart-add
-                            data-cart-add-url="{{ route('cart.add') }}"
-                            data-product-id="{{ $defaultVolume['id'] }}"
-                            data-product-price="{{ $defaultVolume['price'] }}"
-                            data-volume-label="{{ $defaultVolume['label'] }}"
-                            data-cart-product-label="{{ collect([$product['brand'], $product['name'], $defaultVolume['label'], $defaultVolume['price_label']])->implode(' · ') }}"
-                        >+</button>
+                        <a
+                            class="flex size-9 items-center justify-center rounded-full border border-[#E8DAD0] bg-white text-[#5B2730] max-sm:size-7"
+                            href="{{ $product['url'] }}"
+                            aria-label="{{ st('home.common.open_product', 'Переглянути товар') }}"
+                        >+</a>
                     </div>
                 </div>
             </article>
@@ -243,7 +226,7 @@
     </div>
 
     <a class="mt-5 hidden text-center text-[11px] font-medium uppercase leading-none tracking-[1.4px] text-[#7A4751] max-sm:inline-flex max-sm:items-center max-sm:justify-center max-sm:gap-1.5" href="#">
-        <span>Усі знижки</span>
+        <span>{{ st('home.discounts.all_cta', 'Усі знижки') }}</span>
         <span aria-hidden="true">→</span>
     </a>
 </section>

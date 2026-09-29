@@ -1,6 +1,6 @@
 @extends('front.sevia::layouts.app')
 
-@section('title', 'Sevia')
+@section('title', st('home.title', 'Sevia'))
 
 @section('content')
     @include('front.sevia::home.sections.hero')

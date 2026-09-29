@@ -18,6 +18,8 @@ Route::get('/', [SeviaCatalogController::class, 'home'])->name('home');
 Route::get('/discovery-53', [SeviaCatalogController::class, 'discovery'])->name('discovery-53');
 Route::get('/discovery-53/count', [SeviaCatalogController::class, 'discoveryCount'])->name('discovery-53.count');
 Route::get('/catalog', [SeviaCatalogController::class, 'index'])->name('catalog.index');
+Route::get('/collections', [SeviaCatalogController::class, 'collections'])->name('collections.index');
+Route::get('/collections/{collection}', [SeviaCatalogController::class, 'collection'])->name('collections.show');
 Route::get('/sale', [SeviaCatalogController::class, 'index'])->name('sale.index');
 Route::get('/catalog/count', [SeviaCatalogController::class, 'count'])->name('catalog.count');
 Route::get('/catalog/{category:slug}', [SeviaCatalogController::class, 'index'])->name('catalog.category');

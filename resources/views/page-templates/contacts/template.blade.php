@@ -10,6 +10,7 @@
         ?? $default;
     $heading = $t('heading', $page->getTitleForLocale($locale) ?? 'Контакти');
     $channels = data_get($content, 'channels', []);
+    $instagramUrl = trim((string) data_get($content, 'instagram'));
 @endphp
 
 @section('title', ($page->meta_title[$locale] ?? $page->meta_title[$fallback] ?? $heading) . ' | Sevia')
@@ -33,8 +34,12 @@
                         $title = data_get($channel, "title.{$locale}") ?? data_get($channel, "title.{$fallback}");
                         $meta = data_get($channel, "meta.{$locale}") ?? data_get($channel, "meta.{$fallback}");
                         $action = data_get($channel, "action.{$locale}") ?? data_get($channel, "action.{$fallback}") ?? 'Відкрити';
+                        $channelHref = data_get($channel, 'href');
+                        if (! $channelHref && str_contains(mb_strtolower((string) $label), 'instagram')) {
+                            $channelHref = $instagramUrl;
+                        }
                     @endphp
-                    <a class="grid min-h-[110px] grid-cols-[180px_minmax(0,1fr)_24px] items-center gap-6 border-b border-[#EFE4D9] text-left hover:bg-[#FDFBF8] max-sm:grid-cols-[1fr_20px]" href="{{ data_get($channel, 'href', '#') }}">
+                    <a class="grid min-h-[110px] grid-cols-[180px_minmax(0,1fr)_24px] items-center gap-6 border-b border-[#EFE4D9] text-left hover:bg-[#FDFBF8] max-sm:grid-cols-[1fr_20px]" href="{{ $channelHref ?: '#' }}">
                         <span class="text-[12px] uppercase tracking-[2px] text-[#A98088] max-sm:hidden">{{ $label }}</span>
                         <span class="flex flex-col">
                             <span class="hidden text-[11px] uppercase tracking-[1.5px] text-[#A98088] max-sm:block">{{ $label }}</span>
