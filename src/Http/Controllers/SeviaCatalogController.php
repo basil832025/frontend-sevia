@@ -156,7 +156,7 @@ class SeviaCatalogController extends Controller
             'collectionKey' => $collection,
             'breadcrumbs' => [
                 ['title' => 'Sevia', 'url' => route('home')],
-                ['title' => 'Колекції', 'url' => route('collections.index')],
+                ['title' => st('collections.breadcrumb', 'Колекції'), 'url' => route('collections.index')],
                 ['title' => $definition['title'], 'url' => null],
             ],
         ]);
@@ -861,7 +861,23 @@ class SeviaCatalogController extends Controller
             'derevni' => ['title' => 'Деревні', 'capsule' => 'Капсула 06', 'image' => 'collection-derevo.png', 'aliases' => ['деревні'], 'description' => 'Теплі й виразні деревні композиції на кожен день і для особливих моментів.', 'accords' => ['Кедр', 'Сандал', 'Ветивер', 'Пачулі']],
         ];
 
-        return $collections[$key] ?? null;
+        $definition = $collections[$key] ?? null;
+
+        if ($definition === null) {
+            return null;
+        }
+
+        foreach (['title', 'capsule', 'description'] as $field) {
+            $definition[$field] = st("collections.{$key}.{$field}", $definition[$field]);
+        }
+
+        $definition['accords'] = array_map(
+            fn (string $accord, int $index): string => st("collections.{$key}.accord_" . ($index + 1), $accord),
+            $definition['accords'],
+            array_keys($definition['accords']),
+        );
+
+        return $definition;
     }
 
     private function collectionCounts(string $locale): array

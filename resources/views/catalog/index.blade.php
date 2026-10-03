@@ -48,6 +48,46 @@
     }
 
     $pageUrl = fn (int $targetPage) => request()->fullUrlWithQuery(['page' => $targetPage]);
+
+    $genderGroup = collect($filterGroups)->first(fn (array $group): bool => ($group['role'] ?? null) === 'gender');
+    $selectedGenderIds = $genderGroup
+        ? collect($selectedFilters[$genderGroup['id']] ?? [])->map(fn ($id): int => (int) $id)->all()
+        : [];
+    $genderValueId = static function (array $needles) use ($genderGroup): ?int {
+        if (! $genderGroup) {
+            return null;
+        }
+
+        return collect($genderGroup['values'])->first(function (array $value) use ($needles): bool {
+            $title = mb_strtolower((string) $value['title']);
+
+            return collect($needles)->contains(fn (string $needle): bool => str_contains($title, $needle));
+        })['id'] ?? null;
+    };
+    $mobileTabUrl = static function (?int $valueId) use ($genderGroup): string {
+        $filters = request()->query('filters', []);
+
+        if ($genderGroup) {
+            if ($valueId === null) {
+                unset($filters[$genderGroup['id']]);
+            } else {
+                $filters[$genderGroup['id']] = [$valueId];
+            }
+        }
+
+        return request()->fullUrlWithQuery([
+            'filters' => $filters ?: null,
+            'sale' => null,
+            'page' => null,
+        ]);
+    };
+    $mobileTabs = [
+        ['label' => st('catalog.tabs.all', 'Усі'), 'url' => $mobileTabUrl(null), 'active' => ! ($saleOnly ?? false) && $selectedGenderIds === []],
+        ['label' => st('catalog.tabs.women', 'Жіночі'), 'url' => $mobileTabUrl($genderValueId(['жіноч', 'women', 'female'])), 'active' => in_array($genderValueId(['жіноч', 'women', 'female']), $selectedGenderIds, true)],
+        ['label' => st('catalog.tabs.men', 'Чоловічі'), 'url' => $mobileTabUrl($genderValueId(['чоловіч', 'men', 'male'])), 'active' => in_array($genderValueId(['чоловіч', 'men', 'male']), $selectedGenderIds, true)],
+        ['label' => st('catalog.tabs.unisex', 'Унісекс'), 'url' => $mobileTabUrl($genderValueId(['унісекс', 'unisex'])), 'active' => in_array($genderValueId(['унісекс', 'unisex']), $selectedGenderIds, true)],
+        ['label' => st('catalog.tabs.sale', 'Sale'), 'url' => route('sale.index'), 'active' => (bool) ($saleOnly ?? false)],
+    ];
 @endphp
 
 @section('content')
@@ -80,8 +120,8 @@
                     <h1 class="m-0 mt-3 font-cormorant text-[54px] font-medium uppercase leading-none text-[#5B2730] sm:text-[76px]">{{ $collection['title'] }}</h1>
                     <p class="m-0 mt-5 max-w-[520px] text-[14px] leading-6 text-[#7A4751]">{{ $collection['description'] }}</p>
                     <dl class="mt-7 flex gap-7 text-[#7A4751]">
-                        <div><dt class="text-[9px] uppercase tracking-[1.8px] text-[#A98088]">Ароматів</dt><dd class="m-0 mt-1 font-cormorant text-[20px]">{{ $productsTotal }}</dd></div>
-                        <div><dt class="text-[9px] uppercase tracking-[1.8px] text-[#A98088]">Об’єм розливу</dt><dd class="m-0 mt-1 font-cormorant text-[20px]">3–30 мл</dd></div>
+                        <div><dt class="text-[9px] uppercase tracking-[1.8px] text-[#A98088]">{{ st('collections.stats.fragrances', 'Ароматів') }}</dt><dd class="m-0 mt-1 font-cormorant text-[20px]">{{ $productsTotal }}</dd></div>
+                        <div><dt class="text-[9px] uppercase tracking-[1.8px] text-[#A98088]">{{ st('collections.stats.volume', 'Об’єм розливу') }}</dt><dd class="m-0 mt-1 font-cormorant text-[20px]">{{ st('collections.stats.volume_value', '3–30 мл') }}</dd></div>
                     </dl>
                 </div>
                 <img class="aspect-[0.78] w-full border-[7px] border-white object-cover p-0 shadow-sm" src="{{ asset('vendor/frontend-sevia/images/' . $collection['image']) }}" alt="{{ $collection['title'] }}">
@@ -90,17 +130,17 @@
         <section class="border-b border-[#EFE4D9] bg-white px-5 py-6 sm:px-[68px]">
             <div class="mx-auto flex w-full max-w-[1304px] flex-wrap gap-x-8 gap-y-3">
                 @foreach ($collection['accords'] as $accord)
-                    <span class="text-[12px] text-[#7A4751]"><b class="block font-cormorant text-[20px] font-medium text-[#5B2730]">{{ $accord }}</b>акорд колекції</span>
+                    <span class="text-[12px] text-[#7A4751]"><b class="block font-cormorant text-[20px] font-medium text-[#5B2730]">{{ $accord }}</b>{{ st('collections.accord_label', 'акорд колекції') }}</span>
                 @endforeach
             </div>
         </section>
     @endif
 
-    @if ($productsTotal > 0 && empty($collection))
+    @if (empty($collection))
         <div class="hidden w-full gap-2 overflow-x-auto px-5 pb-3 max-sm:flex">
-            @foreach ([st('catalog.tabs.all', 'Усі'), st('catalog.tabs.women', 'Жіночі'), st('catalog.tabs.men', 'Чоловічі'), st('catalog.tabs.unisex', 'Унісекс'), st('catalog.tabs.sale', 'Sale')] as $tab)
-                <a class="inline-flex h-[33px] shrink-0 items-center justify-center rounded-full px-4 text-[12px] font-medium leading-[15px] tracking-[0.3px] {{ $loop->first ? 'bg-[#5B2730] text-white' : 'border border-[#E8DAD0] text-[#7A4751]' }}" href="{{ route('catalog.index') }}">
-                    {{ $tab }}
+            @foreach ($mobileTabs as $tab)
+                <a class="inline-flex h-[33px] shrink-0 items-center justify-center rounded-full px-4 text-[12px] font-medium leading-[15px] tracking-[0.3px] {{ $tab['active'] ? 'bg-[#5B2730] text-white' : 'border border-[#E8DAD0] text-[#7A4751]' }}" href="{{ $tab['url'] }}">
+                    {{ $tab['label'] }}
                 </a>
             @endforeach
         </div>
@@ -543,18 +583,18 @@
     @if (! empty($collection))
         @php
             $otherCollections = [
-                ['key' => 'muskusni', 'title' => 'Мускусні', 'image' => 'collection-muskusni.png'],
-                ['key' => 'kvitkovi', 'title' => 'Квіткові', 'image' => 'collection-kvitkovi.png'],
-                ['key' => 'solodki', 'title' => 'Солодкі', 'image' => 'collection-solodki.png'],
-                ['key' => 'svigi-citrusovi', 'title' => 'Свіжі/Цитрусові', 'image' => 'collection-svigi.png'],
-                ['key' => 'shkiriani', 'title' => 'Шкіряні', 'image' => 'collection-shkira.png'],
-                ['key' => 'derevni', 'title' => 'Деревні', 'image' => 'collection-derevo.png'],
+                ['key' => 'muskusni', 'title' => st('collections.muskusni.title', 'Мускусні'), 'image' => 'collection-muskusni.png'],
+                ['key' => 'kvitkovi', 'title' => st('collections.kvitkovi.title', 'Квіткові'), 'image' => 'collection-kvitkovi.png'],
+                ['key' => 'solodki', 'title' => st('collections.solodki.title', 'Солодкі'), 'image' => 'collection-solodki.png'],
+                ['key' => 'svigi-citrusovi', 'title' => st('collections.svigi-citrusovi.title', 'Свіжі/Цитрусові'), 'image' => 'collection-svigi.png'],
+                ['key' => 'shkiriani', 'title' => st('collections.shkiriani.title', 'Шкіряні'), 'image' => 'collection-shkira.png'],
+                ['key' => 'derevni', 'title' => st('collections.derevni.title', 'Деревні'), 'image' => 'collection-derevo.png'],
             ];
         @endphp
         <section class="border-t border-[#EFE4D9] bg-white px-5 py-14 sm:px-[68px] sm:py-[88px]">
             <div class="mx-auto w-full max-w-[1304px]">
-                <p class="m-0 text-[11px] font-medium uppercase tracking-[2.5px] text-[#A98088]">Далі</p>
-                <h2 class="m-0 mt-2 font-cormorant text-[45px] font-medium uppercase text-[#5B2730]">Інші капсули</h2>
+                <p class="m-0 text-[11px] font-medium uppercase tracking-[2.5px] text-[#A98088]">{{ st('collections.other.eyebrow', 'Далі') }}</p>
+                <h2 class="m-0 mt-2 font-cormorant text-[45px] font-medium uppercase text-[#5B2730]">{{ st('collections.other.title', 'Інші капсули') }}</h2>
                 <div class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
                     @foreach ($otherCollections as $other)
                         @continue($other['key'] === ($collectionKey ?? ''))
@@ -568,8 +608,8 @@
         </section>
         <section class="bg-[#F8EDE7] px-5 py-10 sm:px-[68px] sm:py-14">
             <div class="mx-auto grid w-full max-w-[900px] grid-cols-[150px_minmax(0,1fr)] items-center gap-7">
-                <img class="w-full" src="{{ asset('vendor/frontend-sevia/images/discovery-band.png') }}" alt="Discovery 5×3">
-                <div><p class="m-0 text-[11px] uppercase tracking-[2px] text-[#A98088]">Discovery 5×3</p><h2 class="m-0 mt-2 font-cormorant text-[32px] leading-none text-[#5B2730]">П’ять ароматів капсули по 3 мл — −15%</h2><a class="mt-5 inline-flex border-b border-[#5B2730] pb-1 text-[12px] uppercase tracking-[1.5px] text-[#5B2730]" href="{{ route('discovery-53') }}">Зібрати сет →</a></div>
+                <img class="w-full" src="{{ asset('vendor/frontend-sevia/images/discovery-band.png') }}" alt="{{ st('collections.discovery.alt', 'Discovery 5×3') }}">
+                <div><p class="m-0 text-[11px] uppercase tracking-[2px] text-[#A98088]">{{ st('collections.discovery.eyebrow', 'Discovery 5×3') }}</p><h2 class="m-0 mt-2 font-cormorant text-[32px] leading-none text-[#5B2730]">{{ st('collections.discovery.title', 'П’ять ароматів капсули по 3 мл — −15%') }}</h2><a class="mt-5 inline-flex border-b border-[#5B2730] pb-1 text-[12px] uppercase tracking-[1.5px] text-[#5B2730]" href="{{ route('discovery-53') }}">{{ st('collections.discovery.cta', 'Зібрати сет →') }}</a></div>
             </div>
         </section>
     @endif
