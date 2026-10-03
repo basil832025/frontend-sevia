@@ -77,7 +77,7 @@
             'nova_branch' => $authText('nova_branch_meta', '1–2 дні · отримання за телефоном'),
             'nova_postomat' => $authText('nova_postomat_meta', '1–2 дні · код у СМС, без черг'),
             'nova_courier' => $authText('nova_courier_meta', '1–2 дні · привезе на адресу'),
-            'sevia_pickup' => $authText('sevia_pickup_meta', 'сьогодні · вул. Хрещатик 22, Київ, з 11:00'),
+            'sevia_pickup' => $authText('sevia_pickup_meta', 'сьогодні · вул. Михайла Максимовича 32 Б, Київ, з 11:00'),
         ][$authDeliveryMethod];
         $authDeliveryMethodIcon = $authDeliveryMethod === 'sevia_pickup' ? 'S' : '✣';
     @endphp
@@ -322,8 +322,8 @@
                                     <span class="text-[12.5px] leading-[19px] text-[#A98088]" data-delivery-option-price>{{ $authNovaCourierLabel }}</span>
                                     @if($authDeliveryMethod === 'nova_courier')<span class="absolute bottom-0 left-0 top-0 w-0.5 bg-[#5B2730]" data-delivery-active-bar></span>@endif
                                 </button>
-                                <button class="{{ $authDeliveryMethod === 'sevia_pickup' ? 'relative ' : '' }}flex min-h-[66.62px] w-full items-center justify-between border-t border-[#F0E6DE] px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="sevia_pickup" data-title="Шоу-рум Sevia · самовивіз" data-meta="сьогодні · вул. Хрещатик 22, Київ, з 11:00" data-price="0" data-price-label="безкоштовно" data-icon="S" @if($authDeliveryMethod === 'sevia_pickup') data-active="true" @endif>
-                                    <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[10px] font-semibold text-[#5B2730]">S</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#7A4751]">Шоу-рум Sevia · самовивіз</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">сьогодні · вул. Хрещатик 22, Київ, з 11:00</span></span></span>
+                                <button class="{{ $authDeliveryMethod === 'sevia_pickup' ? 'relative ' : '' }}flex min-h-[66.62px] w-full items-center justify-between border-t border-[#F0E6DE] px-4 py-3 pl-[15px] text-left normal-case tracking-normal" type="button" data-delivery-option data-value="sevia_pickup" data-title="{{ $authText('sevia_pickup', 'Шоу-рум Sevia · самовивіз') }}" data-meta="{{ $authText('sevia_pickup_meta', 'сьогодні · вул. Михайла Максимовича 32 Б, Київ, з 11:00') }}" data-price="0" data-price-label="{{ $authText('free', 'безкоштовно') }}" data-icon="S" @if($authDeliveryMethod === 'sevia_pickup') data-active="true" @endif>
+                                    <span class="flex items-center gap-4"><span class="grid size-[18px] place-items-center text-[10px] font-semibold text-[#5B2730]">S</span><span class="flex flex-col gap-[2.62px]"><span class="text-[14px] leading-[21px] text-[#7A4751]">{{ $authText('sevia_pickup', 'Шоу-рум Sevia · самовивіз') }}</span><span class="text-[11.5px] leading-[17px] text-[#A98088]">{{ $authText('sevia_pickup_meta', 'сьогодні · вул. Михайла Максимовича 32 Б, Київ, з 11:00') }}</span></span></span>
                                     <span class="text-[12.5px] leading-[19px] text-[#A98088]" data-delivery-option-price>{{ $authText('free', 'безкоштовно') }}</span>
                                     @if($authDeliveryMethod === 'sevia_pickup')<span class="absolute bottom-0 left-0 top-0 w-0.5 bg-[#5B2730]" data-delivery-active-bar></span>@endif
                                 </button>

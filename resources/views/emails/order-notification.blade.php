@@ -21,7 +21,7 @@
             default => $emailText('warehouse', 'Нова Пошта, відділення'),
         };
     $deliveryPlace = $order->self_pickup
-        ? $emailText('pickup_address', 'вул. Хрещатик 22, Київ')
+        ? $emailText('pickup_address', 'вул. Михайла Максимовича 32 Б, Київ')
         : trim(implode(', ', array_filter([$order->nova_city, $order->nova_city_details, $order->nova_warehouse])));
 @endphp
 
