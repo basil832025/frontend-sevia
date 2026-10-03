@@ -3,8 +3,8 @@
 @section('title', st('checkout-success.title', 'Замовлення оформлено'))
 
 @section('content')
-    @php($successText = static fn (string $key, string $default): string => st("checkout-success.$key", $default))
     @php
+        $successText = static fn (string $key, string $default): string => st("checkout-success.$key", $default);
         $money = fn ($value) => number_format((float) $value, 0, ',', ' ') . ' ₴';
         $payment = $order->payment instanceof \App\Enums\PaymentMethodEnum
             ? $order->payment

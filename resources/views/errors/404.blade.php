@@ -4,7 +4,9 @@
 @section('meta_description', st('errors-404.meta_description', 'Сторінка не знайдена'))
 
 @section('content')
-    @php($error404Text = static fn (string $key, string $default): string => st("errors-404.$key", $default))
+    @php
+        $error404Text = static fn (string $key, string $default): string => st("errors-404.$key", $default);
+    @endphp
     <section class="flex min-h-[743.83px] flex-col items-center bg-white px-[68.04px] py-[105.84px] text-center max-lg:px-6 max-lg:py-20 max-sm:min-h-[680.47px] max-sm:px-5 max-sm:pb-20 max-sm:pt-10">
         <div class="flex flex-col items-center">
             <div class="pb-4 max-sm:pb-0">

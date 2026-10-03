@@ -1,5 +1,7 @@
 <x-mail::message>
-@php($emailText = static fn (string $key, string $default): string => st("emails.$key", $default))
+@php
+    $emailText = static fn (string $key, string $default): string => st("emails.$key", $default);
+@endphp
 # {{ $emailText('admin_heading', 'Нове замовлення №') }}{{ $order->number ?? $order->id }}
 
 @php

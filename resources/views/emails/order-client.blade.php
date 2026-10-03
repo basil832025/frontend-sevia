@@ -1,5 +1,7 @@
 <x-mail::message>
-@php($emailText = static fn (string $key, string $default): string => st("emails.$key", $default))
+@php
+    $emailText = static fn (string $key, string $default): string => st("emails.$key", $default);
+@endphp
 # {{ $emailText('client_heading', 'Дякуємо за замовлення') }}
 
 {{ str_replace(':order', (string) ($order->number ?? $order->id), $emailText('client_intro', 'Ваше замовлення №:order прийнято в обробку.')) }}

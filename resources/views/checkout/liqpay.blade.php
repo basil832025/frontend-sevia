@@ -3,8 +3,8 @@
 @section('title', st('checkout-liqpay.title', 'Оплата замовлення №') . ($order->number ?? $order->id))
 
 @section('content')
-    @php($liqpayText = static fn (string $key, string $default): string => st("checkout-liqpay.$key", $default))
     @php
+        $liqpayText = static fn (string $key, string $default): string => st("checkout-liqpay.$key", $default);
         $money = fn ($value) => number_format((float) $value, 0, ',', ' ') . ' ₴';
         $saveEmailAction = route('checkout.pay.liqpay.email', $order);
         $itemsCount = (int) $order->items->sum('qty');
