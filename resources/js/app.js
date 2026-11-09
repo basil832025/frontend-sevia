@@ -2374,6 +2374,7 @@ document.querySelectorAll('[data-volume-option]').forEach((button) => {
     button.addEventListener('click', () => {
         const section = button.closest('[data-product-card]') ?? button.closest('section');
         const price = section?.querySelector('[data-product-price-display]');
+        const oldPrice = section?.querySelector('[data-product-old-price-display]');
         const volumeLine = section?.querySelector('[data-product-volume-line]');
         const unitPrice = section?.querySelector('[data-product-unit-price]');
         const options = section?.querySelectorAll('[data-volume-option]') ?? [];
@@ -2393,6 +2394,11 @@ document.querySelectorAll('[data-volume-option]').forEach((button) => {
 
         if (price && button.dataset.priceLabel) {
             price.textContent = button.dataset.priceLabel;
+        }
+
+        if (oldPrice) {
+            oldPrice.textContent = button.dataset.oldPriceLabel ?? '';
+            oldPrice.hidden = !button.dataset.oldPriceLabel;
         }
 
         if (volumeLine) {

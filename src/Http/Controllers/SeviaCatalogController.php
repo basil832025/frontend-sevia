@@ -724,6 +724,8 @@ class SeviaCatalogController extends Controller
             ? (float) $baseVariant->price / max((float) ($baseVariant->price_unit_quantity ?? 1), 1)
             : 0;
 
+        $unitOldPrice = (float) ($baseVariant?->old_price ?? 0) / max((float) ($baseVariant?->price_unit_quantity ?? 1), 1);
+
         $byVolume = $variants
             ->filter(fn (Product $variant): bool => (float) $variant->price > 0)
             ->mapWithKeys(function (Product $variant) use ($locale): array {
@@ -735,7 +737,7 @@ class SeviaCatalogController extends Controller
             ->filter(fn (Product $variant, int $amount): bool => $amount > 0);
 
         return collect($this->configuredVolumeAmounts())
-            ->map(function (int $amount) use ($byVolume, $unitPrice, $baseVariant): ?array {
+            ->map(function (int $amount) use ($byVolume, $unitPrice, $unitOldPrice, $baseVariant): ?array {
                 $variant = $byVolume->get($amount);
                 $price = $variant ? (float) $variant->price : $unitPrice * $amount;
 
@@ -743,11 +745,14 @@ class SeviaCatalogController extends Controller
                     return null;
                 }
 
+                $oldPrice = $variant ? (float) $variant->old_price : $unitOldPrice * $amount;
+
                 return [
                     'id' => (int) ($variant?->id ?? $baseVariant?->id ?? 0),
                     'label' => $amount . ' мл',
                     'price' => $price,
                     'price_label' => $this->money($price),
+                    'old_price_label' => $oldPrice > $price ? $this->money($oldPrice) : null,
                 ];
             })
             ->filter()

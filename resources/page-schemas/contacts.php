@@ -5,8 +5,30 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Illuminate\Support\Str;
 
 return function (array $locales, string $defaultLocale): array {
+    $urlOrContactLink = static function (string $attribute, mixed $value, \Closure $fail): void {
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        if (Str::isUrl($value)) {
+            return;
+        }
+
+        if (preg_match('/^mailto:([^?]+)(?:\?.*)?$/i', $value, $matches)
+            && filter_var($matches[1], FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+
+        if (preg_match('/^tel:\+?[0-9][0-9(). -]*$/i', $value)) {
+            return;
+        }
+
+        $fail(__('validation.url'));
+    };
+
     return [
         Tabs::make('Контакти')
             ->tabs(array_map(
@@ -58,7 +80,9 @@ return function (array $locales, string $defaultLocale): array {
                             ]),
                         $locales
                     )),
-                TextInput::make('href')->label('URL')->url(),
+                TextInput::make('href')
+                    ->label('URL')
+                    ->rule($urlOrContactLink),
             ]),
     ];
 };

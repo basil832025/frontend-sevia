@@ -509,6 +509,7 @@
                                     : null;
                                 $defaultVolume ??= $volumes->first();
                                 $defaultVolumeAmount = (int) preg_replace('/\D+/', '', (string) ($defaultVolume['label'] ?? ''));
+                                $oldPriceLabel = $defaultVolume ? ($defaultVolume['old_price_label'] ?? null) : $product['old_price_label'];
                             @endphp
                             <article class="group flex min-h-[430px] flex-col max-sm:min-h-[314px] max-sm:border max-sm:border-[#E8DAD0] max-sm:bg-white sm:max-lg:min-h-[330px]" data-product-card>
                                 <a class="relative flex h-[286px] items-center justify-center bg-white p-6 max-sm:h-[182px] max-sm:bg-[#FDFBF8] max-sm:p-6 sm:max-lg:h-[170px] sm:max-lg:p-3" href="{{ $product['url'] }}">
@@ -535,7 +536,7 @@
                                                     $volumeAmount = (int) preg_replace('/\D+/', '', (string) ($volume['label'] ?? ''));
                                                     $isSelectedVolume = $volumeAmount === $defaultVolumeAmount;
                                                 @endphp
-                                                <button class="inline-flex h-10 min-w-[46px] flex-col items-center justify-center gap-0 border border-[#D8C4BE] px-0.5 text-[#7A4751] transition-[border-color] hover:border-[#5B2730] hover:text-[#5B2730] {{ $isSelectedVolume ? 'sevia-volume-option--selected border-[#5B2730] text-[#5B2730]' : '' }} max-sm:h-10 max-sm:w-full max-sm:min-w-0 max-sm:px-0" type="button" data-volume-option data-volume-id="{{ $volume['id'] }}" data-volume-label="{{ $volume['label'] }}" data-price-label="{{ $volume['price_label'] }}" data-product-id="{{ $volume['id'] }}" data-product-price="{{ $volume['price'] }}" data-cart-product-label="{{ $product['brand'] }} {{ $product['name'] }} / {{ $volume['label'] }}"><span class="text-[9px] font-medium leading-3 max-sm:text-[8px]">{{ $volume['label'] }}</span><span class="text-[9px] font-medium leading-3 max-sm:text-[8px]">{{ $volume['price_label'] }}</span></button>
+                                                <button class="inline-flex h-10 min-w-[46px] flex-col items-center justify-center gap-0 border border-[#D8C4BE] px-0.5 text-[#7A4751] transition-[border-color] hover:border-[#5B2730] hover:text-[#5B2730] {{ $isSelectedVolume ? 'sevia-volume-option--selected border-[#5B2730] text-[#5B2730]' : '' }} max-sm:h-10 max-sm:w-full max-sm:min-w-0 max-sm:px-0" type="button" data-volume-option data-volume-id="{{ $volume['id'] }}" data-volume-label="{{ $volume['label'] }}" data-price-label="{{ $volume['price_label'] }}" data-old-price-label="{{ $volume['old_price_label'] ?? '' }}" data-product-id="{{ $volume['id'] }}" data-product-price="{{ $volume['price'] }}" data-cart-product-label="{{ $product['brand'] }} {{ $product['name'] }} / {{ $volume['label'] }}"><span class="text-[9px] font-medium leading-3 max-sm:text-[8px]">{{ $volume['label'] }}</span><span class="text-[9px] font-medium leading-3 max-sm:text-[8px]">{{ $volume['price_label'] }}</span></button>
                                             @endforeach
                                         </div>
                                     @endif
@@ -543,9 +544,7 @@
                                     <div class="mt-auto flex h-[52px] items-center justify-between border-t border-[#EFE4D9] pt-3 max-sm:h-[47px] max-sm:border-0 max-sm:p-0 max-sm:pt-3 sm:max-lg:h-[42px] sm:max-lg:pt-[9px]" data-cart-action-row>
                                         <p class="m-0 flex items-end gap-1.5 max-sm:items-baseline max-sm:gap-[5px]">
                                             <span class="text-[15px] font-semibold leading-5 text-[#5B2730] max-sm:text-[15px] max-sm:leading-[23px]" data-product-price-display>{{ $defaultVolume['price_label'] ?? $product['price_label'] }}</span>
-                                            @if ($product['old_price_label'])
-                                                <span class="text-[12px] leading-5 text-[#A98088] line-through max-sm:text-[9px] max-sm:leading-[11px] max-sm:text-[#C9A9B0]">{{ $product['old_price_label'] }}</span>
-                                            @endif
+                                            <span class="text-[12px] leading-5 text-[#A98088] line-through max-sm:text-[9px] max-sm:leading-[11px] max-sm:text-[#C9A9B0]" data-product-old-price-display @if (!$oldPriceLabel) hidden @endif>{{ $oldPriceLabel }}</span>
                                             <span class="text-[10.5px] leading-4 text-[#A98088]" data-product-volume-label>/ {{ $defaultVolume['label'] ?? $product['unit'] }}</span>
                                         </p>
                                         <div class="hidden items-center justify-center gap-2 rounded-full border border-[#5B2730] bg-[#FDFBF8] px-3 h-[34px]" data-cart-quantity-controls>

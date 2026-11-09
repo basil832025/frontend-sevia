@@ -210,8 +210,8 @@
 
                     <div class="relative z-10 mt-auto flex h-[47px] items-center justify-between border-t border-[#EFE4D9] bg-[#FDFBF8] pt-3 max-sm:mt-0 max-sm:h-[47px] max-sm:border-t max-sm:border-[#E8DAD0] max-sm:bg-white max-sm:pt-3">
                         <p class="m-0 flex items-end gap-[5px]">
-                            <span class="text-[15px] font-semibold leading-[23px] text-[#5B2730] max-sm:text-[13.5px] max-sm:leading-4 max-sm:text-[#B03B45]">{{ $product['price_label'] }}</span>
-                            <span class="text-[12px] leading-[19px] text-[#A98088] line-through max-sm:text-[9px] max-sm:leading-[11px] max-sm:text-[#C9A9B0]">{{ $product['old_price_label'] }}</span>
+                            <span class="text-[15px] font-semibold leading-[23px] text-[#5B2730] max-sm:text-[13.5px] max-sm:leading-4 max-sm:text-[#B03B45]">{{ $defaultVolume['price_label'] }}</span>
+                            <span class="text-[12px] leading-[19px] text-[#A98088] line-through max-sm:text-[9px] max-sm:leading-[11px] max-sm:text-[#C9A9B0]">{{ $defaultVolume['old_price_label'] }}</span>
                             <span class="text-[10.5px] leading-4 text-[#A98088] max-sm:hidden">/ {{ $defaultVolume['label'] }}</span>
                         </p>
                         <a
