@@ -26,7 +26,7 @@
            min-[1600px]:px-[96px] min-[1600px]:pb-[124px]
 
            min-[640px]:max-[1099px]:px-[51.85px]
-           min-[640px]:max-[1099px]:pb-0
+           min-[640px]:max-[1099px]:pb-[100px]
 
            max-sm:relative max-sm:isolate max-sm:overflow-hidden
            max-sm:rounded-[20px] max-sm:bg-[#F8EDE7]
@@ -138,12 +138,12 @@
            max-sm:grid-cols-1 max-sm:gap-3.5 max-sm:pt-3"
         >      @foreach ($perfumeCollections as $collection)
                 <a
-                    class="group relative block h-[533px] overflow-visible
+                    class="group relative block h-[533px] min-w-0 overflow-visible
            border border-[#E8DAD0] bg-white text-[#5B2730]
 
            min-[640px]:max-[1099px]:h-[436.23px]
 
-           max-sm:h-[250px] max-sm:overflow-hidden"
+           max-sm:h-auto max-sm:overflow-hidden"
                     href="{{ route('collections.show', ['collection' => $collection['key']]) }}"
                 >     <figure class="absolute inset-px m-0 flex items-center justify-center overflow-hidden {{ $collection['tone'] }} max-sm:static max-sm:h-[158px] max-sm:w-full">
                         <img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] max-sm:hidden" src="{{ asset('vendor/frontend-sevia/images/' . $collection['image']) }}" alt="{{ $collection['title'] }}">
@@ -153,51 +153,42 @@
 
                     <div
                         class="absolute left-2.5 right-2.5 bottom-[-92.61px]
-           flex h-[202px] flex-col gap-1.5
+           flex min-h-[202px] flex-col gap-1.5
            border border-[#5B2730] bg-[#FDFBF8]
            px-9 py-6
 
            min-[640px]:max-[1099px]:left-[7.49px]
            min-[640px]:max-[1099px]:right-[7.02px]
            min-[640px]:max-[1099px]:bottom-[-67.93px]
-           min-[640px]:max-[1099px]:h-[153.06px]
+           min-[640px]:max-[1099px]:min-h-[164px]
            min-[640px]:max-[1099px]:gap-[4.3px]
-           min-[640px]:max-[1099px]:px-[18.73px]
+           min-[640px]:max-[1099px]:px-[clamp(8px,1.35vw,14px)]
            min-[640px]:max-[1099px]:py-[15.84px]
 
-           max-sm:static max-sm:h-[94px] max-sm:gap-[5px]
+           max-sm:static max-sm:min-h-[94px] max-sm:gap-[5px]
            max-sm:border-0 max-sm:bg-white max-sm:px-[13px]
            max-sm:pb-3.5 max-sm:pt-3"
-                    >  <p
-                            class="m-0 text-[12px] font-medium uppercase leading-4
-           tracking-[2.8px] text-[rgba(91,39,48,0.86)]
-
-           min-[640px]:max-[1099px]:text-[11.4px]
-           min-[640px]:max-[1099px]:leading-[15px]
-           min-[640px]:max-[1099px]:tracking-[2.656px]
-
-           max-sm:text-[8.5px] max-sm:leading-[10px]
-           max-sm:tracking-[1px] max-sm:text-[#A98088]"
-                        ><h3
+                    >
+                        <h3
                             class="m-0 font-cormorant text-[48px] font-medium italic
-           leading-[58px] text-[#5B2730]
+           leading-[58px] text-[#5B2730] [overflow-wrap:anywhere]
 
-           min-[640px]:max-[1099px]:text-[28px]
-           min-[640px]:max-[1099px]:leading-[38px]
+           min-[640px]:max-[1099px]:min-h-[2lh]
+           min-[640px]:max-[1099px]:text-[clamp(19px,2.5vw,26px)]
+           min-[640px]:max-[1099px]:leading-[1.15]
 
            max-sm:text-[24px] max-sm:not-italic max-sm:leading-[29px]"
                         >
                             {{ $collection['title'] }}
                         </h3>
                         <div
-                            class="mt-[18px] flex h-[50px] items-baseline justify-between
+                            class="mt-auto flex min-h-[50px] shrink-0 items-baseline justify-between gap-2
            border-t border-[rgba(91,39,48,0.32)] pt-3.5
 
-           min-[640px]:max-[1099px]:mt-[12.96px]
-           min-[640px]:max-[1099px]:h-[44.8px]
+           min-[640px]:max-[1099px]:min-h-[44.8px]
            min-[640px]:max-[1099px]:pt-[10.8px]
 
-           max-sm:mt-0 max-sm:h-[19px] max-sm:border-t-0
+           max-sm:min-h-[19px] max-sm:border-t-0
            max-sm:items-center max-sm:pt-0.5"
                         >            <span class="text-[14px] font-medium uppercase leading-4 tracking-[2.73px] text-[rgba(91,39,48,0.86)] max-sm:text-[10.5px] max-sm:font-normal max-sm:normal-case max-sm:leading-[13px] max-sm:tracking-normal max-sm:text-[#7A4751]">{{ $collection['count'] }}</span>
                             <span

@@ -105,7 +105,7 @@
                         <path d="M2.8 7.5H12.2M8.4 3.3L12.2 7.5L8.4 11.7" stroke="#FFF8F4" stroke-width="1.3125" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </a>
-                <a class="flex min-h-[52px] flex-1 items-center justify-center border border-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#5B2730]" href="{{ route('home') }}#discovery">
+                <a class="flex min-h-[52px] flex-1 items-center justify-center border border-[#5B2730] px-10 text-[11.5px] font-medium uppercase leading-[17px] tracking-[1.84px] text-[#5B2730]" href="{{ route('discovery-53') }}">
                     {{ $cartText('discovery_offer', 'Discovery 5x3 мл') }}
                 </a>
             </div>
