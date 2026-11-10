@@ -249,7 +249,7 @@
                                 </div>
 
                                 <div class="grid gap-1" data-brand-list>
-                                    @foreach (collect($group['values'])->take(8) as $value)
+                                    @foreach (($group['role'] ?? null) === 'aroma' ? $group['values'] : collect($group['values'])->take(8) as $value)
                                         <label class="flex h-8 cursor-pointer items-center gap-[11px] py-[7px] text-[13.5px] leading-4 text-[#7A4751] has-[:checked]:text-[#5B2730]">
                                             <input class="peer sr-only" type="checkbox" name="filters[{{ $group['id'] }}][]" value="{{ $value['id'] }}" @checked(in_array($value['id'], $selectedGroupValues, true))>
                                             <span class="grid size-[18px] place-items-center border border-[#E8DAD0] after:hidden after:h-[7px] after:w-2.5 after:rotate-[-45deg] after:border-b-[1.5px] after:border-l-[1.5px] after:border-white peer-checked:border-[#5B2730] peer-checked:bg-[#5B2730] peer-checked:after:block"></span>
@@ -365,7 +365,7 @@
                             @endif
 
                             <div class="grid gap-2.5" @if (($group['role'] ?? null) === 'brand') data-brand-list @endif>
-                                @foreach (collect($group['values'])->take(($group['role'] ?? null) === 'brand' ? 999 : 10) as $value)
+                                @foreach (($group['role'] ?? null) === 'aroma' ? $group['values'] : collect($group['values'])->take(($group['role'] ?? null) === 'brand' ? 999 : 10) as $value)
                                     <label class="@if (($group['role'] ?? null) === 'brand' && $loop->iteration > 5) hidden @else flex @endif min-h-[22px] cursor-pointer items-center justify-between gap-3 text-[14px] leading-[22px] text-[#7A4751]" @if (($group['role'] ?? null) === 'brand' && $loop->iteration > 5) data-brand-extra @endif>
                                         <span class="flex min-w-0 items-center gap-2.5">
                                             <input class="size-3.5 border border-[#E8DAD0] bg-[#FDFBF8] accent-[#5B2730]" type="checkbox" name="filters[{{ $group['id'] }}][]" value="{{ $value['id'] }}" @checked(in_array($value['id'], $selectedFilters[$group['id']] ?? [], true)) onchange="this.form.submit()">
