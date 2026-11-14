@@ -6,14 +6,14 @@
     @php
     $contactsText = static fn (string $key, string $default): string => st("contacts.$key", $default);
     $pageContent = is_array($content ?? null) ? $content : [];
-    $localized = static function (string $key) use ($pageContent): string {
-        $value = data_get($pageContent, $key);
+    $localizedValue = static function (mixed $value): string {
         if (is_array($value)) {
             $value = $value[app()->getLocale()] ?? $value[config('translatable.fallback_locale', 'uk')] ?? '';
         }
 
         return trim((string) $value);
     };
+    $localized = static fn (string $key): string => $localizedValue(data_get($pageContent, $key));
     $address = $localized('address');
     $hours = $localized('working_hours');
     $phone = $localized('phone') ?: '+38 (063) 000 00 00';
@@ -36,6 +36,25 @@
         ['label' => 'Email', 'title' => $email, 'meta' => $contactsText('email_meta', 'Для співпраці та оптових запитів'), 'action' => $contactsText('email_action', 'Написати листа'), 'href' => 'mailto:'.$email],
         ['label' => $contactsText('phone', 'Телефон'), 'title' => $phone, 'meta' => $contactsText('phone_meta', 'Дзвінки та Viber · робочі дні'), 'action' => $contactsText('phone_action', 'Подзвонити або Viber'), 'href' => 'tel:'.preg_replace('/[^+0-9]/', '', $phone)],
     ];
+
+    $savedChannels = [];
+    foreach ((array) data_get($pageContent, 'channels', []) as $row) {
+        $label = $localizedValue(data_get($row, 'label'));
+        $title = $localizedValue(data_get($row, 'title'));
+        if ($label === '' && $title === '') {
+            continue;
+        }
+
+        $href = trim((string) data_get($row, 'href'));
+        $savedChannels[] = [
+            'label' => $label,
+            'title' => $title,
+            'meta' => $localizedValue(data_get($row, 'meta')),
+            'action' => $localizedValue(data_get($row, 'action')),
+            'href' => $href ?: (str_contains(mb_strtolower($label), 'instagram') ? $instagramUrl : '#'),
+        ];
+    }
+    $channels = $savedChannels ?: $channels;
 @endphp
 
 @section('content')
