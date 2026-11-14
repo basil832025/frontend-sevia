@@ -4,6 +4,7 @@ namespace Basil832025\FrontendSevia\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Shop\Product;
+use App\Models\Shop\ProductCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -16,6 +17,7 @@ class SeviaSearchController extends Controller
         $locale = app()->getLocale() ?: 'uk';
         $term = trim((string) $request->query('q', ''));
         $perPage = 24;
+        $brands = collect();
 
         $query = Product::query()
             ->active()
@@ -35,10 +37,19 @@ class SeviaSearchController extends Controller
 
         if ($term !== '') {
             $like = '%' . addcslashes(Str::lower($term), '\\%_') . '%';
+            $brands = ProductCategory::query()
+                ->where('is_visible', true)
+                ->whereRaw('LOWER(title) LIKE ?', [$like])
+                ->get();
 
-            $query->where(function (Builder $searchQuery) use ($like): void {
+            $query->where(function (Builder $searchQuery) use ($like, $brands): void {
                 $this->applyProductSearch($searchQuery, $like);
                 $searchQuery->orWhereHas('children', fn (Builder $childQuery) => $this->applyProductSearch($childQuery, $like));
+                if ($brands->isNotEmpty()) {
+                    $ids = $brands->modelKeys();
+                    $searchQuery->orWhereIn('category_id', $ids)
+                        ->orWhereHas('categories', fn (Builder $category) => $category->whereKey($ids));
+                }
             });
         } else {
             $query->whereRaw('1 = 0');
@@ -52,6 +63,18 @@ class SeviaSearchController extends Controller
             ->values();
 
         $items = $this->sortProducts($items, $request, $term);
+        $brandLinks = $brands->map(fn (ProductCategory $brand) => [
+            'name' => $this->label($brand, 'title', $locale),
+            'url' => route('catalog.category', ['category' => $brand->slug]),
+        ])->sortBy('name')->values();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'brands' => $brandLinks->take(5)->values(),
+                'products' => $items->take(3)->values(),
+                'total' => $items->count(),
+            ]);
+        }
 
         $page = max(1, (int) $request->query('page', 1));
         $products = $items->forPage($page, $perPage)->values();
@@ -59,6 +82,7 @@ class SeviaSearchController extends Controller
 
         return view('front.sevia::search.results', [
             'query' => $term,
+            'brands' => $brandLinks,
             'products' => $products,
             'productsTotal' => $items->count(),
             'page' => min($page, $lastPage),

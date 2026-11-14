@@ -42,6 +42,17 @@
         </div>
     </section>
 
+    @if ($brands->isNotEmpty())
+        <section class="mx-auto w-full max-w-[1304px] px-6 py-6">
+            <h2 class="mb-3 text-[14px] font-semibold uppercase tracking-[2px] text-[#7A4751]">Бренди</h2>
+            <div class="flex flex-wrap gap-2">
+                @foreach ($brands as $brand)
+                    <a class="border border-[#E8DAD0] bg-[#F8EDE7] px-3.5 py-2 text-[#5B2730]" href="{{ $brand['url'] }}">{{ $brand['name'] }} →</a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <section class="bg-white px-[68px] pb-[44px] pt-[55px] max-lg:px-6 max-sm:px-5 max-sm:pt-8">
         <div class="mx-auto flex w-full max-w-[1304px] items-end justify-between gap-8 max-md:flex-col max-md:items-start">
             <h1 class="m-0 font-cormorant text-[76px] font-medium leading-none tracking-[-1.134px] text-[#5B2730] max-sm:text-[46px]">

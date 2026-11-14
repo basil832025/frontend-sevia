@@ -213,34 +213,80 @@
                         </section>
                     </div>
 
-                    <section class="flex flex-col gap-[18px]">
-                        <h2 class="m-0 flex items-center gap-1.5 text-[12px] font-bold uppercase leading-[19px] tracking-[2.64px] text-[#A98088]">
-                            <span>Збіги</span>
-                            <span class="text-[#A85D66]">3</span>
-                        </h2>
-                        <div class="grid">
-                            @foreach ([
-                                ['brand' => 'Paco Rabanne', 'name' => 'Lady Million', 'notes' => 'Неролі · Малина · Мед', 'price' => '580 ₴', 'image' => 'bestseller-1.png'],
-                                ['brand' => 'Paco Rabanne', 'name' => '1 Million', 'notes' => 'Грейпфрут · Кориця · Шкіра', 'price' => '560 ₴', 'image' => 'bestseller-4.png'],
-                                ['brand' => 'Paco Rabanne', 'name' => 'Invictus', 'notes' => 'Грейпфрут · Морська нота · Гваяк', 'price' => '540 ₴', 'image' => 'bestseller-5.png'],
-                            ] as $match)
-                                <a class="grid h-[101px] grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-[18px] border-b border-[#EFE4D9] py-[15px]" href="{{ route('search.index', ['q' => $match['brand'] . ' ' . $match['name']]) }}">
-                                    <span class="flex h-[70px] w-14 items-center justify-center border border-[#EFE4D9] bg-gradient-to-br from-[#F8EDE7] to-[#F3E3DF]">
-                                        <img class="h-[68px] w-[54px] object-contain" src="{{ asset('vendor/frontend-sevia/images/' . $match['image']) }}" alt="{{ $match['brand'] }} {{ $match['name'] }}">
-                                    </span>
-                                    <span class="grid min-w-0 gap-0.5">
-                                        <span class="truncate text-[12px] leading-[19px] tracking-[0.48px] text-[#A98088]">{{ $match['brand'] }}</span>
-                                        <span class="truncate font-cormorant text-[20px] font-medium leading-[31px] text-[#5B2730]">{{ $match['name'] }}</span>
-                                        <span class="truncate text-[12px] leading-[19px] text-[#A98088]">{{ $match['notes'] }}</span>
-                                    </span>
-                                    <span class="font-cormorant text-[19px] leading-[29px] text-[#5B2730]">{{ $match['price'] }}</span>
-                                </a>
-                            @endforeach
-                        </div>
-                        <a class="w-fit border-b border-[#5B2730] pb-1 text-[13px] leading-5 tracking-[0.52px] text-[#5B2730]" href="{{ route('search.index', ['q' => 'paco rabanne']) }}">Показати всі результати за «paco rabanne» →</a>
-                    </section>
+                    <section class="flex flex-col gap-[18px]" aria-live="polite" data-search-preview></section>
                 </div>
             </div>
         </section>
     </div>
 </header>
+
+<script>
+    (() => {
+        const input = document.querySelector('[data-search-input]');
+        const preview = document.querySelector('[data-search-preview]');
+        if (!input || !preview) return;
+
+        let timer;
+        let pending;
+
+        const appendLink = (list, url, label) => {
+            const link = document.createElement('a');
+            link.className = 'block border-b border-[#EFE4D9] py-3 text-[#5B2730]';
+            link.href = url;
+            link.textContent = label;
+            list.append(link);
+        };
+
+        const appendGroup = (label) => {
+            const group = document.createElement('div');
+            const heading = document.createElement('h2');
+            heading.className = 'text-[12px] font-bold uppercase tracking-[2.64px] text-[#A98088]';
+            heading.textContent = label;
+            group.append(heading);
+            preview.append(group);
+            return group;
+        };
+
+        function updatePreview() {
+            clearTimeout(timer);
+            pending?.abort();
+            preview.replaceChildren();
+
+            const term = input.value.trim();
+            if (!term) return;
+
+            timer = setTimeout(async () => {
+                pending = new AbortController();
+                const url = new URL(input.form.action);
+                url.searchParams.set('q', term);
+
+                try {
+                    const response = await fetch(url, {
+                        headers: { Accept: 'application/json' },
+                        signal: pending.signal,
+                    });
+                    if (!response.ok) throw new Error('Search request failed');
+                    const { brands, products, total } = await response.json();
+                    if (input.value.trim() !== term) return;
+
+                    if (brands.length) {
+                        const group = appendGroup('Бренди');
+                        brands.forEach(({ url, name }) => appendLink(group, url, name + ' →'));
+                    }
+                    if (products.length) {
+                        const group = appendGroup('Товари · ' + total);
+                        products.forEach((product) => appendLink(group, product.url, product.brand + ' ' + product.name));
+                    }
+                    appendLink(preview, url, 'Показати всі результати за «' + term + '» →');
+                } catch (error) {
+                    if (error.name !== 'AbortError' && input.value.trim() === term) {
+                        appendLink(preview, url, 'Перейти до результатів пошуку →');
+                    }
+                }
+            }, 250);
+        }
+
+        input.addEventListener('input', updatePreview);
+        updatePreview();
+    })();
+</script>
