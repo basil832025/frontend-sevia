@@ -82,7 +82,7 @@ return function (array $locales, string $defaultLocale): array {
                     )),
                 TextInput::make('href')
                     ->label('URL')
-                    ->rule($urlOrContactLink),
+                    ->rule(static fn (): \Closure => $urlOrContactLink),
             ]),
     ];
 };

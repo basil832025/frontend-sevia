@@ -8,6 +8,6 @@
     @include('front.sevia::home.sections.collections')
     @include('front.sevia::home.sections.discounts')
     @include('front.sevia::home.sections.discovery-set')
-    @include('front.sevia::home.sections.showroom')
+    @include('front.sevia::page-templates.home-showroom.template', ['content' => $showroomContent])
     @include('front.sevia::home.sections.instagram')
 @endsection

@@ -1,3 +1,25 @@
+@php
+    $locale = app()->getLocale();
+    $fallbackLocale = config('translatable.fallback_locale', 'uk');
+
+    $showroomText = static fn (string $key, string $default): string =>
+        data_get($showroomContent, "{$key}.{$locale}")
+        ?: data_get($showroomContent, "{$key}.{$fallbackLocale}")
+        ?: st("home.showroom.{$key}", $default);
+
+    $showroomImage = static function (string $key, string $default) use ($showroomContent): string {
+        $path = data_get($showroomContent, "images.{$key}");
+
+        if ($key === 'mobile' && blank($path)) {
+            $path = data_get($showroomContent, 'images.main');
+        }
+
+        return filled($path)
+            ? Storage::disk('public')->url($path)
+            : asset("vendor/frontend-sevia/images/{$default}");
+    };
+@endphp
+
 <section
     class="
         relative
@@ -140,6 +162,7 @@
                     sm:max-[1099px]:text-left
 
                     max-sm:order-1
+                    max-sm:w-full
                     max-sm:gap-4
                 "
             >
@@ -163,7 +186,7 @@
                         max-sm:tracking-[1.8px]
                     "
                 >
-                    {{ st('home.showroom.eyebrow', 'магазин Sevia') }}
+                    {{ $showroomText('eyebrow', 'магазин Sevia') }}
                 </p>
 
                 <h2
@@ -188,13 +211,14 @@
                         sm:max-[1099px]:leading-[46px]
                         sm:max-[1099px]:tracking-[-0.524px]
 
-                        max-sm:w-[276px]
+                        max-sm:w-full
+                        max-sm:max-w-[276px]
                         max-sm:text-[29px]
                         max-sm:leading-[35px]
                     "
                 >
                     <span class="block">
-                        {{ st('home.showroom.title_line_1', 'Спробуй нові аромати') }}
+                        {{ $showroomText('title_line_1', 'Спробуй нові аромати') }}
                     </span>
 
                     <span
@@ -210,7 +234,7 @@
                             sm:max-[1099px]:tracking-[-1.18px]
                         "
                     >
-                        {{ st('home.showroom.title_line_2', 'в нашому шоурумі') }}
+                        {{ $showroomText('title_line_2', 'в нашому шоурумі') }}
                     </span>
                 </h2>
             </div>
@@ -231,8 +255,8 @@
             >
                 <img
                     class="h-full w-full object-cover"
-                    src="{{ asset('vendor/frontend-sevia/images/showroom-mobile.png') }}"
-                    alt="{{ st('home.showroom.image_alt', 'Шоурум Sevia') }}"
+                    src="{{ $showroomImage('mobile', 'showroom-mobile.png') }}"
+                    alt="{{ $showroomText('image_alt', 'Шоурум Sevia') }}"
                 >
             </figure>
 
@@ -291,7 +315,7 @@
                             max-sm:text-[#7A4751]
                         "
                     >
-                        {{ st('home.showroom.quote', '«Sevia починалася з моєї власної шафи з парфумами та маленького Instagram-акаунту. Мені хотілося, щоб люди могли спробувати нішевий парфум, не платячи одразу за повний флакон.»') }}
+                        {{ $showroomText('quote', '«Sevia починалася з моєї власної шафи з парфумами та маленького Instagram-акаунту. Мені хотілося, щоб люди могли спробувати нішевий парфум, не платячи одразу за повний флакон.»') }}
                     </p>
 
                     <footer
@@ -315,7 +339,7 @@
                             max-sm:tracking-[1px]
                         "
                     >
-                        {{ st('home.showroom.quote_author', '— наталія, засновниця Sevia') }}
+                        {{ $showroomText('quote_author', '— наталія, засновниця Sevia') }}
                     </footer>
                 </blockquote>
 
@@ -398,7 +422,7 @@
                                     max-sm:leading-[22px]
                                 "
                             >
-                                {{ st('home.showroom.benefit_1.title', 'Гарантія оригіналу.') }}
+                                {{ $showroomText('benefit_1.title', 'Гарантія оригіналу.') }}
                             </strong>
 
                             <span
@@ -418,7 +442,7 @@
                                     max-sm:text-[#A98088]
                                 "
                             >
-                                {{ st('home.showroom.benefit_1.text', 'Лише офіційні дистрибʼютори та європейські бутики.') }}
+                                {{ $showroomText('benefit_1.text', 'Лише офіційні дистрибʼютори та європейські бутики.') }}
                             </span>
                         </span>
                     </li>
@@ -480,7 +504,7 @@
                                     max-sm:leading-[22px]
                                 "
                             >
-                                {{ st('home.showroom.benefit_2.title', 'Розпив від 3 мл.') }}
+                                {{ $showroomText('benefit_2.title', 'Розпив від 3 мл.') }}
                             </strong>
 
                             <span
@@ -500,7 +524,7 @@
                                     max-sm:text-[#A98088]
                                 "
                             >
-                                {{ st('home.showroom.benefit_2.text', 'Спробуй вдома й повертайся за більшим обʼємом, коли впевнишся, що це твоє.') }}
+                                {{ $showroomText('benefit_2.text', 'Спробуй вдома й повертайся за більшим обʼємом, коли впевнишся, що це твоє.') }}
                             </span>
                         </span>
                     </li>
@@ -561,7 +585,7 @@
                                     max-sm:leading-[22px]
                                 "
                             >
-                                {{ st('home.showroom.benefit_3.title', 'Тепла консультація.') }}
+                                {{ $showroomText('benefit_3.title', 'Тепла консультація.') }}
                             </strong>
 
                             <span
@@ -581,7 +605,7 @@
                                     max-sm:text-[#A98088]
                                 "
                             >
-                                {{ st('home.showroom.benefit_3.text', 'Допоможемо знайти аромат під настрій, сезон і твою шкіру.') }}
+                                {{ $showroomText('benefit_3.text', 'Допоможемо знайти аромат під настрій, сезон і твою шкіру.') }}
                             </span>
                         </span>
                     </li>
@@ -590,78 +614,25 @@
 
                 {{-- Кнопка --}}
                 <a
-                    class="
-        hidden
-        box-border
-        items-center
-        justify-center
-        border
-        border-[#5B2730]
-        bg-[#FDFBF8]
-        text-[#5B2730]
-
-        sm:max-[1099px]:inline-flex
-        sm:max-[1099px]:h-[45.02px]
-        sm:max-[1099px]:w-[213.3px]
-        sm:max-[1099px]:gap-0
-        sm:max-[1099px]:px-[26.648px]
-        sm:max-[1099px]:pt-[11.2px]
-        sm:max-[1099px]:pb-[11.82px]
-
-        max-sm:order-6
-        max-sm:mt-4
-        max-sm:h-[43px]
-        max-sm:w-[223px]
-        max-sm:px-[26px]
-        max-sm:py-3.5
-    "
-                    href="#catalog"
+                    class="inline-flex h-[54px] min-w-[245px] max-w-full items-center justify-center gap-3
+                           border border-[#5B2730] bg-[#FDFBF8] px-9 text-center text-[13px] font-medium
+                           uppercase leading-[20px] tracking-[1.56px] text-[#5B2730]
+                           min-[1600px]:h-[70px] min-[1600px]:min-w-[306px] min-[1600px]:px-[49px]
+                           min-[1600px]:text-[15.6px] min-[1600px]:tracking-[1.872px]
+                           sm:max-[1099px]:h-[45px] sm:max-[1099px]:min-w-[213px] sm:max-[1099px]:gap-[10px]
+                           sm:max-[1099px]:px-[26px] sm:max-[1099px]:text-[12.4px]
+                           sm:max-[1099px]:leading-[19px] sm:max-[1099px]:tracking-[1.482px]
+                           max-sm:order-6 max-sm:mt-4 max-sm:h-[43px] max-sm:min-w-0 max-sm:w-[223px]
+                           max-sm:gap-2 max-sm:px-[26px] max-sm:text-[12px]
+                           max-sm:leading-[15px] max-sm:tracking-[1.4px]"
+                    href="{{ route('catalog.index') }}"
                 >
-    <span
-        class="
-            flex
-            shrink-0
-            items-center
-            justify-center
-
-            sm:max-[1099px]:h-[20px]
-            sm:max-[1099px]:w-[146px]
-            sm:max-[1099px]:text-[12.4px]
-            sm:max-[1099px]:font-medium
-            sm:max-[1099px]:leading-[19px]
-            sm:max-[1099px]:tracking-[1.482px]
-            sm:max-[1099px]:uppercase
-
-            max-sm:text-[12px]
-            max-sm:font-medium
-            max-sm:uppercase
-            max-sm:leading-none
-            max-sm:tracking-[1.4px]
-        "
-    >
-        {{ st('home.showroom.catalog_cta', 'Перейти в каталог') }}
-    </span>
-
-                    <span
-                        class="
-            flex
-            shrink-0
-            items-center
-
-            sm:max-[1099px]:h-[20px]
-            sm:max-[1099px]:w-[12px]
-            sm:max-[1099px]:text-[12.4px]
-            sm:max-[1099px]:font-medium
-            sm:max-[1099px]:leading-[19px]
-            sm:max-[1099px]:tracking-[1.482px]
-
-            max-sm:ml-2
-            max-sm:text-[12px]
-        "
-                        aria-hidden="true"
-                    >
-        →
-    </span>
+                    <span>{{ $showroomText('catalog_cta', 'Перейти в каталог') }}</span>
+                    <svg class="h-2.5 w-3.5 shrink-0 max-sm:h-2 max-sm:w-3 sm:max-[1099px]:w-[12px]"
+                         viewBox="0 0 14 10" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 5H13M13 5L9 1M13 5L9 9" stroke="currentColor" stroke-width="1.1"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </a>
             </div>
         </div>
@@ -733,7 +704,7 @@
                         sm:max-[1099px]:h-full
                         sm:max-[1099px]:w-full
                     "
-                    src="{{ asset('vendor/frontend-sevia/images/try-new-up.png') }}"
+                    src="{{ $showroomImage('main', 'try-new-up.png') }}"
                     alt=""
                 >
             </figure>
@@ -778,7 +749,7 @@
                         sm:max-[1099px]:h-full
                         sm:max-[1099px]:w-full
                     "
-                    src="{{ asset('vendor/frontend-sevia/images/try-new-down.png') }}"
+                    src="{{ $showroomImage('secondary', 'try-new-down.png') }}"
                     alt=""
                 >
             </figure>

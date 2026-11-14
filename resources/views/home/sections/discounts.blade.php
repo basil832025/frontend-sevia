@@ -9,6 +9,14 @@
 @endphp
 @php($discountProducts = collect($liveDiscountProducts ?? []))
 
+<style>
+    @media (min-width: 1100px) {
+        .home-discount-cards {
+            width: calc(100% - 64px);
+        }
+    }
+</style>
+
 <section
     class="relative isolate flex min-h-[862px] flex-col items-center bg-white pt-20
            min-[1600px]:min-h-[1131px] min-[1600px]:pt-[107px]
@@ -140,7 +148,7 @@
     </div>
 
     <div
-        class="relative z-10 flex w-full max-w-[1296px] gap-2.5
+        class="home-discount-cards relative z-10 flex w-full max-w-[1296px] gap-2.5
 
            min-[1100px]:max-[1599px]:-mt-[72px]
 

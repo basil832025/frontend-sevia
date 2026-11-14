@@ -5,7 +5,7 @@
         <img class="hidden h-full w-full object-cover mix-blend-multiply max-sm:block" src="{{ asset('vendor/frontend-sevia/images/discovery-band-mobile.png') }}" alt="{{ st('home.discovery_set.image_alt', 'Discovery 5x3 мл') }}">
     </figure>
 
-    <a class="hidden h-[43px] w-[208px] items-center justify-center gap-2 bg-[#5B2730] px-7 py-3.5 text-[12px] font-medium uppercase leading-none tracking-[1.4px] text-white max-sm:order-3 max-sm:inline-flex" href="#">
+    <a class="hidden h-[43px] w-[208px] items-center justify-center gap-2 bg-[#5B2730] px-7 py-3.5 text-[12px] font-medium uppercase leading-none tracking-[1.4px] text-white max-sm:order-3 max-sm:inline-flex" href="{{ route('discovery-53') }}">
         <span>{{ st('home.discovery_set.cta', 'Зібрати свій сет') }}</span>
         <span aria-hidden="true">→</span>
     </a>
@@ -33,10 +33,10 @@
             @endfor
         </div>
         <div class="mt-[6px] flex items-center gap-8 max-sm:hidden">
-            <a class="inline-flex h-[54px] min-w-[245px] items-center justify-center border border-[#5B2730] bg-[#FDFBF8] px-9 text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#5B2730]" href="#">
+            <a class="inline-flex h-[54px] min-w-[245px] items-center justify-center border border-[#5B2730] bg-[#FDFBF8] px-9 text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#5B2730]" href="{{ route('discovery-53') }}">
                 {{ st('home.discovery_set.cta', 'Зібрати свій сет') }}
             </a>
-            <a class="inline-flex items-center gap-3 text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#5B2730]" href="#">
+            <a class="inline-flex items-center gap-3 text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#5B2730]" href="{{ route('discovery-53.guide') }}">
                 {{ st('home.discovery_set.how_it_works', 'Як це працює') }}
                 <span aria-hidden="true">→</span>
             </a>

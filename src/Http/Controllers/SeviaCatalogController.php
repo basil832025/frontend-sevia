@@ -3,6 +3,7 @@
 namespace Basil832025\FrontendSevia\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pages;
 use App\Models\Shop\Characteristic;
 use App\Models\Shop\Product;
 use App\Models\Shop\ProductCategory;
@@ -61,6 +62,11 @@ class SeviaCatalogController extends Controller
             'liveDiscountProducts' => $discountProducts,
             'instagramPosts' => app(InstagramFeedService::class)->latest(6),
             'collectionCounts' => $this->collectionCounts($locale),
+            'showroomContent' => Pages::query()
+                ->where('slug', 'home-showroom')
+                ->where('template', 'home-showroom')
+                ->where('status', 'published')
+                ->first()?->content ?? [],
         ]);
     }
 
