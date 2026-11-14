@@ -1,7 +1,7 @@
 @extends('front.sevia::layouts.app')
 
 @section('title', st('delivery-payment.title', 'Доставка та оплата | Sevia'))
-@section('meta_description', st('delivery-payment.meta_description', 'Умови доставки, оплати, обміну, повернення та самовивозу в шоу-румі Sevia.'))
+@section('meta_description', st('delivery-payment.meta_description', 'Умови доставки, оплати та самовивозу в шоу-румі Sevia.'))
 
     @php
         $deliveryPaymentText = static fn (string $key, string $default): string => st("delivery-payment.$key", $default);
@@ -10,7 +10,6 @@
     $contents = [
         ['id' => 'delivery', 'title' => $deliveryPaymentText('delivery', 'Доставка')],
         ['id' => 'payment', 'title' => $deliveryPaymentText('payment', 'Оплата')],
-        ['id' => 'returns', 'title' => $deliveryPaymentText('returns', 'Обмін і повернення')],
         ['id' => 'original', 'title' => $deliveryPaymentText('original', 'Гарантія оригіналу')],
         ['id' => 'showroom', 'title' => $deliveryPaymentText('showroom', 'Шоу-рум')],
     ];
@@ -120,15 +119,6 @@
                                 </span>
                             </span>
                         </div>
-                    </section>
-
-                    <section id="returns" class="scroll-mt-36 max-sm:flex max-sm:h-36 max-sm:flex-col max-sm:gap-3 max-sm:px-5 max-sm:py-4">
-                        <h2 class="m-0 pb-4 font-cormorant text-[60px] font-medium leading-[63px] tracking-[-0.6px] text-[#5B2730] max-sm:pb-0 max-sm:text-[28px] max-sm:leading-[34px] max-sm:tracking-normal">
-                            {{ $deliveryPaymentText('returns', 'Обмін і повернення') }}
-                        </h2>
-                        <p class="m-0 max-w-[720px] text-[16px] font-normal leading-[26px] text-[#7A4751] max-sm:text-[14px] max-sm:leading-[22px]">
-                            {{ $deliveryPaymentText('returns_description', 'Обмін та повернення можна здійснити лише під час отримання парфумів на відділенні Нової Пошти.') }}
-                        </p>
                     </section>
 
                     <section id="original" class="scroll-mt-36 max-sm:flex max-sm:h-[166px] max-sm:flex-col max-sm:gap-3 max-sm:px-5 max-sm:py-4">

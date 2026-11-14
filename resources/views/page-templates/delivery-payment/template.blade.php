@@ -72,7 +72,7 @@
                 </section>
             @endif
 
-            @foreach (['return_policy' => 'Обмін і повернення', 'original_guarantee' => 'Гарантія оригіналу', 'showroom' => 'Шоу-рум'] as $key => $label)
+            @foreach (['original_guarantee' => 'Гарантія оригіналу', 'showroom' => 'Шоу-рум'] as $key => $label)
                 @if (! $isHidden($key) && ($html = $t($key)))
                     <section>
                         <h2 class="m-0 font-cormorant text-[42px] font-medium text-[#5B2730] max-sm:text-[28px]">{{ $label }}</h2>

@@ -46,8 +46,6 @@ return function (array $locales, string $defaultLocale): array {
                     ->label('Сховати доставку'),
                 Toggle::make('content.visibility.payment')
                     ->label('Сховати оплату'),
-                Toggle::make('content.visibility.return_policy')
-                    ->label('Сховати обмін і повернення'),
                 Toggle::make('content.visibility.original_guarantee')
                     ->label('Сховати гарантію оригіналу'),
                 Toggle::make('content.visibility.showroom')
@@ -86,10 +84,6 @@ return function (array $locales, string $defaultLocale): array {
                     ->tabs(array_map(
                         fn (string $locale): Tab => Tab::make(strtoupper($locale))
                             ->schema([
-                                TinyEditor::make("content.return_policy.{$locale}")
-                                    ->label('Обмін і повернення')
-                                    ->profile('simple')
-                                    ->minHeight(140),
                                 TinyEditor::make("content.original_guarantee.{$locale}")
                                     ->label('Гарантія оригіналу')
                                     ->profile('simple')
