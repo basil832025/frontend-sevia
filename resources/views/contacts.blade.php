@@ -162,24 +162,35 @@
                         </div>
                     </section>
 
-                    <form class="flex flex-col gap-[18px] border border-[#E8DAD0] bg-[#FDFBF8] p-8 max-sm:hidden" action="{{ route('contacts') }}" method="get">
+                    <form id="write-us" class="scroll-mt-36 flex flex-col gap-[18px] border border-[#E8DAD0] bg-[#FDFBF8] p-8" action="{{ route('contacts.store') }}" method="post">
+                        @csrf
+                        @if (session('contactMessageSent'))
+                            <p role="status">Дякуємо! Ваше повідомлення надіслано.</p>
+                        @endif
+                        @if ($errors->contactMessage->any())
+                            <ul role="alert" class="text-[#B03B45]">
+                                @foreach ($errors->contactMessage->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
                         <h2 class="m-0 pb-1 font-cormorant text-[24px] font-medium leading-[37px] text-[#5B2730]">
                              {{ $contactsText('write_us', 'Написати нам') }}
                         </h2>
 
                         <label class="flex flex-col gap-[5.99px]">
                              <span class="text-[11px] font-semibold uppercase leading-[17px] tracking-[2.42px] text-[#A98088]">{{ $contactsText('name', 'Імʼя') }}</span>
-                             <input class="h-11 border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 py-3 text-[15px] leading-[18px] text-[#5B2730] placeholder:text-[#A98088] focus:border-[#5B2730] focus:outline-none" type="text" name="name" placeholder="{{ $contactsText('name_placeholder', 'Як до вас звертатися') }}">
+                             <input class="h-11 border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 py-3 text-[15px] leading-[18px] text-[#5B2730] placeholder:text-[#A98088] focus:border-[#5B2730] focus:outline-none" type="text" name="name" required maxlength="120" value="{{ old('name') }}" placeholder="{{ $contactsText('name_placeholder', 'Як до вас звертатися') }}">
                         </label>
 
                         <label class="flex flex-col gap-1.5">
                              <span class="text-[11px] font-semibold uppercase leading-[17px] tracking-[2.42px] text-[#A98088]">{{ $contactsText('reply_contact', 'Контакт для відповіді') }}</span>
-                             <input class="h-11 border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 py-3 text-[15px] leading-[18px] text-[#5B2730] placeholder:text-[#A98088] focus:border-[#5B2730] focus:outline-none" type="text" name="contact" placeholder="{{ $contactsText('reply_contact_placeholder', 'Email або @telegram') }}">
+                             <input class="h-11 border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 py-3 text-[15px] leading-[18px] text-[#5B2730] placeholder:text-[#A98088] focus:border-[#5B2730] focus:outline-none" type="text" name="contact" required maxlength="255" value="{{ old('contact') }}" placeholder="{{ $contactsText('reply_contact_placeholder', 'Email або @telegram') }}">
                         </label>
 
                         <label class="flex flex-col gap-1.5">
                              <span class="text-[11px] font-semibold uppercase leading-[17px] tracking-[2.42px] text-[#A98088]">{{ $contactsText('message', 'Повідомлення') }}</span>
-                             <textarea class="h-20 resize-none border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 py-3 text-[15px] leading-[18px] text-[#5B2730] placeholder:text-[#A98088] focus:border-[#5B2730] focus:outline-none" name="message" placeholder="{{ $contactsText('message_placeholder', 'Коротко опишіть запит') }}"></textarea>
+                             <textarea class="h-20 resize-none border border-[#E8DAD0] bg-[#FDFBF8] px-3.5 py-3 text-[15px] leading-[18px] text-[#5B2730] placeholder:text-[#A98088] focus:border-[#5B2730] focus:outline-none" name="message" required maxlength="3000" placeholder="{{ $contactsText('message_placeholder', 'Коротко опишіть запит') }}">{{ old('message') }}</textarea>
                         </label>
 
                         <button class="mt-0 inline-flex h-[50.15px] w-full items-center justify-center bg-[#5B2730] px-7 py-[13.25px] text-[13px] font-medium uppercase leading-5 tracking-[1.56px] text-[#FDFBF8]" type="submit">

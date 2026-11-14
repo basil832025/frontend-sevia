@@ -12,6 +12,7 @@ use Basil832025\FrontendSevia\Http\Controllers\SeviaProductController;
 use Basil832025\FrontendSevia\Http\Controllers\SeviaProductReviewController;
 use Basil832025\FrontendSevia\Http\Controllers\SeviaSearchController;
 use Basil832025\FrontendSevia\Http\Controllers\SeviaTemplatePageController;
+use Basil832025\FrontendSevia\Http\Controllers\SeviaContactMessageController;
 
 Route::get('/', [SeviaCatalogController::class, 'home'])->name('home');
 
@@ -72,6 +73,10 @@ Route::post('/product/{product:slug}/reviews', [SeviaProductReviewController::cl
 Route::get('/contacts', fn (SeviaTemplatePageController $controller) =>
     $controller->show('contacts', 'front.sevia::contacts')
 )->name('contacts');
+
+Route::post('/contacts', [SeviaContactMessageController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('contacts.store');
 
 Route::get('/delivery-payment', fn (SeviaTemplatePageController $controller) =>
     $controller->show('delivery-payment', 'front.sevia::delivery-payment')
