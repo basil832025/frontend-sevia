@@ -16,6 +16,7 @@ class FrontendSeviaServiceProvider extends ServiceProvider
         $viewPath = __DIR__ . '/../resources/views';
 
         View::addNamespace('front.sevia', $viewPath);
+        View::addNamespace('front.duxi', $viewPath);
         View::addLocation($viewPath);
         Blade::anonymousComponentPath($viewPath . '/components');
 

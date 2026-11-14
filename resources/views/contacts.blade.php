@@ -14,6 +14,7 @@
         return trim((string) $value);
     };
     $localized = static fn (string $key): string => $localizedValue(data_get($pageContent, $key));
+    $heading = $localized('heading') ?: $contactsText('heading', 'Контакти');
     $address = $localized('address');
     $hours = $localized('working_hours');
     $phone = $localized('phone') ?: '+38 (063) 000 00 00';
@@ -61,20 +62,20 @@
     <nav class="flex h-[50.15px] items-center gap-2.5 px-[68.04px] pb-2 pt-[22px] text-[13px] font-normal leading-5 max-lg:px-6 max-sm:hidden" aria-label="Breadcrumb">
         <a class="text-[#7A4751] hover:text-[#5B2730]" href="{{ route('home') }}">Sevia</a>
         <span class="text-[#E8DAD0]">/</span>
-        <span class="text-[#5B2730]">{{ $contactsText('heading', 'Контакти') }}</span>
+        <span class="text-[#5B2730]">{{ $heading }}</span>
     </nav>
 
     <section class="bg-white px-[68.04px] pb-28 pt-[64.49px] max-lg:px-6 max-lg:pb-20 max-sm:px-0 max-sm:py-0">
         <div class="mx-auto flex w-full max-w-[1303.92px] flex-col">
             <header class="flex min-h-[218.35px] flex-col items-center gap-3 pb-[45.36px] text-center max-sm:h-[163px] max-sm:min-h-0 max-sm:items-start max-sm:px-5 max-sm:pb-6 max-sm:pt-3 max-sm:text-left">
                 <p class="m-0 text-[11px] font-medium uppercase leading-[17px] tracking-[3.08px] text-[#A98088] max-sm:font-sans max-sm:leading-[13px]">
-                    {{ $contactsText('eyebrow', 'Звʼязок') }}
+                    {{ $localized('eyebrow') ?: $contactsText('eyebrow', 'Звʼязок') }}
                 </p>
                 <h1 class="m-0 font-cormorant text-[78.6px] font-medium leading-[79px] tracking-[-1.179px] text-[#5B2730] max-sm:text-[38px] max-sm:leading-[46px]">
-                    {{ $contactsText('heading', 'Контакти') }}
+                    {{ $heading }}
                 </h1>
                 <p class="m-0 max-w-[580px] pt-0.5 text-[16px] font-normal leading-[25px] text-[#7A4751] max-sm:w-full max-sm:pt-0 max-sm:font-sans max-sm:text-[14px] max-sm:font-semibold max-sm:leading-[22px]">
-                    {{ $contactsText('intro', 'Найшвидше - у Instagram. Але обери будь-який зручний канал: ми відповідаємо скрізь і швидко.') }}
+                    {{ $localized('subtitle') ?: $contactsText('intro', 'Найшвидше - у Instagram. Але обери будь-який зручний канал: ми відповідаємо скрізь і швидко.') }}
                 </p>
             </header>
 
