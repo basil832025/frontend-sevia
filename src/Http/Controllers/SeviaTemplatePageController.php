@@ -50,7 +50,9 @@ class SeviaTemplatePageController
             ]);
         }
 
-        $view = $registry->viewName($page->template);
+        $view = $slug === 'delivery-payment'
+            ? "front.sevia::page-templates.{$page->template}.template"
+            : $registry->viewName($page->template);
 
         if (! view()->exists($view)) {
             return view($fallbackView, [
