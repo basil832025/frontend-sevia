@@ -4,19 +4,37 @@
 @section('meta_description', st('contacts.meta_description', 'Контакти Sevia: Telegram, Instagram, email, телефон та шоу-рум у Києві.'))
 
     @php
-        $contactsText = static fn (string $key, string $default): string => st("contacts.$key", $default);
+    $contactsText = static fn (string $key, string $default): string => st("contacts.$key", $default);
     $pageContent = is_array($content ?? null) ? $content : [];
+    $localized = static function (string $key) use ($pageContent): string {
+        $value = data_get($pageContent, $key);
+        if (is_array($value)) {
+            $value = $value[app()->getLocale()] ?? $value[config('translatable.fallback_locale', 'uk')] ?? '';
+        }
+
+        return trim((string) $value);
+    };
+    $address = $localized('address');
+    $hours = $localized('working_hours');
+    $phone = $localized('phone') ?: '+38 (063) 000 00 00';
+    $email = $localized('email') ?: 'hello@sevia.ua';
     $telegramUrl = trim((string) data_get($pageContent, 'telegram')) ?: 'https://t.me/sevia';
     $instagramUrl = trim((string) data_get($pageContent, 'instagram')) ?: 'https://www.instagram.com/sevia.parfume/';
     $showroomMapUrl = 'https://www.google.com/maps/place/SEVIA/@50.3918344,30.4632471,669m/data=!3m1!1e3!4m14!1m7!3m6!1s0x40d4c9fa8bb1624d:0x8a357052ef35108d!2sSEVIA!8m2!3d50.3918311!4d30.4681126!16s%2Fg%2F11zgyrvm_2!3m5!1s0x40d4c9fa8bb1624d:0x8a357052ef35108d!8m2!3d50.3918311!4d30.4681126!16s%2Fg%2F11zgyrvm_2?entry=ttu';
     $showroomMapEmbedUrl = 'https://www.google.com/maps?q=50.3918311,30.4681126&z=16&output=embed';
+    if ($address !== '') {
+        $query = rawurlencode($address);
+        $showroomMapUrl = "https://www.google.com/maps/search/?api=1&query={$query}";
+        $showroomMapEmbedUrl = "https://www.google.com/maps?q={$query}&z=16&output=embed";
+    }
+    $showroomMapUrl = $localized('map_url') ?: $showroomMapUrl;
 
     $channels = [
         ['label' => 'Telegram', 'title' => '@sevia', 'meta' => $contactsText('telegram_meta', 'Відповідаємо за ~18 хв · 10:00–20:00'), 'action' => $contactsText('telegram_action', 'Написати у Telegram'), 'href' => $telegramUrl],
         ['label' => 'Instagram · парфуми', 'title' => '@sevia.parfume', 'meta' => $contactsText('perfume_instagram_meta', 'Новинки, дропи, огляди ароматів'), 'action' => $contactsText('instagram_action', 'Відкрити Instagram'), 'href' => $instagramUrl],
         ['label' => 'Instagram · білизна', 'title' => '@sevia.lingerie', 'meta' => $contactsText('lingerie_instagram_meta', 'Образи, нові колекції, розмірний гайд'), 'action' => $contactsText('instagram_action', 'Відкрити Instagram'), 'href' => '#'],
-        ['label' => 'Email', 'title' => 'hello@sevia.ua', 'meta' => $contactsText('email_meta', 'Для співпраці та оптових запитів'), 'action' => $contactsText('email_action', 'Написати листа'), 'href' => 'mailto:hello@sevia.ua'],
-        ['label' => $contactsText('phone', 'Телефон'), 'title' => '+38 (063) 000 00 00', 'meta' => $contactsText('phone_meta', 'Дзвінки та Viber · робочі дні'), 'action' => $contactsText('phone_action', 'Подзвонити або Viber'), 'href' => 'tel:+380630000000'],
+        ['label' => 'Email', 'title' => $email, 'meta' => $contactsText('email_meta', 'Для співпраці та оптових запитів'), 'action' => $contactsText('email_action', 'Написати листа'), 'href' => 'mailto:'.$email],
+        ['label' => $contactsText('phone', 'Телефон'), 'title' => $phone, 'meta' => $contactsText('phone_meta', 'Дзвінки та Viber · робочі дні'), 'action' => $contactsText('phone_action', 'Подзвонити або Viber'), 'href' => 'tel:'.preg_replace('/[^+0-9]/', '', $phone)],
     ];
 @endphp
 
@@ -86,12 +104,15 @@
                                  {{ $contactsText('showroom', 'Шоу-рум Sévia') }}
                             </p>
                             <h2 class="m-0 pt-[6.7px] font-cormorant text-[20px] font-medium leading-[29px] text-[#5B2730] max-sm:pt-2 max-sm:text-[18px] max-sm:leading-7">
-                                 {{ $contactsText('address', 'Київ, вул. Михайла Максимовича 9-Д') }}
+                                 {{ $address ?: $contactsText('address', 'Київ, вул. Михайла Максимовича 9-Д') }}
                             </h2>
                             <p class="m-0 text-[13px] font-normal leading-5 text-[#A98088] max-sm:font-sans max-sm:font-semibold max-sm:leading-4">
                                  {{ $contactsText('showroom_description', 'Шоу-рум нішевої парфумерії та білизни') }}
                             </p>
 
+                            @if ($hours !== '')
+                                <p class="m-0 whitespace-pre-line py-4 text-[14px] leading-[22px] text-[#7A4751]">{{ $hours }}</p>
+                            @else
                             <dl class="my-0 flex w-full flex-col gap-2 py-[14.7px] pb-[18.69px] text-[14px] font-normal leading-[22px] text-[#7A4751] max-sm:pb-5 max-sm:text-[13px] max-sm:font-semibold max-sm:leading-4">
                                 <div class="flex justify-between border-b border-[#EFE4D9] pb-2 max-sm:pb-1.5">
                                     <dt>Пн–Пт</dt>
@@ -106,6 +127,7 @@
                                      <dd class="m-0 text-[#A98088]">{{ $contactsText('closed', 'Вихідний') }}</dd>
                                 </div>
                             </dl>
+                            @endif
 
                             <a class="inline-flex h-[34.15px] items-center justify-center text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730] max-sm:hidden" href="{{ $instagramUrl }}" target="_blank" rel="noopener">
                                 <svg class="hidden h-[26px] w-[18px] max-sm:block" viewBox="0 0 18 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
