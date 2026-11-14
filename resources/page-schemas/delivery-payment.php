@@ -100,6 +100,16 @@ return function (array $locales, string $defaultLocale): array {
             ]),
         TextInput::make('content.cta.url')
             ->label('CTA URL')
-            ->url(),
+            ->placeholder('/contacts')
+            ->rule(static fn (): \Closure => static function (string $attribute, mixed $value, \Closure $fail): void {
+                if (is_string($value) && (
+                    preg_match('~\A/(?!/)[^\s\x5c]*\z~u', $value)
+                    || (preg_match('~\Ahttps?://~i', $value) && filter_var($value, FILTER_VALIDATE_URL))
+                )) {
+                    return;
+                }
+
+                $fail('Вкажіть шлях на сайті, наприклад /contacts, або посилання з http:// чи https://.');
+            }),
     ];
 };
