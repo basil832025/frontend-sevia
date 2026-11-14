@@ -3,6 +3,25 @@
     $cartQty = (int) ($cartInfo['qty'] ?? 0);
     $headerClientUrl = auth()->check() ? route('account.overview') : route('auth.phone');
     $headerText = static fn (string $key, string $default): string => st("header.$key", $default);
+    $contactContent = \App\Models\Pages::query()
+        ->where('slug', 'contacts')
+        ->where('status', 'published')
+        ->first()?->content ?? [];
+    $contactPhone = trim((string) data_get($contactContent, 'phone')) ?: '+38 (063) 000 00 00';
+    $contactPhoneNumber = preg_replace('/[^+0-9]/', '', $contactPhone);
+    $contactEmail = trim((string) data_get($contactContent, 'email')) ?: 'hello@sevia.ua';
+    $viberUrl = trim((string) data_get($contactContent, 'viber'));
+    if (! preg_match('~\A(?:https://[^\s]+|viber://chat\?number=(?:\+|%2[Bb])?[0-9]+)\z~', $viberUrl)) {
+        $viberUrl = filled(data_get($contactContent, 'phone')) && $contactPhoneNumber !== ''
+            ? 'viber://chat?number='.rawurlencode($contactPhoneNumber)
+            : '';
+    }
+    $contactLinks = array_filter([
+        'Instagram' => trim((string) data_get($contactContent, 'instagram')) ?: 'https://www.instagram.com/sevia.parfume/',
+        'Telegram' => trim((string) data_get($contactContent, 'telegram')) ?: 'https://t.me/sevia',
+        'Viber' => $viberUrl,
+        $contactEmail => 'mailto:'.$contactEmail,
+    ]);
     $headerClientLabel = auth()->check() ? $headerText('account', 'Особистий кабінет') : $headerText('login', 'Увійти');
     $favoriteIds = auth()->check()
         ? auth()->user()->favorites()->pluck('bs_products.id')->map(fn ($id) => (int) $id)->all()
@@ -45,7 +64,7 @@
             @else
                 <span></span>
             @endif
-            <a class="justify-self-end" href="tel:+380630000000">+38 (063) 000 00 00</a>
+            <a class="justify-self-end" href="tel:{{ $contactPhoneNumber }}">{{ $contactPhone }}</a>
         </div>
     </div>
 
@@ -171,8 +190,13 @@
             </div>
 
             <div class="flex h-[68px] w-full flex-col items-start gap-1.5 px-5 pb-7 pt-2 text-[11px] leading-[13px] text-[#A98088]">
-                <p class="m-0">UA · UAH · +38 (063) 000 00 00</p>
-                <p class="m-0">Instagram · Telegram · hellosevia.ua</p>
+                <p class="m-0">UA · UAH · <a href="tel:{{ $contactPhoneNumber }}">{{ $contactPhone }}</a></p>
+                <p class="m-0">
+                    @foreach ($contactLinks as $label => $href)
+                        @unless ($loop->first) · @endunless
+                        <a href="{{ $href }}">{{ $label }}</a>
+                    @endforeach
+                </p>
             </div>
         </aside>
     </div>

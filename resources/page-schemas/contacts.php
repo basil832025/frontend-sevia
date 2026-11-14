@@ -58,6 +58,10 @@ return function (array $locales, string $defaultLocale): array {
         TextInput::make('content.telegram')
             ->label('Telegram URL')
             ->url(),
+        TextInput::make('content.viber')
+            ->label('Viber URL')
+            ->placeholder('viber://chat?number=%2B380671234567')
+            ->rule('regex:~\A(?:https://[^\s]+|viber://chat\?number=(?:\+|%2[Bb])?[0-9]+)\z~'),
         TextInput::make('content.instagram')
             ->label('Instagram URL')
             ->url(),
