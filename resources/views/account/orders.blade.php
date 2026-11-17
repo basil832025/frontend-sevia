@@ -21,7 +21,7 @@
             <aside class="self-start max-sm:hidden" aria-label="{{ st('account.nav.aria', 'Навігація кабінету') }}">
                 <ul class="m-0 list-none divide-y divide-[#EFE4D9] border-y border-[#EFE4D9] p-0">
                     <li><a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)] items-center gap-2.5 py-3 text-[#7A4751] no-underline" href="{{ route('account.overview') }}"><span class="font-cormorant text-[16px] text-[#A85D66]">01</span><span class="text-[14px]">{{ st('account.nav.overview', 'Огляд') }}</span></a></li>
-                    <li><a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[#5B2730] no-underline" href="{{ route('account.orders') }}"><span class="font-cormorant text-[16px] font-medium text-[#5B2730]">02</span><span class="text-[14px] font-semibold">{{ st('account.nav.orders', 'Замовлення') }}</span><span class="text-[11px] uppercase leading-[17px] tracking-[1.98px] text-[#A98088]">{{ $orders->count() }}</span></a></li>
+                    <li><a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2.5 py-3 text-[#5B2730] no-underline" href="{{ route('account.orders') }}"><span class="font-cormorant text-[16px] font-medium text-[#5B2730]">02</span><span class="text-[14px] font-semibold">{{ st('account.nav.orders', 'Замовлення') }}</span><span class="text-[11px] uppercase leading-[17px] tracking-[1.98px] text-[#A98088]">{{ $ordersCount }}</span></a></li>
                     <li><a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)] items-center gap-2.5 py-3 text-[#7A4751] no-underline" href="{{ route('account.favorites') }}"><span class="font-cormorant text-[16px] text-[#A85D66]">03</span><span class="text-[14px]">{{ st('account.nav.favorites', 'Обране') }}</span></a></li>
                     <li><a class="grid min-h-[50px] grid-cols-[32px_minmax(0,1fr)] items-center gap-2.5 py-3 text-[#7A4751] no-underline" href="{{ route('account.profile') }}"><span class="font-cormorant text-[16px] text-[#A85D66]">05</span><span class="text-[14px]">{{ st('account.nav.profile', 'Особисті дані') }}</span></a></li>
                 </ul>
@@ -33,7 +33,7 @@
 
             <main class="min-w-0">
                 <nav class="flex flex-wrap gap-2 pb-5 max-sm:gap-2 max-sm:pb-2" aria-label="{{ st('account.orders.filter_aria', 'Фільтр замовлень') }}">
-                    @foreach (['all' => st('common.all', 'Усі'), 'transit' => st('account.orders.in_transit', 'У дорозі'), 'delivered' => st('account.orders.delivered', 'Доставлені')] as $value => $label)
+                    @foreach ($filters as $value => $label)
                         <a class="inline-flex h-9 items-center border px-3.5 text-[13px] font-medium leading-5 no-underline max-sm:h-[29px] max-sm:px-[14px] max-sm:text-[11px] max-sm:leading-[13px] {{ $filter === $value ? 'border-[#5B2730] bg-[#5B2730] text-white' : 'border-[#E8DAD0] bg-white text-[#7A4751]' }}" href="{{ route('account.orders', ['status' => $value]) }}">{{ $label }}</a>
                     @endforeach
                 </nav>

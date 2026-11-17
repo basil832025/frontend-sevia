@@ -86,6 +86,34 @@
 @endphp
 
 @section('content')
+    <style>
+        @media (min-width: 640px) and (max-width: 1279px) {
+            .cart-product-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: start;
+                gap: 16px 12px;
+                padding-right: 0;
+            }
+            .cart-product-row > div:nth-child(2) {
+                grid-column: 1 / -1;
+                width: 100%;
+                max-width: none;
+                padding-right: 34px;
+            }
+            .cart-product-row .cart-product-quantity {
+                position: static;
+                justify-self: start;
+            }
+            .cart-product-row .cart-product-price {
+                position: static;
+                min-width: 0;
+            }
+            .cart-product-row .cart-product-remove {
+                top: 18px;
+            }
+        }
+    </style>
     @if ($qty <= 0)
             <section class="mx-auto flex min-h-[602px] w-full max-w-[620px] flex-col items-center bg-[#FDFBF8] px-5 pb-[150px] pt-[152px] text-center max-sm:min-h-[520px] max-sm:pb-20 max-sm:pt-20">
             <div class="flex size-[66px] items-center justify-center rounded-full border border-[#E8DAD0] bg-[#FBF4F0]">
@@ -239,7 +267,7 @@
                             $freeShippingProgress = $freeShippingFrom > 0 ? min(100, max(0, ($cartTotalWithBottles / $freeShippingFrom) * 100)) : 0;
                         @endphp
 
-                        <article class="relative min-h-[165px] border-b border-[#E8DAD0] py-[18px] pl-[104px] pr-[50px] max-sm:min-h-[198.8px] max-sm:py-5 max-sm:pl-[78px] max-sm:pr-[56px]">
+                        <article class="cart-product-row relative min-h-[165px] border-b border-[#E8DAD0] py-[18px] pl-[104px] pr-[50px] max-sm:min-h-[198.8px] max-sm:py-5 max-sm:pl-[78px] max-sm:pr-[56px]">
                             <div class="absolute left-0 top-[30px] flex h-[104px] w-[82px] items-center justify-center bg-[#FDFBF8] p-[9px] max-sm:top-5 max-sm:h-[78px] max-sm:w-[62px] max-sm:p-[7px]">
                                 @if (! empty($item['image']))
                                     <img class="max-h-[86px] max-w-16 object-contain max-sm:max-h-16 max-sm:max-w-12" src="{{ $item['image'] }}" alt="{{ trim($brand . ' ' . $name) }}">
@@ -314,7 +342,7 @@
                                 @endif
                             </div>
 
-                            <form class="absolute right-[168px] top-[67px] flex h-[30px] items-center border border-[#E8DAD0] max-sm:left-[78px] max-sm:right-auto max-sm:top-[134px] max-sm:mt-0 max-sm:w-[84px]" method="POST" action="{{ route('cart.quantity') }}">
+                            <form class="cart-product-quantity absolute right-[168px] top-[67px] flex h-[30px] items-center border border-[#E8DAD0] max-sm:left-[78px] max-sm:right-auto max-sm:top-[134px] max-sm:mt-0 max-sm:w-[84px]" method="POST" action="{{ route('cart.quantity') }}">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $productId }}">
                                 <input type="hidden" name="price" value="{{ $unitPrice }}">
@@ -324,14 +352,14 @@
                                 <button class="grid size-7 place-items-center text-[14px] leading-none text-[#7A4751]" type="submit" name="delta" value="1" aria-label="{{ $cartText('more', 'Більше') }}">+</button>
                             </form>
 
-                            <div class="absolute right-[50px] top-[66px] min-w-24 text-right max-sm:right-0 max-sm:top-[137px] max-sm:min-w-0">
+                            <div class="cart-product-price absolute right-[50px] top-[66px] min-w-24 text-right max-sm:right-0 max-sm:top-[137px] max-sm:min-w-0">
                                 <p class="m-0 text-[16px] font-medium leading-6 {{ $hasDiscount ? 'text-[#B03B45]' : 'text-[#5B2730]' }} max-sm:text-[15px] max-sm:leading-[22px]">{{ $money($lineDisplayTotal) }}</p>
                                 @if ($hasDiscount)
                                     <p class="m-0 text-[12.5px] leading-[19px] text-[#C9A9B0] line-through">{{ $money($oldLineTotal) }}</p>
                                 @endif
                             </div>
 
-                            <form class="absolute right-0 top-[67px] z-10 max-sm:right-0 max-sm:top-5" method="POST" action="{{ route('cart.remove') }}" data-cart-remove-form>
+                            <form class="cart-product-remove absolute right-0 top-[67px] z-10 max-sm:right-0 max-sm:top-5" method="POST" action="{{ route('cart.remove') }}" data-cart-remove-form>
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $productId }}">
                                 <input type="hidden" name="meta[volume]" value="{{ $volume }}">

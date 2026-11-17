@@ -61,10 +61,11 @@
             </aside>
 
             <div class="flex min-w-0 flex-col gap-9 max-lg:gap-7 max-sm:gap-3.5">
+                @if ($trackingOrder['id'] ?? null)
                 <article class="grid min-h-[200px] grid-cols-[minmax(0,412px)_minmax(260px,1fr)] items-center gap-9 bg-[#F8EDE7] p-9 max-lg:grid-cols-1 max-lg:p-6 max-sm:hidden">
                     <div>
                         <div class="text-[11px] font-medium uppercase leading-[17px] tracking-[3.08px] text-[#A98088]">{{ $trackingOrder['status_line'] }}</div>
-                        <h2 class="m-0 mt-0.5 font-cormorant text-[26px] font-medium leading-10 tracking-[-0.26px] text-[#5B2730]">{{ st('account.orders.singular', 'Замовлення') }} {{ $trackingOrder['code'] }}</h2>
+                        <h2 class="m-0 mt-0.5 font-cormorant text-[26px] font-medium leading-10 tracking-[-0.26px] text-[#5B2730]"><a href="{{ route('account.orders.show', ['order' => $trackingOrder['id']]) }}">Останнє замовлення {{ $trackingOrder['code'] }}</a></h2>
                         <p class="m-0 text-[13px] leading-5 text-[#7A4751]">{{ $trackingOrder['items'] }}</p>
                         @if ($trackingOrder['ttn'] !== '')
                             <a class="mt-[18px] inline-flex text-[13px] font-medium uppercase leading-5 tracking-[2.34px] text-[#5B2730] no-underline" href="https://novaposhta.ua/tracking/{{ preg_replace('/\D+/', '', $trackingOrder['ttn']) }}" target="_blank" rel="noopener noreferrer">ТТН {{ $trackingOrder['ttn'] }}</a>
@@ -80,6 +81,7 @@
                         @endforeach
                     </div>
                 </article>
+                @endif
 
                 <section class="grid grid-cols-4 border-y border-[#E8DAD0] max-lg:grid-cols-2 max-sm:grid-cols-2 max-sm:gap-3 max-sm:border-0 max-sm:pb-2.5">
                     <div class="border-r border-[#E8DAD0] px-6 py-[22px] max-sm:min-h-[79px] max-sm:border max-sm:p-4">
@@ -103,7 +105,7 @@
                 <section class="flex flex-col gap-5 max-sm:gap-3 max-sm:py-[14px] max-sm:pt-2.5">
                     <div class="flex items-end justify-between border-b border-[#EFE4D9] pb-3 max-sm:items-baseline max-sm:border-0 max-sm:pb-0">
                         <h2 class="m-0 font-cormorant text-[28px] font-medium leading-[43px] tracking-[-0.28px] text-[#5B2730] max-sm:text-[21px] max-sm:leading-[25px] max-sm:tracking-normal">{{ st('account.overview.recent_orders', 'Останні замовлення') }}</h2>
-                        <a class="text-[12px] font-medium uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] no-underline max-sm:text-[11px] max-sm:leading-[13px] max-sm:tracking-[0.6px] max-sm:text-[#A98088]" href="#">{{ st('common.all', 'Усі') }} →</a>
+                        <a class="text-[12px] font-medium uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] no-underline max-sm:text-[11px] max-sm:leading-[13px] max-sm:tracking-[0.6px] max-sm:text-[#A98088]" href="{{ route('account.orders') }}">{{ st('common.all', 'Усі') }} →</a>
                     </div>
 
                     <div class="flex flex-col">
@@ -116,7 +118,7 @@
                                 <div class="min-w-0 truncate text-[13px] leading-5 text-[#7A4751] max-lg:col-span-2 max-sm:col-span-2 max-sm:text-[12px] max-sm:leading-[15px]">{{ $order['items'] }}</div>
                                 <span class="inline-flex justify-center bg-[#F8EDE7] px-2.5 py-[5px] text-[11px] font-semibold uppercase leading-[17px] tracking-[1.98px] text-[#A98088] max-sm:col-start-2 max-sm:row-start-1 max-sm:justify-self-end max-sm:px-[9px] max-sm:py-1 max-sm:text-[9px] max-sm:font-medium max-sm:leading-[11px] max-sm:tracking-[0.5px] max-sm:text-[#7A4751] {{ $loop->first ? 'bg-[#E7CDCA] text-[#5B2730] max-sm:bg-[#F8EDE7] max-sm:text-[#7A4751]' : '' }}">{{ $order['status'] }}</span>
                                 <div class="font-cormorant text-[20px] font-medium leading-[31px] text-[#5B2730] max-sm:col-start-1 max-sm:mt-1 max-sm:text-[18px] max-sm:leading-[22px]">{{ $order['total'] }}</div>
-                                <a class="text-[12px] font-medium uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] no-underline max-sm:col-start-2 max-sm:justify-self-end max-sm:text-[11px] max-sm:leading-[13px] max-sm:tracking-[0.6px] max-sm:text-[#7A4751]" href="#">{{ st('account.orders.details', 'Деталі') }} →</a>
+                                <a class="text-[12px] font-medium uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] no-underline max-sm:col-start-2 max-sm:justify-self-end max-sm:text-[11px] max-sm:leading-[13px] max-sm:tracking-[0.6px] max-sm:text-[#7A4751]" href="{{ route('account.orders.show', ['order' => $order['id']]) }}">{{ st('account.orders.details', 'Деталі') }} →</a>
                             </article>
                         @endforeach
                     </div>

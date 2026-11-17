@@ -104,7 +104,7 @@ class SeviaAccountController extends Controller
             'favoritesCount' => $favoritesCount,
             'discoveryCount' => 5,
             'trackingOrder' => $this->trackingOrder($orders),
-            'recentOrders' => $this->recentOrders($orders),
+            'recentOrders' => $this->recentOrders($orders, false),
             'wishlistProducts' => $wishlist,
             'profileRows' => $this->profileRows($client),
         ]);
@@ -120,21 +120,35 @@ class SeviaAccountController extends Controller
         }
 
         $filter = (string) $request->query('status', 'all');
+        $filters = [
+            'all' => 'Усі',
+            'accepted' => 'Прийняті',
+            'assembling' => 'Збираються',
+            'ready' => 'Готові до відправки',
+            'transit' => 'У дорозі',
+            'awaiting' => 'Очікують отримання',
+            'delivered' => 'Доставлені',
+            'cancelled' => 'Скасовані',
+        ];
+        if (! array_key_exists($filter, $filters)) {
+            $filter = 'all';
+        }
         $orders = Order::query()
             ->with(['items.product'])
             ->where('clients_id', $client->id)
             ->where('status', '!=', OrderStatus::Cart->value)
-            ->when($filter === 'transit', fn ($query) => $query->where('status', OrderStatus::Shipped->value))
-            ->when($filter === 'delivered', fn ($query) => $query->where('status', OrderStatus::Delivered->value))
             ->latest('id')
             ->get();
 
-        $orderRows = $this->recentOrders($orders, false);
+        $filteredOrders = $orders->filter(fn (Order $order): bool => $filter === 'all' || $this->orderStage($order) === $filter);
+        $orderRows = $this->recentOrders($filteredOrders, false);
 
         return view('front.sevia::account.orders', [
             'client' => $client,
             'orders' => $orderRows,
             'filter' => $filter,
+            'filters' => $filters,
+            'ordersCount' => $orders->count(),
         ]);
     }
 
@@ -524,7 +538,8 @@ class SeviaAccountController extends Controller
 
         if (! $order) {
             return [
-                'status_line' => 'У дорозі · доставка завтра',
+                'id' => null,
+                'status_line' => '',
                 'code' => 'SV-2026-00214',
                 'items' => 'Imagination · Black Afgano · 1 340 ₴',
                 'ttn' => '20 4500 0123 4567',
@@ -539,16 +554,17 @@ class SeviaAccountController extends Controller
         }
 
         return [
-            'status_line' => $this->statusLabel($order) . ($order->dat ? ' · доставка ' . $order->dat->format('d.m') : ''),
+            'id' => $order->id,
+            'status_line' => $this->statusLabel($order) . ($order->created_at ? ' · оформлено ' . $order->created_at->format('d.m.Y') : ''),
             'code' => $this->orderCode($order),
             'items' => $this->orderItemsLine($order),
             'ttn' => trim((string) ($order->nova_ttn ?? '')),
             'status' => $this->statusLabel($order),
             'steps' => [
-                ['label' => 'Прийнято', 'done' => true],
-                ['label' => 'Зібрано', 'done' => in_array($order->status?->value, ['assembled', 'shipped', 'delivered'], true)],
-                ['label' => 'Передано НП', 'done' => in_array($order->status?->value, ['shipped', 'delivered'], true)],
-                ['label' => 'На відділенні', 'done' => $order->status === OrderStatus::Delivered],
+                ['label' => 'Прийнято', 'done' => $this->orderStage($order) !== 'cancelled'],
+                ['label' => 'Готове до відправки', 'done' => in_array($this->orderStage($order), ['ready', 'transit', 'awaiting', 'delivered'], true)],
+                ['label' => 'Передано перевізнику', 'done' => in_array($this->orderStage($order), ['transit', 'awaiting', 'delivered'], true)],
+                ['label' => 'Отримано', 'done' => $this->orderStage($order) === 'delivered'],
             ],
         ];
     }
@@ -565,9 +581,9 @@ class SeviaAccountController extends Controller
         $scheduledDate = $this->formatTrackingDay($novaTracking['scheduled_delivery_date'] ?? null);
         $actualDate = $this->formatTrackingDay($novaTracking['actual_delivery_date'] ?? null);
         $novaStatusDate = $this->formatTrackingDate($novaTracking['status_date'] ?? null);
-        $novaStatus = (string) ($novaTracking['status'] ?? '');
+        $novaStatus = (string) ($novaTracking['status'] ?? $order->nova_status ?? '');
         $orderStatus = $order->status?->value;
-        $novaPassedToCarrier = in_array($novaStatus, ['in_transit', 'arrived', 'received'], true)
+        $novaPassedToCarrier = in_array($novaStatus, ['at_branch', 'in_transit', 'arrived', 'received'], true)
             && in_array($orderStatus, ['assembled', 'shipped', 'delivered'], true);
         $shippedDone = $shippedAt !== '' || in_array($orderStatus, ['shipped', 'delivered'], true) || $novaPassedToCarrier;
         $assembledDone = $assembledAt !== '' || $shippedDone || in_array($orderStatus, ['assembled', 'shipped', 'delivered'], true);
@@ -579,7 +595,7 @@ class SeviaAccountController extends Controller
             ['label' => 'Зібрано', 'done' => $assembledDone, 'date' => $assembledAt],
             ['label' => 'Передано до Нової Пошти', 'done' => $shippedDone, 'date' => $shippedAt],
             ['label' => 'У дорозі', 'done' => $isArrived, 'date' => $isArrived ? $novaStatusDate : ($scheduledDate !== '' ? 'очікувано ' . $scheduledDate : '')],
-            ['label' => 'На відділенні', 'done' => $isDelivered, 'date' => $actualDate !== '' ? $actualDate : ($isArrived ? $novaStatusDate : '')],
+            ['label' => $order->nova_delivery_type === 'postomat' ? 'У поштоматі' : 'На відділенні', 'done' => $isDelivered, 'date' => $actualDate !== '' ? $actualDate : ($isArrived ? $novaStatusDate : '')],
         ];
     }
 
@@ -947,11 +963,22 @@ class SeviaAccountController extends Controller
 
     private function orderItemsLine(Order $order, bool $withTotal = true): string
     {
-        $items = $order->items
-            ->take(2)
-            ->map(fn ($item): string => trim((string) data_get($item->product_snapshot, 'name', $item->product?->name ?? 'Аромат')))
-            ->filter()
-            ->implode(' · ');
+        $rows = $this->orderDetailItems($order);
+        $sets = (int) $rows->where('type', 'discovery_set')->sum('qty');
+        $fragrances = (int) $rows->where('type', '!=', 'discovery_set')->sum('qty');
+        $plural = static function (int $count, array $forms): string {
+            $lastTwo = $count % 100;
+            $last = $count % 10;
+            $form = $lastTwo >= 11 && $lastTwo <= 14
+                ? $forms[2]
+                : ($last === 1 ? $forms[0] : (in_array($last, [2, 3, 4], true) ? $forms[1] : $forms[2]));
+
+            return $count . ' ' . $form;
+        };
+        $items = collect([
+            $sets > 0 ? $plural($sets, ['сет Discovery', 'сети Discovery', 'сетів Discovery']) : null,
+            $fragrances > 0 ? $plural($fragrances, ['аромат', 'аромати', 'ароматів']) : null,
+        ])->filter()->implode(' · ');
 
         if ($items === '') {
             $items = 'Замовлення Sevia';
@@ -966,14 +993,42 @@ class SeviaAccountController extends Controller
 
     private function statusLabel(Order $order): string
     {
-        return match ($order->status) {
-            OrderStatus::New => 'Прийнято',
-            OrderStatus::Processing, OrderStatus::Filling, OrderStatus::Molding, OrderStatus::Baking => 'Збирається',
-            OrderStatus::Prepared, OrderStatus::Assembled => 'Зібрано',
-            OrderStatus::Shipped => 'У дорозі',
-            OrderStatus::Delivered => 'Доставлено',
-            OrderStatus::Cancelled => 'Скасовано',
+        return match ($this->orderStage($order)) {
+            'assembling' => 'Збирається',
+            'ready' => 'Готове до відправки',
+            'transit' => $order->nova_status === 'at_branch' ? 'Передано Новій пошті' : 'У дорозі',
+            'awaiting' => $order->nova_delivery_type === 'postomat' ? 'Очікує в поштоматі' : 'Очікує у відділенні',
+            'delivered' => 'Доставлено',
+            'cancelled' => 'Скасовано',
             default => 'Прийнято',
+        };
+    }
+
+    private function orderStage(Order $order): string
+    {
+        if ($order->status === OrderStatus::Cancelled) {
+            return 'cancelled';
+        }
+        if ($order->status === OrderStatus::Delivered) {
+            return 'delivered';
+        }
+        if (filled($order->nova_ttn)) {
+            $stage = match ((string) $order->nova_status) {
+                'received' => 'delivered',
+                'arrived' => 'awaiting',
+                'at_branch', 'in_transit' => 'transit',
+                default => null,
+            };
+            if ($stage !== null) {
+                return $stage;
+            }
+        }
+
+        return match ($order->status) {
+            OrderStatus::Processing, OrderStatus::Filling, OrderStatus::Molding, OrderStatus::Baking => 'assembling',
+            OrderStatus::Prepared, OrderStatus::Assembled => 'ready',
+            OrderStatus::Shipped => 'transit',
+            default => 'accepted',
         };
     }
 
