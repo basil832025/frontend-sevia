@@ -605,6 +605,7 @@ class SeviaCatalogController extends Controller
                 'count' => (int) ($counts[$category->id] ?? 0),
             ])
             ->filter(fn (array $value) => $value['title'] !== '' && $value['count'] > 0)
+            ->sortBy(fn (array $value): string => mb_strtolower($value['title']), SORT_NATURAL)
             ->values();
 
         if ($values->isEmpty()) {
