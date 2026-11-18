@@ -91,6 +91,27 @@
 @endphp
 
 @section('content')
+    <script>
+        document.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-filter-group-reset]');
+            if (!button) return;
+
+            const group = button.closest('fieldset');
+            const form = button.closest('form');
+            if (!group || !form) return;
+
+            group.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                input.checked = false;
+            });
+            group.querySelectorAll('[name="price_min"], [data-price-min-range]').forEach((input) => {
+                input.value = group.dataset.priceMin;
+            });
+            group.querySelectorAll('[name="price_max"], [data-price-max-range]').forEach((input) => {
+                input.value = group.dataset.priceMax;
+            });
+            form.requestSubmit();
+        });
+    </script>
     <nav class="flex h-[50px] items-center gap-2.5 px-[68px] pb-2 pt-[22px] text-[13px] leading-5 max-lg:px-6 max-sm:hidden sm:max-lg:h-9 sm:max-lg:px-[49px] sm:max-lg:pb-1.5 sm:max-lg:pt-4 sm:max-lg:text-[9.4px] sm:max-lg:leading-[14px]" aria-label="{{ st('common.navigation', 'Навігація') }}">
         @foreach ($breadcrumbs as $item)
             @if (! $loop->first)
@@ -230,7 +251,7 @@
                         @endphp
 
                         <fieldset class="w-full">
-                            <legend class="mb-3 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ $group['title'] }}</legend>
+                            <legend class="mb-3 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ $group['title'] }} <button type="button" class="ml-3 text-[10px] font-normal normal-case underline tracking-normal" data-filter-group-reset>{{ st('common.reset', 'Скинути') }}</button></legend>
 
                             @if (($group['role'] ?? null) === 'gender')
                                 <div class="grid gap-0">
@@ -271,7 +292,7 @@
                     @endforeach
 
                     <fieldset class="w-full" data-price-filter data-price-min="{{ $priceMin }}" data-price-max="{{ $priceMax }}">
-                        <legend class="mb-3 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ st('common.price_uah', 'Ціна, ₴') }}</legend>
+                        <legend class="mb-3 text-[10px] font-medium uppercase leading-3 tracking-[1.6px] text-[#A98088]">{{ st('common.price_uah', 'Ціна, ₴') }} <button type="button" class="ml-3 text-[10px] font-normal normal-case underline tracking-normal" data-filter-group-reset>{{ st('common.reset', 'Скинути') }}</button></legend>
                         <div class="sevia-price-range relative h-5 w-full">
                             <span class="absolute left-2 right-2 top-[9px] h-0.5 rounded bg-[#E8DAD0]"></span>
                             <span class="absolute top-[9px] h-0.5 rounded bg-[#5B2730]" data-price-range-fill></span>
@@ -334,7 +355,7 @@
                 <a class="ml-1 text-[12px] font-normal uppercase leading-[19px] tracking-[2.16px] text-[#5B2730] max-sm:text-[10px] max-sm:tracking-[1px]" href="{{ route('sale.index') }}">{{ st('common.reset_all', 'Скинути все') }}</a>
             @else
             @forelse ($selectedChips as $chip)
-                <a class="inline-flex h-8 items-center border border-[#E8DAD0] bg-[#F8EDE7] px-3 text-[12px] normal-case tracking-normal text-[#5B2730] max-sm:h-[25px] max-sm:border-0 max-sm:px-2.5 max-sm:text-[10.5px] max-sm:uppercase max-sm:leading-[13px] max-sm:tracking-[0.5px] max-sm:text-[#7A4751] sm:max-lg:h-[34.52px] sm:max-lg:px-[10.8px] sm:max-lg:py-[5.76px] sm:max-lg:text-[12.4px] sm:max-lg:font-medium sm:max-lg:leading-[19px]">
+                <a class="inline-flex h-8 items-center border border-[#E8DAD0] bg-[#F8EDE7] px-3 text-[12px] normal-case tracking-normal text-[#5B2730] max-sm:h-[25px] max-sm:border-0 max-sm:px-2.5 max-sm:text-[10.5px] max-sm:uppercase max-sm:leading-[13px] max-sm:tracking-[0.5px] max-sm:text-[#7A4751] sm:max-lg:h-[34.52px] sm:max-lg:px-[10.8px] sm:max-lg:py-[5.76px] sm:max-lg:text-[12.4px] sm:max-lg:font-medium sm:max-lg:leading-[19px]" href="{{ $chip['url'] }}">
                     {{ $chip['title'] }} <span class="ml-1 text-[#A98088]">×</span>
                 </a>
             @empty
@@ -358,7 +379,7 @@
 
                     @foreach ($filterGroups as $group)
                         <fieldset class="w-full">
-                            <legend class="mb-4 pb-3 text-[11px] font-semibold uppercase leading-[17px] tracking-[3.08px] text-[#5B2730]">{{ $group['title'] }}</legend>
+                            <legend class="mb-4 pb-3 text-[11px] font-semibold uppercase leading-[17px] tracking-[3.08px] text-[#5B2730]">{{ $group['title'] }} <button type="button" class="ml-3 text-[10px] font-normal normal-case underline tracking-normal" data-filter-group-reset>{{ st('common.reset', 'Скинути') }}</button></legend>
 
                             @if (($group['role'] ?? null) === 'brand')
                                 <input class="mb-4 h-[38px] w-full border border-[#E8DAD0] bg-[#FDFBF8] px-3 text-[13px] leading-4 text-[#5B2730] outline-none placeholder:text-[#A98088]" type="search" placeholder="{{ st('common.search_brand', 'Пошук бренду...') }}" data-brand-search>
@@ -383,7 +404,7 @@
                     @endforeach
 
                     <fieldset class="w-full" data-price-filter data-price-min="{{ $priceMin }}" data-price-max="{{ $priceMax }}">
-                        <legend class="mb-4 pb-3 text-[11px] font-semibold uppercase leading-[17px] tracking-[3.08px] text-[#5B2730]">{{ st('common.price', 'Ціна') }}</legend>
+                        <legend class="mb-4 pb-3 text-[11px] font-semibold uppercase leading-[17px] tracking-[3.08px] text-[#5B2730]">{{ st('common.price', 'Ціна') }} <button type="button" class="ml-3 text-[10px] font-normal normal-case underline tracking-normal" data-filter-group-reset>{{ st('common.reset', 'Скинути') }}</button></legend>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="grid h-[65px] gap-1 border border-[#E8DAD0] bg-[#FDFBF8] px-3 py-2.5">
                                 <span class="text-[11px] uppercase leading-[17px] tracking-[2.42px] text-[#A98088]">{{ st('common.from_lower', 'від') }}</span>
